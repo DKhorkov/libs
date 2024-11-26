@@ -11,33 +11,13 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type TestDatabaseConfig struct {
-	Driver        string
-	DSN           string
-	MigrationsDir string
-}
-
-type TestConfig struct {
-	Database TestDatabaseConfig
-}
-
-func NewTestConfig() *TestConfig {
-	return &TestConfig{
-		Database: TestDatabaseConfig{
-			Driver:        "sqlite3",
-			DSN:           "file::memory:?cache=shared", // "test.db" can be also used
-			MigrationsDir: "/internal/database/migrations",
-		},
-	}
-}
-
 func TestDatabaseConnect(t *testing.T) {
-	testsConfig := NewTestConfig()
+	testsConfig := db.NewTestConfig()
 
 	t.Run("should connect to database", func(t *testing.T) {
 		connector := &db.CommonDBConnector{
-			DSN:    testsConfig.Database.DSN,
-			Driver: testsConfig.Database.Driver,
+			DSN:    testsConfig.DSN,
+			Driver: testsConfig.Driver,
 		}
 
 		err := connector.Connect()
@@ -56,12 +36,12 @@ func TestDatabaseConnect(t *testing.T) {
 }
 
 func TestDatabaseGetTransaction(t *testing.T) {
-	testsConfig := NewTestConfig()
+	testsConfig := db.NewTestConfig()
 
 	t.Run("should return transaction", func(t *testing.T) {
 		connector := &db.CommonDBConnector{
-			DSN:    testsConfig.Database.DSN,
-			Driver: testsConfig.Database.Driver,
+			DSN:    testsConfig.DSN,
+			Driver: testsConfig.Driver,
 		}
 
 		if err := connector.Connect(); err != nil {
@@ -95,12 +75,12 @@ func TestDatabaseGetTransaction(t *testing.T) {
 }
 
 func TestDatabaseGetConnection(t *testing.T) {
-	testsConfig := NewTestConfig()
+	testsConfig := db.NewTestConfig()
 
 	t.Run("should return connection", func(t *testing.T) {
 		connector := &db.CommonDBConnector{
-			DSN:    testsConfig.Database.DSN,
-			Driver: testsConfig.Database.Driver,
+			DSN:    testsConfig.DSN,
+			Driver: testsConfig.Driver,
 		}
 
 		if err := connector.Connect(); err != nil {
@@ -118,8 +98,8 @@ func TestDatabaseGetConnection(t *testing.T) {
 
 	t.Run("should return connection, even if it was nil", func(t *testing.T) {
 		connector := &db.CommonDBConnector{
-			DSN:    testsConfig.Database.DSN,
-			Driver: testsConfig.Database.Driver,
+			DSN:    testsConfig.DSN,
+			Driver: testsConfig.Driver,
 		}
 
 		connection := connector.GetConnection()

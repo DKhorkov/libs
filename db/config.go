@@ -10,3 +10,17 @@ type Config struct {
 	SSLMode      string
 	Driver       string
 }
+
+type TestConfig struct {
+	Driver        string
+	DSN           string
+	MigrationsDir string
+}
+
+func NewTestConfig() *TestConfig {
+	return &TestConfig{
+		Driver:        "sqlite3",
+		DSN:           "file::memory:?cache=shared", // "test.db" can be also used
+		MigrationsDir: "/internal/database/migrations",
+	}
+}

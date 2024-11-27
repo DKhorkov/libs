@@ -356,6 +356,10 @@ issues:
         - gosec
         - noctx
         - wrapcheck
-    - path: "tests/internal/security/encoding_test.go"
+    - path: "security/encoding_test.go"
       linters:
         - testifylint
+    - path: "db/connector_test.go"
+      linters:
+        - gochecknoglobals
+        - govet

@@ -1,9 +1,10 @@
-package database__test
+package db_test
 
 import (
 	"testing"
 
 	"github.com/DKhorkov/libs/db"
+
 	"github.com/stretchr/testify/assert"
 )
 

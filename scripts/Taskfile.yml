@@ -1,57 +1,11 @@
 version: "3"
 
 tasks:
-  docker_network:
-    desc: "Create docker network for project."
-    aliases:
-      - network
-    cmd: sudo docker network create hmtm_network
-
-  docker_build:
-    desc: "Build docker container."
-    aliases:
-      - build
-    cmd: sudo docker compose -f ../build/package/docker-compose.yml build
-
-  docker_run:
-    desc: "Launch docker container."
-    aliases:
-      - run
-    cmd: sudo docker compose -f ../build/package/docker-compose.yml up
-
-  docker_stop:
-    desc: "Stop all docker containers."
-    aliases:
-      - stop
-    cmd:  sudo docker stop $(sudo docker ps -a -q)
-
-  docker_clean:
-    desc: "Clean docker containers, images and volumes."
-    aliases:
-      - clean
-    cmd: sudo docker system prune -a --volumes
-
-  docker_prod:
-    desc: "Docker build and run."
-    aliases:
-      - prod
-    cmds:
-      - task: create_logs_folder
-      - task: docker_build
-      - task: docker_run
-
   create_logs_folder:
     desc: "Create logs folder for docker volume purposes."
-    internal: true
     dir: ../
     cmds:
       - mkdir -p logs
-
-  graphql_generate:
-    desc: "Generate GraphQL base files."
-    aliases:
-      - graphql
-    cmd: go run github.com/99designs/gqlgen generate
 
   tests:
     desc: "Run tests and save coverage to ./tests/coverage folder."
@@ -59,9 +13,9 @@ tasks:
       - test
     dir: ../
     cmds:
-      - mkdir -p ./tests/coverage
-      - go test -v -coverprofile ./tests/coverage/coverage.out -coverpkg=./... ./tests...
-      - go tool cover -html ./tests/coverage/coverage.out -o ./tests/coverage/coverage.html
+      - mkdir -p ./coverage
+      - go test -v -coverprofile ./coverage/coverage.out -coverpkg=./... ./...
+      - go tool cover -html ./coverage/coverage.out -o ./coverage/coverage.html
 
   linters:
     desc: "Run linters."

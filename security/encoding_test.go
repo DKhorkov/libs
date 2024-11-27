@@ -1,4 +1,4 @@
-package security__test
+package security_test
 
 import (
 	"testing"

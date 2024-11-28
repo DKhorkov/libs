@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"reflect"
 )
 
@@ -17,4 +18,18 @@ func GetEntityColumns(entity interface{}) []interface{} {
 	}
 
 	return columns
+}
+
+func BuildDsn(config Config) string {
+	dsn := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		config.Host,
+		config.Port,
+		config.User,
+		config.Password,
+		config.DatabaseName,
+		config.SSLMode,
+	)
+
+	return dsn
 }

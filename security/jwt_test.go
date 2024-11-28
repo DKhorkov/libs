@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSecurityGenerateJWT(t *testing.T) {
+func TestGenerateJWT(t *testing.T) {
 	testCases := []struct {
 		name          string
 		secretKey     string
@@ -54,7 +54,7 @@ func TestSecurityGenerateJWT(t *testing.T) {
 	}
 }
 
-func TestSecurityParseJWT(t *testing.T) {
+func TestParseJWT(t *testing.T) {
 	const (
 		userID    = 1
 		secretKey = "testSecret"

@@ -24,3 +24,19 @@ func TestGetEntityColumns(t *testing.T) {
 			"should return a slice of []interface{}")
 	})
 }
+
+func TestBuildDsn(t *testing.T) {
+	expected := "host=0.0.0.0 port=5432 user=postgres password=postgres dbname=postgres sslmode=disable"
+	config := db.Config{
+		Host:         "0.0.0.0",
+		Port:         5432,
+		User:         "postgres",
+		Password:     "postgres",
+		DatabaseName: "postgres",
+		SSLMode:      "disable",
+		Driver:       "postgres",
+	}
+
+	actual := db.BuildDsn(config)
+	assert.Equal(t, expected, actual)
+}

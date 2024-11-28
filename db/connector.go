@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 	"log/slog"
 
 	"github.com/DKhorkov/libs/logging"
@@ -71,38 +70,10 @@ func (connector *CommonDBConnector) CloseConnection() {
 }
 
 // New is constructor of CommonDBConnector. Gets database Config and *slog.Logger to create an instance.
-func New(dbConfig Config, logger *slog.Logger) (*CommonDBConnector, error) {
-	dsn := fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-		dbConfig.Host,
-		dbConfig.Port,
-		dbConfig.User,
-		dbConfig.Password,
-		dbConfig.DatabaseName,
-		dbConfig.SSLMode,
-	)
-
+func New(dsn, driver string, logger *slog.Logger) (*CommonDBConnector, error) {
 	dbConnector := &CommonDBConnector{
-		driver: dbConfig.Driver,
+		driver: driver,
 		dsn:    dsn,
-		logger: logger,
-	}
-
-	if err := dbConnector.Connect(); err != nil {
-		return nil, err
-	}
-
-	if err := dbConnector.GetConnection().Ping(); err != nil {
-		return nil, err
-	}
-
-	return dbConnector, nil
-}
-
-func NewTestConnector(config TestConfig, logger *slog.Logger) (*CommonDBConnector, error) {
-	dbConnector := &CommonDBConnector{
-		driver: config.Driver,
-		dsn:    config.DSN,
 		logger: logger,
 	}
 

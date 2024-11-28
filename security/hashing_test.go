@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSecurityHash(t *testing.T) {
+func TestHash(t *testing.T) {
 	testCases := []struct {
 		name          string
 		hashCost      int
@@ -56,7 +56,7 @@ func TestSecurityHash(t *testing.T) {
 	}
 }
 
-func TestSecurityValidateHash(t *testing.T) {
+func TestValidateHash(t *testing.T) {
 	valueToHash := "value"
 	testCases := []struct {
 		name     string

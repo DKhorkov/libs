@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSecurityEncode(t *testing.T) {
+func TestEncode(t *testing.T) {
 	testCases := []struct {
 		name    string
 		data    []byte
@@ -34,7 +34,7 @@ func TestSecurityEncode(t *testing.T) {
 	}
 }
 
-func TestSecurityDecode(t *testing.T) {
+func TestDecode(t *testing.T) {
 	testCases := []struct {
 		name          string
 		encoded       string

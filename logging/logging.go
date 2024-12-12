@@ -3,13 +3,18 @@ package logging
 import (
 	"context"
 	"fmt"
-	"github.com/DKhorkov/libs/contextlib"
 	"io"
 	"log/slog"
 	"net/http"
 	"os"
 	"runtime"
 	"sync"
+
+	"github.com/DKhorkov/libs/contextlib"
+)
+
+const (
+	skipLevel = 2
 )
 
 var (
@@ -62,7 +67,7 @@ func GetLogTraceback(skipLevel int) string {
 	return fmt.Sprintf("%s on line %d: %s", file, line, fn.Name())
 }
 
-func LogRequest(logger *slog.Logger, ctx context.Context, request *http.Request) {
+func LogRequest(ctx context.Context, logger *slog.Logger, request *http.Request) {
 	requestID, err := contextlib.GetValueFromContext[string](ctx, "requestID")
 	if err != nil {
 		requestID = ""
@@ -76,13 +81,13 @@ func LogRequest(logger *slog.Logger, ctx context.Context, request *http.Request)
 		"Request",
 		request,
 		"Traceback",
-		GetLogTraceback(2), // 2 because 1 - is this func and 2 - it's caller
+		GetLogTraceback(skipLevel), // 2 because 1 - is this func and 2 - it's caller
 	)
 }
 
-func LogErrorContext(logger *slog.Logger, ctx context.Context, msg string, err error) {
-	requestID, err := contextlib.GetValueFromContext[string](ctx, "requestID")
-	if err != nil {
+func LogErrorContext(ctx context.Context, logger *slog.Logger, msg string, err error) {
+	requestID, contextErr := contextlib.GetValueFromContext[string](ctx, "requestID")
+	if contextErr != nil {
 		requestID = ""
 	}
 
@@ -92,7 +97,7 @@ func LogErrorContext(logger *slog.Logger, ctx context.Context, msg string, err e
 		requestID,
 		msg,
 		"Traceback",
-		GetLogTraceback(2),
+		GetLogTraceback(skipLevel),
 		"Error",
 		err,
 	)
@@ -102,7 +107,7 @@ func LogError(logger *slog.Logger, msg string, err error) {
 	logger.Error(
 		msg,
 		"Traceback",
-		GetLogTraceback(2),
+		GetLogTraceback(skipLevel),
 		"Error",
 		err,
 	)

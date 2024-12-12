@@ -363,3 +363,6 @@ issues:
       linters:
         - gochecknoglobals
         - govet
+    - path: "middlewares/cookies.go"
+      linters:
+        - gochecknoglobals

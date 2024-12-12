@@ -26,6 +26,10 @@ func (connector *CommonDBConnector) Connect() error {
 			return err
 		}
 
+		if err = connection.Ping(); err != nil {
+			return err
+		}
+
 		connector.connection = connection
 	}
 
@@ -62,7 +66,7 @@ func (connector *CommonDBConnector) CloseConnection() {
 		connector.logger.Error(
 			"Failed to close db connection",
 			"Traceback",
-			logging.GetLogTraceback(),
+			logging.GetLogTraceback(1),
 			"Error",
 			err,
 		)

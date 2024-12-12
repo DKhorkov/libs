@@ -1,9 +1,12 @@
 package logging
 
 import (
+	"context"
 	"fmt"
+	"github.com/DKhorkov/libs/contextlib"
 	"io"
 	"log/slog"
+	"net/http"
 	"os"
 	"runtime"
 	"sync"
@@ -45,8 +48,8 @@ func GetInstance(logLevel slog.Level, logFilePath string) *slog.Logger {
 
 // GetLogTraceback return a string with info about filename, function name and line
 // https://stackoverflow.com/questions/25927660/how-to-get-the-current-function-name
-func GetLogTraceback() string {
-	pc, file, line, ok := runtime.Caller(1)
+func GetLogTraceback(skipLevel int) string {
+	pc, file, line, ok := runtime.Caller(skipLevel)
 	if !ok {
 		return fmt.Sprintf("%s on line %d: %s", "Unknown", 0, "Unknown")
 	}
@@ -57,4 +60,50 @@ func GetLogTraceback() string {
 	}
 
 	return fmt.Sprintf("%s on line %d: %s", file, line, fn.Name())
+}
+
+func LogRequest(logger *slog.Logger, ctx context.Context, request *http.Request) {
+	requestID, err := contextlib.GetValueFromContext[string](ctx, "requestID")
+	if err != nil {
+		requestID = ""
+	}
+
+	logger.InfoContext(
+		ctx,
+		"Received new request",
+		"Request ID",
+		requestID,
+		"Request",
+		request,
+		"Traceback",
+		GetLogTraceback(2), // 2 because 1 - is this func and 2 - it's caller
+	)
+}
+
+func LogErrorContext(logger *slog.Logger, ctx context.Context, msg string, err error) {
+	requestID, err := contextlib.GetValueFromContext[string](ctx, "requestID")
+	if err != nil {
+		requestID = ""
+	}
+
+	logger.ErrorContext(
+		ctx,
+		"Request ID",
+		requestID,
+		msg,
+		"Traceback",
+		GetLogTraceback(2),
+		"Error",
+		err,
+	)
+}
+
+func LogError(logger *slog.Logger, msg string, err error) {
+	logger.Error(
+		msg,
+		"Traceback",
+		GetLogTraceback(2),
+		"Error",
+		err,
+	)
 }

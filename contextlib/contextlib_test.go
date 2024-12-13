@@ -18,17 +18,17 @@ func TestGetValueFromContextAndSetValueToContext(t *testing.T) {
 		)
 
 		// Only that way due to inner type:
-		ctx := contextlib.SetValueToContext(context.Background(), key, value)
+		ctx := contextlib.SetValue(context.Background(), key, value)
 
-		result, err := contextlib.GetValueFromContext[string](ctx, key)
+		result, err := contextlib.GetValue[string](ctx, key)
 		require.NoError(t, err)
 		assert.Equal(t, value, result)
 	})
 
 	t.Run("Get value from context fail", func(t *testing.T) {
-		result, err := contextlib.GetValueFromContext[string](context.Background(), "anyKey")
+		result, err := contextlib.GetValue[string](context.Background(), "anyKey")
 		require.Error(t, err)
-		require.IsType(t, &contextlib.ContextValueNotFoundError{}, err)
+		require.IsType(t, &contextlib.ValueNotFoundError{}, err)
 		assert.Equal(t, "", result)
 	})
 }

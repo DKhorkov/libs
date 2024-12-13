@@ -18,7 +18,7 @@ func TestSetCookie(t *testing.T) {
 			name   = "test"
 			value  = name
 			w      = httptest.NewRecorder()
-			config = cookies.CookieConfig{
+			config = cookies.Config{
 				Path:     "/",
 				Domain:   "",
 				MaxAge:   0,
@@ -33,7 +33,7 @@ func TestSetCookie(t *testing.T) {
 			}
 		)
 
-		cookies.SetCookie(w, name, value, config)
+		cookies.Set(w, name, value, config)
 		assert.Equal(t, expected, w.Header())
 	})
 }

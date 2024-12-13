@@ -68,7 +68,7 @@ func GetLogTraceback(skipLevel int) string {
 }
 
 func LogRequest(ctx context.Context, logger *slog.Logger, request any) {
-	requestID, err := contextlib.GetValueFromContext[string](ctx, requestid.Key)
+	requestID, err := contextlib.GetValue[string](ctx, requestid.Key)
 	if err != nil {
 		requestID = ""
 	}
@@ -86,7 +86,7 @@ func LogRequest(ctx context.Context, logger *slog.Logger, request any) {
 }
 
 func LogErrorContext(ctx context.Context, logger *slog.Logger, msg string, err error) {
-	requestID, contextErr := contextlib.GetValueFromContext[string](ctx, requestid.Key)
+	requestID, contextErr := contextlib.GetValue[string](ctx, requestid.Key)
 	if contextErr != nil {
 		requestID = ""
 	}

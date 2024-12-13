@@ -2,12 +2,12 @@ package contextlib
 
 import "fmt"
 
-type ContextValueNotFoundError struct {
+type ValueNotFoundError struct {
 	Message string
 	BaseErr error
 }
 
-func (e ContextValueNotFoundError) Error() string {
+func (e ValueNotFoundError) Error() string {
 	template := "context with value %s not found"
 	if e.BaseErr != nil {
 		return fmt.Sprintf(template+". Base error: %v", e.Message, e.BaseErr)

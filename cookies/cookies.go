@@ -5,24 +5,24 @@ import (
 	"time"
 )
 
-func SetCookie(
+func Set(
 	writer http.ResponseWriter,
 	name string,
 	value string,
-	cookieConfig CookieConfig,
+	config Config,
 ) {
 	http.SetCookie(
 		writer,
 		&http.Cookie{
 			Name:     name,
 			Value:    value,
-			HttpOnly: cookieConfig.HTTPOnly,
-			Path:     cookieConfig.Path,
-			Domain:   cookieConfig.Domain,
-			Expires:  time.Now().Add(cookieConfig.Expires),
-			MaxAge:   cookieConfig.MaxAge,
-			SameSite: cookieConfig.SameSite,
-			Secure:   cookieConfig.Secure,
+			HttpOnly: config.HTTPOnly,
+			Path:     config.Path,
+			Domain:   config.Domain,
+			Expires:  time.Now().Add(config.Expires),
+			MaxAge:   config.MaxAge,
+			SameSite: config.SameSite,
+			Secure:   config.Secure,
 		},
 	)
 }

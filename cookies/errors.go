@@ -2,12 +2,12 @@ package cookies
 
 import "fmt"
 
-type CookieNotFoundError struct {
+type NotFoundError struct {
 	Message string
 	BaseErr error
 }
 
-func (e CookieNotFoundError) Error() string {
+func (e NotFoundError) Error() string {
 	template := "%s cookie not found"
 	if e.BaseErr != nil {
 		return fmt.Sprintf(template+". Base error: %v", e.Message, e.BaseErr)

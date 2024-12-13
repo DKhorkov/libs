@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type CookieConfig struct {
+type Config struct {
 	// See http.Cookie as reference.
 
 	Path    string        // optional

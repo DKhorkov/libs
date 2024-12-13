@@ -2,8 +2,8 @@ package logging
 
 import "log/slog"
 
-// LogLevels are a simple abstractions on slog.Level.
-var LogLevels = struct {
+// Levels are a simple abstractions on slog.Level.
+var Levels = struct {
 	INFO, DEBUG, WARN, ERROR slog.Level
 }{
 	INFO:  slog.LevelInfo,

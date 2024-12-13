@@ -18,12 +18,12 @@ func CookiesMiddleware(handler http.Handler, cookieNames []string) http.Handler 
 				continue
 			}
 
-			ctx := contextlib.SetValueToContext(context.Background(), CookiesWriterName, cookie)
+			ctx := contextlib.SetValue(context.Background(), CookiesWriterName, cookie)
 			r = r.WithContext(ctx)
 		}
 
 		// Paste writer to context for writing cookies in resolvers purposes:
-		ctx := contextlib.SetValueToContext(context.Background(), CookiesWriterName, w)
+		ctx := contextlib.SetValue(context.Background(), CookiesWriterName, w)
 		r = r.WithContext(ctx)
 		handler.ServeHTTP(w, r)
 	})

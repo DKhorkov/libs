@@ -112,3 +112,11 @@ func LogError(logger *slog.Logger, msg string, err error) {
 		err,
 	)
 }
+
+func LogInfo(logger *slog.Logger, msg string) {
+	logger.Error(
+		msg,
+		"Traceback",
+		GetLogTraceback(skipLevel),
+	)
+}

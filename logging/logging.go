@@ -10,6 +10,8 @@ import (
 	"runtime"
 	"sync"
 
+	"github.com/DKhorkov/libs/requestid"
+
 	"github.com/DKhorkov/libs/contextlib"
 )
 
@@ -68,7 +70,7 @@ func GetLogTraceback(skipLevel int) string {
 }
 
 func LogRequest(ctx context.Context, logger *slog.Logger, request *http.Request) {
-	requestID, err := contextlib.GetValueFromContext[string](ctx, "requestID")
+	requestID, err := contextlib.GetValueFromContext[string](ctx, requestid.Key)
 	if err != nil {
 		requestID = ""
 	}
@@ -86,7 +88,7 @@ func LogRequest(ctx context.Context, logger *slog.Logger, request *http.Request)
 }
 
 func LogErrorContext(ctx context.Context, logger *slog.Logger, msg string, err error) {
-	requestID, contextErr := contextlib.GetValueFromContext[string](ctx, "requestID")
+	requestID, contextErr := contextlib.GetValueFromContext[string](ctx, requestid.Key)
 	if contextErr != nil {
 		requestID = ""
 	}

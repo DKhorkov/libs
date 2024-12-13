@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"net/http"
 	"os"
 	"runtime"
 	"sync"
 
-	"github.com/DKhorkov/libs/requestid"
-
 	"github.com/DKhorkov/libs/contextlib"
+	"github.com/DKhorkov/libs/requestid"
 )
 
 const (
@@ -69,7 +67,7 @@ func GetLogTraceback(skipLevel int) string {
 	return fmt.Sprintf("%s on line %d: %s", file, line, fn.Name())
 }
 
-func LogRequest(ctx context.Context, logger *slog.Logger, request *http.Request) {
+func LogRequest(ctx context.Context, logger *slog.Logger, request any) {
 	requestID, err := contextlib.GetValueFromContext[string](ctx, requestid.Key)
 	if err != nil {
 		requestID = ""

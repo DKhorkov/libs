@@ -93,9 +93,9 @@ func LogErrorContext(ctx context.Context, logger *slog.Logger, msg string, err e
 
 	logger.ErrorContext(
 		ctx,
+		msg,
 		"Request ID",
 		requestID,
-		msg,
 		"Traceback",
 		GetLogTraceback(skipLevel),
 		"Error",

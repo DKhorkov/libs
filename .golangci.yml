@@ -366,3 +366,4 @@ issues:
     - path: "middlewares/cookies.go"
       linters:
         - gochecknoglobals
+        - fatcontext

@@ -18,7 +18,7 @@ func CookiesMiddleware(handler http.Handler, cookieNames []string) http.Handler 
 				continue
 			}
 
-			ctx := contextlib.SetValue(context.Background(), CookiesWriterName, cookie)
+			ctx := contextlib.SetValue(context.Background(), cookieName, cookie)
 			r = r.WithContext(ctx)
 		}
 

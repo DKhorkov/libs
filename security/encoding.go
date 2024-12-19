@@ -16,3 +16,18 @@ func Decode(encoded string) ([]byte, error) {
 
 	return decoded, nil
 }
+
+// RawEncode encodes data for security purpose without padding characters. For example, to send in s3.
+func RawEncode(data []byte) string {
+	return base64.RawURLEncoding.EncodeToString(data)
+}
+
+// RawDecode decodes raw encoded data, to get it's original value.
+func RawDecode(encoded string) ([]byte, error) {
+	decoded, err := base64.RawURLEncoding.DecodeString(encoded)
+	if err != nil {
+		return nil, err
+	}
+
+	return decoded, nil
+}

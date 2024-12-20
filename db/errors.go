@@ -2,14 +2,14 @@ package db
 
 import "fmt"
 
-// NilDBConnectionError is an error, representing not being able to connect to database and create a connection object.
+// NilDBConnectionError is an error, representing not being able to connect to database and create a connection pool.
 type NilDBConnectionError struct {
 	Message string
 	BaseErr error
 }
 
 func (e NilDBConnectionError) Error() string {
-	template := "DB connection error. Making operation on nil database connection."
+	template := "DB connections pool error. Making operation on nil database connections pool."
 	if e.Message != "" {
 		template = e.Message
 	}

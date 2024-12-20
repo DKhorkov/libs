@@ -1,9 +1,11 @@
 package db_test
 
 import (
+	"context"
 	"database/sql"
 	"log/slog"
 	"testing"
+	"time"
 
 	"github.com/DKhorkov/libs/db"
 
@@ -18,40 +20,55 @@ var (
 	dsn    = "file::memory:?cache=shared"
 )
 
-func TestConnect(t *testing.T) {
-	t.Run("should connect to database", func(t *testing.T) {
-		connector, err := db.New(dsn, driver, &slog.Logger{})
-		require.NoError(t, err)
-
-		err = connector.Connect()
-		require.NoError(t, err)
-	})
-
-	t.Run("should fail to connect to non existing database", func(t *testing.T) {
-		connector, err := db.New(dsn, driver, &slog.Logger{})
-		require.NoError(t, err)
-
-		err = connector.Connect()
-		require.NoError(t, err)
-	})
-
-	t.Run("should return error to unknown driver", func(t *testing.T) {
-		driver, dsn := "fake", "fake"
-		_, err := db.New(dsn, driver, &slog.Logger{})
-		require.Error(t, err)
-	})
-}
-
-func TestGetTransaction(t *testing.T) {
+func TestTransaction(t *testing.T) {
 	t.Run("should return transaction", func(t *testing.T) {
 		connector, err := db.New(dsn, driver, &slog.Logger{})
 		require.NoError(t, err)
 
-		if err = connector.Connect(); err != nil {
-			t.Fatal(err)
-		}
+		defer func() {
+			err = connector.Close()
+			require.NoError(t, err)
+		}()
 
-		transaction, err := connector.GetTransaction()
+		transaction, err := connector.Transaction(context.Background())
+		require.NoError(t, err)
+		assert.IsTypef(
+			t,
+			&sql.Tx{},
+			transaction,
+			"transaction type should be sql.Tx")
+	})
+
+	t.Run("nil connections pool", func(t *testing.T) {
+		connector := &db.CommonDBConnector{}
+
+		transaction, err := connector.Transaction(context.Background())
+		require.Error(t, err)
+		assert.IsTypef(
+			t,
+			&db.NilDBConnectionError{},
+			err,
+			"error should be %T", &db.NilDBConnectionError{},
+		)
+
+		assert.Nil(t, transaction)
+	})
+
+	t.Run("transaction with options", func(t *testing.T) {
+		connector, err := db.New(dsn, driver, &slog.Logger{})
+		require.NoError(t, err)
+
+		defer func() {
+			err = connector.Close()
+			require.NoError(t, err)
+		}()
+
+		transaction, err := connector.Transaction(
+			context.Background(),
+			db.WithTransactionReadOnly(true),
+			db.WithTransactionIsolationLevel(sql.LevelReadUncommitted),
+		)
+
 		require.NoError(t, err)
 		assert.IsTypef(
 			t,
@@ -61,34 +78,71 @@ func TestGetTransaction(t *testing.T) {
 	})
 }
 
-func TestGetConnection(t *testing.T) {
+func TestConnection(t *testing.T) {
 	t.Run("should return connection", func(t *testing.T) {
 		connector, err := db.New(dsn, driver, &slog.Logger{})
 		require.NoError(t, err)
 
-		if err = connector.Connect(); err != nil {
-			t.Fatal(err)
-		}
+		defer func() {
+			err = connector.Close()
+			require.NoError(t, err)
+		}()
 
-		connection := connector.GetConnection()
+		connection, err := connector.Connection(context.Background())
+		require.NoError(t, err)
 		assert.NotNil(t, connection)
 		assert.IsTypef(
 			t,
-			&sql.DB{},
+			&sql.Conn{},
 			connection,
-			"connection type should be sql.DB")
+			"connection type should be sql.Conn")
+
+		err = connection.Close()
+		require.NoError(t, err)
 	})
 
-	t.Run("should return connection, even if it was nil", func(t *testing.T) {
-		connector, err := db.New(dsn, driver, &slog.Logger{})
-		require.NoError(t, err)
+	t.Run("nil connections pool", func(t *testing.T) {
+		connector := &db.CommonDBConnector{}
 
-		connection := connector.GetConnection()
-		assert.NotNil(t, connection)
+		connection, err := connector.Connection(context.Background())
+		require.Error(t, err)
+		require.Error(t, err)
 		assert.IsTypef(
 			t,
-			&sql.DB{},
-			connection,
-			"connection type should be sql.DB")
+			&db.NilDBConnectionError{},
+			err,
+			"error should be %T", &db.NilDBConnectionError{},
+		)
+
+		assert.Nil(t, connection)
+	})
+}
+
+func TestNewConnector(t *testing.T) {
+	t.Run("new connector without options", func(t *testing.T) {
+		connector, err := db.New(dsn, driver, &slog.Logger{})
+		require.NoError(t, err)
+		require.NotNil(t, connector)
+
+		err = connector.Close()
+		require.NoError(t, err)
+	})
+
+	t.Run("new connector with options", func(t *testing.T) {
+		connector, err := db.New(
+			dsn,
+			driver,
+			&slog.Logger{},
+			db.WithMaxConnectionIdleTime(time.Minute),
+			db.WithMaxConnectionLifetime(time.Minute),
+			db.WithMaxIdleConnections(1),
+			db.WithMaxOpenConnections(1),
+		)
+
+		require.NoError(t, err)
+		require.NotNil(t, connector)
+
+		err = connector.Close()
+		require.NoError(t, err)
 	})
 }

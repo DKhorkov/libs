@@ -1,12 +1,14 @@
 package db
 
-import "database/sql"
+import (
+	"context"
+	"database/sql"
+)
 
 // Connector interface is created for usage in external application according to
 // "dependency inversion principle" of SOLID due to working via abstractions.
 type Connector interface {
-	Connect() error
-	CloseConnection()
-	GetTransaction() (*sql.Tx, error)
-	GetConnection() *sql.DB
+	Close() error
+	Transaction(ctx context.Context, opts ...TransactionOption) (*sql.Tx, error)
+	Connection(ctx context.Context) (*sql.Conn, error)
 }

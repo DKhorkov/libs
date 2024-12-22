@@ -11,4 +11,5 @@ type Connector interface {
 	Close() error
 	Transaction(ctx context.Context, opts ...TransactionOption) (*sql.Tx, error)
 	Connection(ctx context.Context) (*sql.Conn, error)
+	Pool() *sql.DB
 }

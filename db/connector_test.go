@@ -146,3 +146,20 @@ func TestNewConnector(t *testing.T) {
 		require.NoError(t, err)
 	})
 }
+
+func TestPool(t *testing.T) {
+	t.Run("should return connections pool", func(t *testing.T) {
+		connector, err := db.New(dsn, driver, &slog.Logger{})
+		require.NoError(t, err)
+
+		assert.NotNil(t, connector.Pool())
+
+		err = connector.Close()
+		require.NoError(t, err)
+	})
+
+	t.Run("nil connections pool", func(t *testing.T) {
+		connector := &db.CommonDBConnector{}
+		assert.Nil(t, connector.Pool())
+	})
+}

@@ -87,6 +87,10 @@ func (connector *CommonDBConnector) Transaction(ctx context.Context, opts ...Tra
 	)
 }
 
+func (connector *CommonDBConnector) Pool() *sql.DB {
+	return connector.connectionsPool
+}
+
 // Close closes pool of connections.
 func (connector *CommonDBConnector) Close() error {
 	if connector.connectionsPool == nil {

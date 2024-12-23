@@ -17,6 +17,13 @@ tasks:
       - go test -v -coverprofile ./coverage/coverage.out -coverpkg=./... ./...
       - go tool cover -html ./coverage/coverage.out -o ./coverage/coverage.html
 
+  benchmarks:
+    desc: "Run benchmarks."
+    aliases:
+      - bench
+    dir: ../
+    cmd: go test -v ./... -bench=. -run=xxx -benchmem >> bench.txt
+
   linters:
     desc: "Run linters."
     aliases:

@@ -87,6 +87,7 @@ func (connector *CommonDBConnector) Transaction(ctx context.Context, opts ...Tra
 	)
 }
 
+// Pool returns database connections pool.
 func (connector *CommonDBConnector) Pool() *sql.DB {
 	return connector.connectionsPool
 }

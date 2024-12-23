@@ -29,6 +29,7 @@ go.work.sum
 *.log
 logs/
 *.db
+bench.txt
 
 # Environments
 .venv

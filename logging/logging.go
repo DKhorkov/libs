@@ -67,6 +67,7 @@ func GetLogTraceback(skipLevel int) string {
 	return fmt.Sprintf("%s on line %d: %s", file, line, fn.Name())
 }
 
+// LogRequest uses provided logger to save request info and connect it with request ID from the context.
 func LogRequest(ctx context.Context, logger *slog.Logger, request any) {
 	requestID, err := contextlib.GetValue[string](ctx, requestid.Key)
 	if err != nil {
@@ -85,6 +86,8 @@ func LogRequest(ctx context.Context, logger *slog.Logger, request any) {
 	)
 }
 
+// LogErrorContext uses provided logger to save error with message info and context.
+// Context is used to get request ID and connect it with error.
 func LogErrorContext(ctx context.Context, logger *slog.Logger, msg string, err error) {
 	requestID, contextErr := contextlib.GetValue[string](ctx, requestid.Key)
 	if contextErr != nil {
@@ -103,6 +106,7 @@ func LogErrorContext(ctx context.Context, logger *slog.Logger, msg string, err e
 	)
 }
 
+// LogError logs error with message info, using provided logger.
 func LogError(logger *slog.Logger, msg string, err error) {
 	logger.Error(
 		msg,
@@ -113,6 +117,7 @@ func LogError(logger *slog.Logger, msg string, err error) {
 	)
 }
 
+// LogInfo logs message, using provided logger.
 func LogInfo(logger *slog.Logger, msg string) {
 	logger.Error(
 		msg,

@@ -6,11 +6,12 @@ import (
 
 	"github.com/DKhorkov/libs/contextlib"
 	"github.com/DKhorkov/libs/requestid"
+	grpclogging "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"google.golang.org/grpc"
 )
 
-// ServerLoggingUnaryInterceptor intercepts gRPC handler, logs request with provided request ID and calls handler.
-func ServerLoggingUnaryInterceptor(
+// UnaryServerLoggingInterceptor intercepts gRPC handler, logs request with provided request ID and calls handler.
+func UnaryServerLoggingInterceptor(
 	logger *slog.Logger,
 ) func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
@@ -33,4 +34,23 @@ func ServerLoggingUnaryInterceptor(
 
 		return handler(ctx, req)
 	}
+}
+
+// UnaryClientLoggingInterceptor adapts slog logger to interceptor logger.
+func UnaryClientLoggingInterceptor(logger *slog.Logger) grpclogging.Logger {
+	return grpclogging.LoggerFunc(
+		func(
+			ctx context.Context,
+			logLevel grpclogging.Level,
+			msg string,
+			fields ...any,
+		) {
+			logger.Log(
+				ctx,
+				slog.Level(logLevel),
+				msg,
+				fields...,
+			)
+		},
+	)
 }

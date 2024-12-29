@@ -1,7 +1,11 @@
 package db
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
+	"github.com/DKhorkov/libs/logging"
+	"log/slog"
 	"reflect"
 )
 
@@ -32,4 +36,10 @@ func BuildDsn(config Config) string {
 	)
 
 	return dsn
+}
+
+func CloseConnectionContext(ctx context.Context, connection *sql.Conn, logger *slog.Logger) {
+	if err := connection.Close(); err != nil {
+		logging.LogErrorContext(ctx, logger, "Failed to close connection", err)
+	}
 }

@@ -1,6 +1,9 @@
 package db_test
 
 import (
+	"context"
+	"github.com/stretchr/testify/require"
+	"log/slog"
 	"testing"
 
 	"github.com/DKhorkov/libs/db"
@@ -39,4 +42,27 @@ func TestBuildDsn(t *testing.T) {
 
 	actual := db.BuildDsn(config)
 	assert.Equal(t, expected, actual)
+}
+
+func TestCloseConnectionContext(t *testing.T) {
+	t.Run("should close connection context", func(t *testing.T) {
+		var (
+			logger = &slog.Logger{}
+			ctx    = context.Background()
+		)
+
+		connector, err := db.New(dsn, driver, logger)
+		require.NoError(t, err)
+
+		defer func() {
+			if err = connector.Close(); err != nil {
+				t.Fatal(err)
+			}
+		}()
+
+		connection, err := connector.Connection(ctx)
+		require.NoError(t, err)
+
+		db.CloseConnectionContext(ctx, connection, logger)
+	})
 }

@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/DKhorkov/libs/logging"
 	"log/slog"
 	"reflect"
+
+	"github.com/DKhorkov/libs/logging"
 )
 
 // GetEntityColumns receives a POINTER on entity (NOT A VALUE), parses is using reflection and returns

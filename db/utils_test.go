@@ -2,9 +2,10 @@ package db_test
 
 import (
 	"context"
-	"github.com/stretchr/testify/require"
 	"log/slog"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/DKhorkov/libs/db"
 

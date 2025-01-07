@@ -3,6 +3,9 @@ package grpc
 import (
 	"context"
 	"log/slog"
+	"strings"
+
+	"google.golang.org/grpc/metadata"
 
 	"github.com/DKhorkov/libs/contextlib"
 	"github.com/DKhorkov/libs/requestid"
@@ -15,22 +18,28 @@ func UnaryServerLoggingInterceptor(
 	logger *slog.Logger,
 ) func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		requestIDer, ok := req.(requestid.RequestIDer)
-		if ok {
-			requestID := requestIDer.GetRequestID()
-			ctx = contextlib.SetValue(ctx, requestid.Key, requestID)
+		var requestID string
 
-			logger.InfoContext(
-				ctx,
-				"Received new request",
-				"Request ID",
-				requestID,
-				"Request",
-				req,
-				"Handler",
-				info.FullMethod,
-			)
+		md, ok := metadata.FromIncomingContext(ctx)
+		if ok {
+			requestIDKey := strings.ToLower(requestid.Key) // metadata sends all keys in lowercase
+			if _, ok = md[requestIDKey]; ok {
+				requestID = md[requestIDKey][0] // md is a map[string][]string
+			}
+
+			ctx = contextlib.SetValue(ctx, requestid.Key, requestID) // setting to context value for inner usage
 		}
+
+		logger.InfoContext(
+			ctx,
+			"Received new request",
+			"Request ID",
+			requestID,
+			"Request",
+			req,
+			"Handler",
+			info.FullMethod,
+		)
 
 		return handler(ctx, req)
 	}

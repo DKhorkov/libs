@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"log/slog"
+	"reflect"
 	"strings"
 
 	"google.golang.org/grpc/metadata"
@@ -11,6 +12,10 @@ import (
 	"github.com/DKhorkov/libs/requestid"
 	grpclogging "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"google.golang.org/grpc"
+)
+
+const (
+	passwordFieldName = "Password"
 )
 
 // UnaryServerLoggingInterceptor intercepts gRPC handler, logs request with provided request ID and calls handler.
@@ -30,6 +35,22 @@ func UnaryServerLoggingInterceptor(
 			ctx = contextlib.SetValue(ctx, requestid.Key, requestID) // setting to context value for inner usage
 		}
 
+		// Making password field empty not to store in logs:
+		var passwordField reflect.Value
+		var passwordCopy string
+		if reflectValue := reflect.ValueOf(req); reflectValue.IsValid() && !reflectValue.IsZero() {
+			if reflectValue.Kind() == reflect.Ptr {
+				passwordField = reflectValue.Elem().FieldByName(passwordFieldName)
+			} else {
+				passwordField = reflectValue.FieldByName(passwordFieldName)
+			}
+
+			if passwordField.IsValid() && !passwordField.IsZero() {
+				passwordCopy = passwordField.String()
+				passwordField.SetString("")
+			}
+		}
+
 		logger.InfoContext(
 			ctx,
 			"Received new request",
@@ -40,6 +61,11 @@ func UnaryServerLoggingInterceptor(
 			"Handler",
 			info.FullMethod,
 		)
+
+		// Returning password field for correct logics due to a pointer request:
+		if passwordField.IsValid() {
+			passwordField.SetString(passwordCopy)
+		}
 
 		return handler(ctx, req)
 	}
@@ -54,12 +80,36 @@ func UnaryClientLoggingInterceptor(logger *slog.Logger) grpclogging.Logger {
 			msg string,
 			fields ...any,
 		) {
+			// Making password field empty not to store in logs:
+			var passwordField reflect.Value
+			var passwordCopy string
+			for _, field := range fields {
+				if reflectValue := reflect.ValueOf(field); reflectValue.IsValid() && !reflectValue.IsZero() {
+					if reflectValue.Kind() == reflect.Ptr {
+						reflectValue = reflectValue.Elem()
+					}
+
+					if reflectValue.Kind() == reflect.Struct {
+						passwordField = reflectValue.FieldByName(passwordFieldName)
+						if passwordField.IsValid() && !passwordField.IsZero() {
+							passwordCopy = passwordField.String()
+							passwordField.SetString("")
+						}
+					}
+				}
+			}
+
 			logger.Log(
 				ctx,
 				slog.Level(logLevel),
 				msg,
 				fields...,
 			)
+
+			// Returning password field for correct logics due to a pointer request:
+			if passwordField.IsValid() {
+				passwordField.SetString(passwordCopy)
+			}
 		},
 	)
 }

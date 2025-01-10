@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"reflect"
 	"runtime"
 	"sync"
 
@@ -14,7 +15,8 @@ import (
 )
 
 const (
-	skipLevel = 2
+	skipLevel         = 2
+	passwordFieldName = "Password"
 )
 
 var (
@@ -72,6 +74,25 @@ func LogRequest(ctx context.Context, logger *slog.Logger, request any) {
 	requestID, err := contextlib.GetValue[string](ctx, requestid.Key)
 	if err != nil {
 		requestID = ""
+	}
+
+	// Making password field empty not to store in logs.
+	var reflectValue reflect.Value
+	if reflect.ValueOf(request).Kind() == reflect.Ptr {
+		reflectValue = reflect.ValueOf(request).Elem()
+	} else {
+		reflectValue = reflect.ValueOf(&request).Elem()
+	}
+
+	if reflectValue.IsValid() && !reflectValue.IsZero() {
+		// https://stackoverflow.com/questions/63421976/panic-reflect-call-of-reflect-value-fieldbyname-on-interface-value
+		tempValue := reflect.New(reflectValue.Elem().Type()).Elem()
+		tempValue.Set(reflectValue.Elem())
+		passwordField := tempValue.FieldByName(passwordFieldName)
+		if passwordField.IsValid() && !reflectValue.IsZero() {
+			passwordField.SetString("")
+		}
+		reflectValue.Set(tempValue)
 	}
 
 	logger.InfoContext(

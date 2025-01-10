@@ -367,3 +367,6 @@ issues:
       linters:
         - gochecknoglobals
         - fatcontext
+    - path: "grpc/interceptors.go"
+      linters:
+        - gocognit

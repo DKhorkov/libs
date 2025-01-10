@@ -84,7 +84,7 @@ func LogRequest(ctx context.Context, logger *slog.Logger, request any) {
 		reflectValue = reflect.ValueOf(&request).Elem()
 	}
 
-	if reflectValue.IsValid() && !reflectValue.IsZero() {
+	if reflectValue.IsValid() && !reflectValue.IsZero() && reflectValue.Kind() == reflect.Struct {
 		// https://stackoverflow.com/questions/63421976/panic-reflect-call-of-reflect-value-fieldbyname-on-interface-value
 		tempValue := reflect.New(reflectValue.Elem().Type()).Elem()
 		tempValue.Set(reflectValue.Elem())

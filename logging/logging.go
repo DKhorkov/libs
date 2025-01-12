@@ -31,7 +31,7 @@ func GetInstance(logLevel slog.Level, logFilePath string) *slog.Logger {
 	if logFile, err := os.OpenFile(
 		logFilePath,
 		os.O_RDWR|os.O_CREATE|os.O_APPEND,
-		0666,
+		0777,
 	); err != nil {
 		fmt.Printf("Failed to open log file %s: %s\n", logFilePath, err)
 		logWriter = os.Stdout

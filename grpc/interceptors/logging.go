@@ -1,4 +1,4 @@
-package grpc
+package interceptors
 
 import (
 	"context"
@@ -19,14 +19,10 @@ const (
 )
 
 // UnaryServerLoggingInterceptor intercepts gRPC handler, logs request with provided request ID and calls handler.
-func UnaryServerLoggingInterceptor(
-	logger *slog.Logger,
-) func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+func UnaryServerLoggingInterceptor(logger *slog.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		var requestID string
-
-		md, ok := metadata.FromIncomingContext(ctx)
-		if ok {
+		if md, ok := metadata.FromIncomingContext(ctx); ok {
 			requestIDKey := strings.ToLower(requestid.Key) // metadata sends all keys in lowercase
 			if _, ok = md[requestIDKey]; ok {
 				requestID = md[requestIDKey][0] // md is a map[string][]string

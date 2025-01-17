@@ -17,6 +17,7 @@ import (
 const (
 	skipLevel         = 2
 	passwordFieldName = "Password"
+	permission        = 0777
 )
 
 var (
@@ -31,7 +32,7 @@ func GetInstance(logLevel slog.Level, logFilePath string) *slog.Logger {
 	if logFile, err := os.OpenFile(
 		logFilePath,
 		os.O_RDWR|os.O_CREATE|os.O_APPEND,
-		0777,
+		permission,
 	); err != nil {
 		fmt.Printf("Failed to open log file %s: %s\n", logFilePath, err)
 		logWriter = os.Stdout

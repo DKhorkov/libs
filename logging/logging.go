@@ -141,7 +141,7 @@ func LogError(logger *slog.Logger, msg string, err error) {
 
 // LogInfo logs message, using provided logger.
 func LogInfo(logger *slog.Logger, msg string) {
-	logger.Error(
+	logger.Info(
 		msg,
 		"Traceback",
 		GetLogTraceback(skipLevel),

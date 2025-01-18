@@ -8,8 +8,8 @@ import (
 	"go.opentelemetry.io/otel/trace/noop"
 )
 
-func NewMockSpan() MockSpan {
-	return MockSpan{}
+func NewMockSpan() *MockSpan {
+	return &MockSpan{}
 }
 
 // MockSpan is a mock for testing in other projects.

@@ -374,3 +374,6 @@ issues:
     - path: "grpc/interceptors/logging.go"
       linters:
         - gocognit
+    - path: "tracing/mocks*"
+      linters:
+        - revive

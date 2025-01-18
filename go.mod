@@ -14,6 +14,7 @@ require (
 	go.opentelemetry.io/otel/exporters/jaeger v1.17.0
 	go.opentelemetry.io/otel/sdk v1.34.0
 	go.opentelemetry.io/otel/trace v1.34.0
+	go.uber.org/mock v0.5.0
 	golang.org/x/crypto v0.32.0
 	google.golang.org/grpc v1.69.4
 )

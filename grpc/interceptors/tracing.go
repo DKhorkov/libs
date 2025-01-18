@@ -13,7 +13,7 @@ import (
 
 // UnaryServerTracingInterceptor creates span on base of existing span and logs its Start and End events.
 func UnaryServerTracingInterceptor(
-	tp *tracing.TraceProvider,
+	tp tracing.TraceProvider,
 	spanConfig tracing.SpanConfig,
 ) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
@@ -50,7 +50,7 @@ func UnaryServerTracingInterceptor(
 
 // UnaryClientTracingInterceptor creates span on base of existing span and logs its Start and End events.
 func UnaryClientTracingInterceptor(
-	tp *tracing.TraceProvider,
+	tp tracing.TraceProvider,
 	spanConfig tracing.SpanConfig,
 ) grpc.UnaryClientInterceptor {
 	return func(

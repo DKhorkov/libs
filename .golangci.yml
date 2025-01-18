@@ -367,7 +367,7 @@ issues:
       linters:
         - gochecknoglobals
         - fatcontext
-    - path: "tracing/provider.go"
+    - path: "tracing/providers.go"
       linters:
         - staticcheck
         - spancheck

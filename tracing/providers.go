@@ -15,8 +15,8 @@ const (
 	Key = "x-trace-id"
 )
 
-// New create new *TraceProvider for creating spans for traces.
-func New(config Config, opts ...trace.TracerOption) (*TraceProvider, error) {
+// New create new *CommonTraceProvider for creating spans for traces.
+func New(config Config, opts ...trace.TracerOption) (*CommonTraceProvider, error) {
 	// Setting jaeger endpoint for viewing traces:
 	exporter, err := jaeger.New(jaeger.WithCollectorEndpoint(
 		jaeger.WithEndpoint(config.JaegerURL),
@@ -42,7 +42,7 @@ func New(config Config, opts ...trace.TracerOption) (*TraceProvider, error) {
 
 	otel.SetTracerProvider(traceProvider) // Set provider as global
 
-	provider := &TraceProvider{
+	provider := &CommonTraceProvider{
 		traceProvider: traceProvider,
 		tracer:        otel.Tracer(config.ServiceName, opts...),
 	}
@@ -50,19 +50,19 @@ func New(config Config, opts ...trace.TracerOption) (*TraceProvider, error) {
 	return provider, nil
 }
 
-// TraceProvider provides the ability to easily create spans for tracing.
-type TraceProvider struct {
+// CommonTraceProvider provides the ability to easily create spans for tracing.
+type CommonTraceProvider struct {
 	traceProvider *sdktrace.TracerProvider
 	tracer        trace.Tracer
 }
 
-// Shutdown correctly shutdowns TraceProvider's inner logic.
-func (tp *TraceProvider) Shutdown(ctx context.Context) error {
+// Shutdown correctly shutdowns CommonTraceProvider's inner logic.
+func (tp *CommonTraceProvider) Shutdown(ctx context.Context) error {
 	return tp.traceProvider.Shutdown(ctx)
 }
 
 // Span creates new span.
-func (tp *TraceProvider) Span(
+func (tp *CommonTraceProvider) Span(
 	ctx context.Context,
 	name string,
 	opts ...trace.SpanStartOption,
@@ -71,7 +71,7 @@ func (tp *TraceProvider) Span(
 }
 
 // SpanFromTraceID creates new span on base of provided trace.TraceID.
-func (tp *TraceProvider) SpanFromTraceID(
+func (tp *CommonTraceProvider) SpanFromTraceID(
 	ctx context.Context,
 	traceID trace.TraceID,
 	name string,
@@ -89,6 +89,6 @@ func (tp *TraceProvider) SpanFromTraceID(
 }
 
 // TraceIDFromHex decodes trace.TraceID from hash.
-func (tp *TraceProvider) TraceIDFromHex(traceHex string) (trace.TraceID, error) {
+func (tp *CommonTraceProvider) TraceIDFromHex(traceHex string) (trace.TraceID, error) {
 	return trace.TraceIDFromHex(traceHex)
 }

@@ -33,7 +33,7 @@ func UnaryServerTracingInterceptor(
 					return nil, err
 				}
 
-				ctx, span = tp.SpanFromTraceID(ctx, traceID, spanConfig.Name, spanConfig.Opts...)
+				ctx, span = tp.SpanFromTraceID(ctx, traceID, info.FullMethod, spanConfig.Opts...)
 				span.AddEvent(spanConfig.Events.Start.Name, spanConfig.Events.Start.Opts...)
 			}
 		}
@@ -62,7 +62,7 @@ func UnaryClientTracingInterceptor(
 		invoker grpc.UnaryInvoker,
 		opts ...grpc.CallOption,
 	) error {
-		ctx, span := tp.Span(ctx, spanConfig.Name, spanConfig.Opts...)
+		ctx, span := tp.Span(ctx, method, spanConfig.Opts...)
 		defer span.End()
 
 		span.AddEvent(spanConfig.Events.Start.Name, spanConfig.Events.Start.Opts...)

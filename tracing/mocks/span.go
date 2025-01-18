@@ -4,6 +4,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/embedded"
 	"go.opentelemetry.io/otel/trace/noop"
 )
 
@@ -12,7 +13,9 @@ func NewMockSpan() MockSpan {
 }
 
 // MockSpan is a mock for testing in other projects.
-type MockSpan struct{}
+type MockSpan struct {
+	embedded.Span
+}
 
 func (ms *MockSpan) End(options ...trace.SpanEndOption) {}
 

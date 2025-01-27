@@ -21,6 +21,10 @@ func (e InvalidJWTError) Error() string {
 	return fmt.Sprintf(template, e.Message)
 }
 
+func (e InvalidJWTError) Unwrap() error {
+	return e.BaseErr
+}
+
 // JWTClaimsError is an error, which represents, that failed to retrieve JWT payload.
 type JWTClaimsError struct {
 	Message string
@@ -38,4 +42,8 @@ func (e JWTClaimsError) Error() string {
 	}
 
 	return fmt.Sprintf(template, e.Message)
+}
+
+func (e JWTClaimsError) Unwrap() error {
+	return e.BaseErr
 }

@@ -15,3 +15,7 @@ func (e NotFoundError) Error() string {
 
 	return fmt.Sprintf(template, e.Message)
 }
+
+func (e NotFoundError) Unwrap() error {
+	return e.BaseErr
+}

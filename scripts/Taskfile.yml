@@ -8,7 +8,7 @@ tasks:
       - mkdir -p logs
 
   tests:
-    desc: "Run tests and save coverage to ./tests/coverage folder."
+    desc: "Run tests and save coverage to coverage folder."
     aliases:
       - test
     dir: ../

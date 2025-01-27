@@ -22,6 +22,10 @@ func (e BaseError) Error() string {
 	return e.Message
 }
 
+func (e BaseError) Unwrap() error {
+	return e.BaseErr
+}
+
 // GRPCStatus is a member function, which is used by gRPC when converting an error into a status.
 func (e BaseError) GRPCStatus() *status.Status {
 	return status.New(e.Status, e.Error())

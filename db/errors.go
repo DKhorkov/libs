@@ -20,3 +20,7 @@ func (e NilDBConnectionError) Error() string {
 
 	return fmt.Sprintf(template, e.Message)
 }
+
+func (e NilDBConnectionError) Unwrap() error {
+	return e.BaseErr
+}

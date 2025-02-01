@@ -377,3 +377,6 @@ issues:
     - path: "tracing/mocks*"
       linters:
         - revive
+    - path: "nats/worker_options.go"
+      linters:
+        - gochecknoglobals

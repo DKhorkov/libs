@@ -8,7 +8,7 @@ type transactionOptions struct {
 	readOnly       bool
 }
 
-// TransactionOption represents golang functional option pattern func for transaction settings.
+// TransactionOption represents golang functional option pattern func for transaction configuration.
 type TransactionOption func(options *transactionOptions) error
 
 // WithTransactionIsolationLevel sets transaction isolation level for database transaction.

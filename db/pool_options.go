@@ -12,7 +12,7 @@ type poolOptions struct {
 	maxConnectionIdleTime time.Duration
 }
 
-// PoolOption represents golang functional option pattern func for connections pool settings.
+// PoolOption represents golang functional option pattern func for connections pool configuration.
 type PoolOption func(options *poolOptions) error
 
 // WithMaxOpenConnections sets maximum opened connections in database connections pool.

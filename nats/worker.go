@@ -1,7 +1,6 @@
 package nats
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/nats-io/nats.go"
@@ -65,11 +64,10 @@ func (w *CommonWorker) Run() error {
 		return &WorkerAlreadyRunningError{}
 	}
 
-	for i := range w.goroutinesPoolSize {
+	for range w.goroutinesPoolSize {
 		w.wg.Add(1)
 		go func() {
 			for msg := range w.messageChannel {
-				fmt.Printf("goroutine %d ", i)
 				w.messageHandler(msg)
 			}
 

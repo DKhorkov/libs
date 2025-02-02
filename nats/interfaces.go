@@ -1,6 +1,6 @@
 package nats
 
-// Worker asynchronously processing NATS messages in goroutines.
+// Worker asynchronously processes NATS messages in goroutines.
 type Worker interface {
 	Run() error
 	Stop() error

@@ -19,7 +19,7 @@ func Set(
 			HttpOnly: config.HTTPOnly,
 			Path:     config.Path,
 			Domain:   config.Domain,
-			Expires:  time.Now().Add(config.Expires),
+			Expires:  time.Now().UTC().Add(config.Expires),
 			MaxAge:   config.MaxAge,
 			SameSite: config.SameSite,
 			Secure:   config.Secure,

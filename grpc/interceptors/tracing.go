@@ -35,16 +35,11 @@ func UnaryServerTracingInterceptor(
 
 				ctx, span = tp.SpanFromTraceID(ctx, traceID, info.FullMethod, spanConfig.Opts...)
 				span.AddEvent(spanConfig.Events.Start.Name, spanConfig.Events.Start.Opts...)
+				defer span.AddEvent(spanConfig.Events.End.Name, spanConfig.Events.End.Opts...)
 			}
 		}
 
-		result, err := handler(ctx, req)
-
-		if span != nil {
-			span.AddEvent(spanConfig.Events.End.Name, spanConfig.Events.End.Opts...)
-		}
-
-		return result, err
+		return handler(ctx, req)
 	}
 }
 
@@ -66,9 +61,8 @@ func UnaryClientTracingInterceptor(
 		defer span.End()
 
 		span.AddEvent(spanConfig.Events.Start.Name, spanConfig.Events.Start.Opts...)
-		err := invoker(ctx, method, req, reply, cc, opts...)
-		span.AddEvent(spanConfig.Events.End.Name, spanConfig.Events.End.Opts...)
+		defer span.AddEvent(spanConfig.Events.End.Name, spanConfig.Events.End.Opts...)
 
-		return err
+		return invoker(ctx, method, req, reply, cc, opts...)
 	}
 }

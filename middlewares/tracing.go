@@ -17,14 +17,14 @@ func TracingMiddleware(next http.Handler, tp tracing.TraceProvider, spanConfig t
 		)
 
 		defer span.End()
+
 		span.AddEvent(spanConfig.Events.Start.Name, spanConfig.Events.Start.Opts...)
+		defer span.AddEvent(spanConfig.Events.End.Name, spanConfig.Events.End.Opts...)
 
 		traceID := span.SpanContext().TraceID().String()
 		ctx = metadata.AppendToOutgoingContext(ctx, tracing.Key, traceID) // setting for cross-service usage
 		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)
-
-		span.AddEvent(spanConfig.Events.End.Name, spanConfig.Events.End.Opts...)
 	})
 }

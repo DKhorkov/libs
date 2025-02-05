@@ -25,7 +25,7 @@ func GenerateJWT(value any, secretKey string, ttl time.Duration, algorithm strin
 	}
 
 	claims["value"] = value
-	claims["exp"] = time.Now().Add(ttl).Unix()
+	claims["exp"] = time.Now().UTC().Add(ttl).Unix()
 	return token.SignedString([]byte(secretKey))
 }
 

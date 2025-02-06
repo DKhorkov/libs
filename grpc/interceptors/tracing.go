@@ -39,7 +39,12 @@ func UnaryServerTracingInterceptor(
 			}
 		}
 
-		return handler(ctx, req)
+		result, err := handler(ctx, req)
+		if err != nil && span != nil {
+			span.SetStatus(tracing.StatusError, err.Error())
+		}
+
+		return result, err
 	}
 }
 
@@ -63,6 +68,11 @@ func UnaryClientTracingInterceptor(
 		span.AddEvent(spanConfig.Events.Start.Name, spanConfig.Events.Start.Opts...)
 		defer span.AddEvent(spanConfig.Events.End.Name, spanConfig.Events.End.Opts...)
 
-		return invoker(ctx, method, req, reply, cc, opts...)
+		if err := invoker(ctx, method, req, reply, cc, opts...); err != nil {
+			span.SetStatus(tracing.StatusError, err.Error())
+			return err
+		}
+
+		return nil
 	}
 }

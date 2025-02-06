@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/DKhorkov/libs/contextlib"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/DKhorkov/libs/contextlib"
 )
 
 func TestGetValueFromContextAndSetValueToContext(t *testing.T) {

@@ -3,10 +3,11 @@ package requestid_test
 import (
 	"testing"
 
-	"github.com/DKhorkov/libs/requestid"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/DKhorkov/libs/requestid"
 )
 
 func TestNew(t *testing.T) {

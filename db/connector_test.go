@@ -7,12 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/DKhorkov/libs/db"
-
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/DKhorkov/libs/db"
 )
 
 var (

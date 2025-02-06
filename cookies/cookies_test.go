@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/DKhorkov/libs/cookies"
-
 	"github.com/stretchr/testify/assert"
+
+	"github.com/DKhorkov/libs/cookies"
 )
 
 func TestSetCookie(t *testing.T) {

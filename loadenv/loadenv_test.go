@@ -3,9 +3,9 @@ package loadenv_test
 import (
 	"testing"
 
-	"github.com/DKhorkov/libs/loadenv"
-
 	"github.com/stretchr/testify/assert"
+
+	"github.com/DKhorkov/libs/loadenv"
 )
 
 func TestGetEnv(t *testing.T) {

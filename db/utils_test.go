@@ -5,11 +5,10 @@ import (
 	"log/slog"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/DKhorkov/libs/db"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestGetEntityColumns(t *testing.T) {

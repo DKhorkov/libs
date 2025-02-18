@@ -9,7 +9,7 @@ import (
 )
 
 // TracingMiddleware creates root span of request and logs its Start and End events.
-func TracingMiddleware(next http.Handler, tp tracing.TraceProvider, spanConfig tracing.SpanConfig) http.Handler {
+func TracingMiddleware(next http.Handler, tp tracing.Provider, spanConfig tracing.SpanConfig) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx, span := tp.Span(
 			r.Context(),

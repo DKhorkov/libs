@@ -39,7 +39,7 @@ func TestTransaction(t *testing.T) {
 	})
 
 	t.Run("nil connections pool", func(t *testing.T) {
-		connector := &db.CommonDBConnector{}
+		connector := &db.CommonConnector{}
 
 		transaction, err := connector.Transaction(context.Background())
 		require.Error(t, err)
@@ -101,7 +101,7 @@ func TestConnection(t *testing.T) {
 	})
 
 	t.Run("nil connections pool", func(t *testing.T) {
-		connector := &db.CommonDBConnector{}
+		connector := &db.CommonConnector{}
 
 		connection, err := connector.Connection(context.Background())
 		require.Error(t, err)
@@ -158,7 +158,7 @@ func TestPool(t *testing.T) {
 	})
 
 	t.Run("nil connections pool", func(t *testing.T) {
-		connector := &db.CommonDBConnector{}
+		connector := &db.CommonConnector{}
 		assert.Nil(t, connector.Pool())
 	})
 }

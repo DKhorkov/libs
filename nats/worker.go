@@ -64,14 +64,14 @@ func (w *CommonWorker) Run() error {
 		return &WorkerAlreadyRunningError{}
 	}
 
+	w.wg.Add(w.goroutinesPoolSize)
 	for range w.goroutinesPoolSize {
-		w.wg.Add(1)
 		go func() {
+			defer w.wg.Done()
+
 			for msg := range w.messageChannel {
 				w.messageHandler(msg)
 			}
-
-			w.wg.Done()
 		}()
 	}
 

@@ -17,32 +17,32 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// MockTraceProvider is a mock of TraceProvider interface.
-type MockTraceProvider struct {
+// MockProvider is a mock of Provider interface.
+type MockProvider struct {
 	ctrl     *gomock.Controller
-	recorder *MockTraceProviderMockRecorder
+	recorder *MockProviderMockRecorder
 	isgomock struct{}
 }
 
-// MockTraceProviderMockRecorder is the mock recorder for MockTraceProvider.
-type MockTraceProviderMockRecorder struct {
-	mock *MockTraceProvider
+// MockProviderMockRecorder is the mock recorder for MockProvider.
+type MockProviderMockRecorder struct {
+	mock *MockProvider
 }
 
-// NewMockTraceProvider creates a new mock instance.
-func NewMockTraceProvider(ctrl *gomock.Controller) *MockTraceProvider {
-	mock := &MockTraceProvider{ctrl: ctrl}
-	mock.recorder = &MockTraceProviderMockRecorder{mock}
+// NewMockProvider creates a new mock instance.
+func NewMockProvider(ctrl *gomock.Controller) *MockProvider {
+	mock := &MockProvider{ctrl: ctrl}
+	mock.recorder = &MockProviderMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockTraceProvider) EXPECT() *MockTraceProviderMockRecorder {
+func (m *MockProvider) EXPECT() *MockProviderMockRecorder {
 	return m.recorder
 }
 
 // Shutdown mocks base method.
-func (m *MockTraceProvider) Shutdown(ctx context.Context) error {
+func (m *MockProvider) Shutdown(ctx context.Context) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Shutdown", ctx)
 	ret0, _ := ret[0].(error)
@@ -50,13 +50,13 @@ func (m *MockTraceProvider) Shutdown(ctx context.Context) error {
 }
 
 // Shutdown indicates an expected call of Shutdown.
-func (mr *MockTraceProviderMockRecorder) Shutdown(ctx any) *gomock.Call {
+func (mr *MockProviderMockRecorder) Shutdown(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Shutdown", reflect.TypeOf((*MockTraceProvider)(nil).Shutdown), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Shutdown", reflect.TypeOf((*MockProvider)(nil).Shutdown), ctx)
 }
 
 // Span mocks base method.
-func (m *MockTraceProvider) Span(ctx context.Context, name string, opts ...trace.SpanStartOption) (context.Context, trace.Span) {
+func (m *MockProvider) Span(ctx context.Context, name string, opts ...trace.SpanStartOption) (context.Context, trace.Span) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, name}
 	for _, a := range opts {
@@ -69,14 +69,14 @@ func (m *MockTraceProvider) Span(ctx context.Context, name string, opts ...trace
 }
 
 // Span indicates an expected call of Span.
-func (mr *MockTraceProviderMockRecorder) Span(ctx, name any, opts ...any) *gomock.Call {
+func (mr *MockProviderMockRecorder) Span(ctx, name any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, name}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Span", reflect.TypeOf((*MockTraceProvider)(nil).Span), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Span", reflect.TypeOf((*MockProvider)(nil).Span), varargs...)
 }
 
 // SpanFromTraceID mocks base method.
-func (m *MockTraceProvider) SpanFromTraceID(ctx context.Context, traceID trace.TraceID, name string, opts ...trace.SpanStartOption) (context.Context, trace.Span) {
+func (m *MockProvider) SpanFromTraceID(ctx context.Context, traceID trace.TraceID, name string, opts ...trace.SpanStartOption) (context.Context, trace.Span) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, traceID, name}
 	for _, a := range opts {
@@ -89,14 +89,14 @@ func (m *MockTraceProvider) SpanFromTraceID(ctx context.Context, traceID trace.T
 }
 
 // SpanFromTraceID indicates an expected call of SpanFromTraceID.
-func (mr *MockTraceProviderMockRecorder) SpanFromTraceID(ctx, traceID, name any, opts ...any) *gomock.Call {
+func (mr *MockProviderMockRecorder) SpanFromTraceID(ctx, traceID, name any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, traceID, name}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpanFromTraceID", reflect.TypeOf((*MockTraceProvider)(nil).SpanFromTraceID), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpanFromTraceID", reflect.TypeOf((*MockProvider)(nil).SpanFromTraceID), varargs...)
 }
 
 // TraceIDFromHex mocks base method.
-func (m *MockTraceProvider) TraceIDFromHex(traceHex string) (trace.TraceID, error) {
+func (m *MockProvider) TraceIDFromHex(traceHex string) (trace.TraceID, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TraceIDFromHex", traceHex)
 	ret0, _ := ret[0].(trace.TraceID)
@@ -105,7 +105,7 @@ func (m *MockTraceProvider) TraceIDFromHex(traceHex string) (trace.TraceID, erro
 }
 
 // TraceIDFromHex indicates an expected call of TraceIDFromHex.
-func (mr *MockTraceProviderMockRecorder) TraceIDFromHex(traceHex any) *gomock.Call {
+func (mr *MockProviderMockRecorder) TraceIDFromHex(traceHex any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TraceIDFromHex", reflect.TypeOf((*MockTraceProvider)(nil).TraceIDFromHex), traceHex)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TraceIDFromHex", reflect.TypeOf((*MockProvider)(nil).TraceIDFromHex), traceHex)
 }

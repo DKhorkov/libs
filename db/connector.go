@@ -8,14 +8,14 @@ import (
 	_ "github.com/lib/pq" // Postgres driver
 )
 
-// New is constructor of CommonDBConnector. Gets database Config and *slog.Logger to create an instance.
-func New(dsn, driver string, logger *slog.Logger, opts ...PoolOption) (*CommonDBConnector, error) {
+// New is constructor of CommonConnector. Gets database Config and *slog.Logger to create an instance.
+func New(dsn, driver string, logger *slog.Logger, opts ...PoolOption) (*CommonConnector, error) {
 	pool, err := connect(dsn, driver, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	dbConnector := &CommonDBConnector{
+	dbConnector := &CommonConnector{
 		connectionsPool: pool,
 		logger:          logger,
 	}
@@ -23,8 +23,8 @@ func New(dsn, driver string, logger *slog.Logger, opts ...PoolOption) (*CommonDB
 	return dbConnector, nil
 }
 
-// CommonDBConnector is base connector to work with database.
-type CommonDBConnector struct {
+// CommonConnector is base connector to work with database.
+type CommonConnector struct {
 	connectionsPool *sql.DB
 	logger          *slog.Logger
 }
@@ -56,7 +56,7 @@ func connect(dsn, driver string, opts ...PoolOption) (*sql.DB, error) {
 }
 
 // Connection creates connection with database, if not exists. Returns connection for external usage.
-func (connector *CommonDBConnector) Connection(ctx context.Context) (*sql.Conn, error) {
+func (connector *CommonConnector) Connection(ctx context.Context) (*sql.Conn, error) {
 	if connector.connectionsPool == nil {
 		return nil, &NilDBConnectionError{}
 	}
@@ -65,7 +65,7 @@ func (connector *CommonDBConnector) Connection(ctx context.Context) (*sql.Conn, 
 }
 
 // Transaction return database transaction object for external usage with atomicity of operations.
-func (connector *CommonDBConnector) Transaction(ctx context.Context, opts ...TransactionOption) (*sql.Tx, error) {
+func (connector *CommonConnector) Transaction(ctx context.Context, opts ...TransactionOption) (*sql.Tx, error) {
 	if connector.connectionsPool == nil {
 		return nil, &NilDBConnectionError{}
 	}
@@ -88,12 +88,12 @@ func (connector *CommonDBConnector) Transaction(ctx context.Context, opts ...Tra
 }
 
 // Pool returns database connections pool.
-func (connector *CommonDBConnector) Pool() *sql.DB {
+func (connector *CommonConnector) Pool() *sql.DB {
 	return connector.connectionsPool
 }
 
 // Close closes pool of connections.
-func (connector *CommonDBConnector) Close() error {
+func (connector *CommonConnector) Close() error {
 	if connector.connectionsPool == nil {
 		return nil
 	}

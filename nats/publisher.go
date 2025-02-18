@@ -1,10 +1,10 @@
 package nats
 
-import "github.com/nats-io/nats.go"
+import natsbroker "github.com/nats-io/nats.go"
 
-// NewCommonPublisher creates *CommonPublisher.
-func NewCommonPublisher(url string, opts ...nats.Option) (*CommonPublisher, error) {
-	connection, err := nats.Connect(url, opts...)
+// NewPublisher creates *CommonPublisher.
+func NewPublisher(url string, opts ...natsbroker.Option) (*CommonPublisher, error) {
+	connection, err := natsbroker.Connect(url, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -16,7 +16,7 @@ func NewCommonPublisher(url string, opts ...nats.Option) (*CommonPublisher, erro
 
 // CommonPublisher is a base NATS publisher.
 type CommonPublisher struct {
-	connection *nats.Conn
+	connection *natsbroker.Conn
 }
 
 // Publish sends message to provided topic (subject).

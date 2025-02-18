@@ -6,8 +6,8 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-// NewCommonWorker creates *CommonWorker with provided options.
-func NewCommonWorker(
+// NewWorker creates *CommonWorker with provided options.
+func NewWorker(
 	url string,
 	subject string,
 	opts ...WorkerOption,

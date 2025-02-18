@@ -22,7 +22,7 @@ const (
 func TestWorkerRun(t *testing.T) {
 	t.Run("worker is already running", func(t *testing.T) {
 		var resultStorage []string
-		worker, err := NewCommonWorker(
+		worker, err := NewWorker(
 			url,
 			subject,
 			WithNatsOptions(nats.Name(workerName)),
@@ -57,7 +57,7 @@ func TestWorkerRun(t *testing.T) {
 
 	t.Run("worker successfully started", func(t *testing.T) {
 		var resultStorage []string
-		worker, err := NewCommonWorker(
+		worker, err := NewWorker(
 			url,
 			subject,
 			WithNatsOptions(nats.Name(workerName)),
@@ -83,7 +83,7 @@ func TestWorkerRun(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		publisher, err := NewCommonPublisher(url)
+		publisher, err := NewPublisher(url)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -113,7 +113,7 @@ func TestWorkerRun(t *testing.T) {
 func TestWorkerStop(t *testing.T) {
 	t.Run("worker is already stopped", func(t *testing.T) {
 		var resultStorage []string
-		worker, err := NewCommonWorker(
+		worker, err := NewWorker(
 			url,
 			subject,
 			WithNatsOptions(nats.Name(workerName)),
@@ -148,7 +148,7 @@ func TestWorkerStop(t *testing.T) {
 
 	t.Run("worker successfully stopped", func(t *testing.T) {
 		var resultStorage []string
-		worker, err := NewCommonWorker(
+		worker, err := NewWorker(
 			url,
 			subject,
 			WithNatsOptions(nats.Name(workerName)),

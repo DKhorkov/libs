@@ -380,3 +380,6 @@ issues:
     - path: "nats/worker_options.go"
       linters:
         - gochecknoglobals
+    - path: "nats/worker_test.go"
+      linters:
+        - testpackage

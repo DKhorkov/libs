@@ -3,7 +3,7 @@ package nats
 import (
 	"sync"
 
-	"github.com/nats-io/nats.go"
+	natsbroker "github.com/nats-io/nats.go"
 )
 
 // NewWorker creates *CommonWorker with provided options.
@@ -20,7 +20,7 @@ func NewWorker(
 		}
 	}
 
-	connection, err := nats.Connect(url, options.natsOpts...)
+	connection, err := natsbroker.Connect(url, options.natsOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +29,7 @@ func NewWorker(
 	connection.SetDisconnectErrHandler(options.disconnectErrorHandler)
 	connection.SetClosedHandler(options.closeHandler)
 
-	messageChannel := make(chan *nats.Msg, options.messageChannelBufferSize)
+	messageChannel := make(chan *natsbroker.Msg, options.messageChannelBufferSize)
 
 	subscription, err := connection.ChanSubscribe(subject, messageChannel)
 	if err != nil {
@@ -48,11 +48,11 @@ func NewWorker(
 
 // CommonWorker is a base worker for processing NATS messages.
 type CommonWorker struct {
-	connection         *nats.Conn
-	subscription       *nats.Subscription
-	messageChannel     chan *nats.Msg
+	connection         *natsbroker.Conn
+	subscription       *natsbroker.Subscription
+	messageChannel     chan *natsbroker.Msg
 	goroutinesPoolSize int
-	messageHandler     func(message *nats.Msg)
+	messageHandler     func(message *natsbroker.Msg)
 	isRunning          bool
 	isStopped          bool
 	wg                 *sync.WaitGroup

@@ -6,13 +6,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nats-io/nats.go"
+	natsbroker "github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 const (
-	url                      = nats.DefaultURL
+	url                      = natsbroker.DefaultURL
 	subject                  = "test"
 	workerName               = "nats-worker"
 	goroutinesPoolSize       = 1
@@ -25,21 +25,21 @@ func TestWorkerRun(t *testing.T) {
 		worker, err := NewWorker(
 			url,
 			subject,
-			WithNatsOptions(nats.Name(workerName)),
+			WithNatsOptions(natsbroker.Name(workerName)),
 			WithGoroutinesPoolSize(goroutinesPoolSize),
 			WithMessageChannelBufferSize(messageChannelBufferSize),
-			WithCloseHandler(func(connection *nats.Conn) {
+			WithCloseHandler(func(_ *natsbroker.Conn) {
 				t.Log("close handler called")
 			}),
-			WithErrorHandler(func(_ *nats.Conn, _ *nats.Subscription, err error) {
+			WithErrorHandler(func(_ *natsbroker.Conn, _ *natsbroker.Subscription, err error) {
 				t.Logf("error handler called. Error: %v", err)
 			}),
-			WithMessageHandler(func(m *nats.Msg) {
+			WithMessageHandler(func(m *natsbroker.Msg) {
 				data := string(m.Data)
 				t.Logf("message handler called. Message: %s", data)
 				resultStorage = append(resultStorage, data)
 			}),
-			WithDisconnectErrorHandler(func(_ *nats.Conn, err error) {
+			WithDisconnectErrorHandler(func(_ *natsbroker.Conn, err error) {
 				t.Logf("disconnect handler called. Error: %v", err)
 			}),
 		)
@@ -51,7 +51,7 @@ func TestWorkerRun(t *testing.T) {
 		worker.isRunning = true
 		err = worker.Run()
 		require.Error(t, err)
-		assert.IsType(t, err, &WorkerAlreadyRunningError{})
+		assert.IsType(t, &WorkerAlreadyRunningError{}, err)
 		require.Empty(t, resultStorage)
 	})
 
@@ -60,21 +60,21 @@ func TestWorkerRun(t *testing.T) {
 		worker, err := NewWorker(
 			url,
 			subject,
-			WithNatsOptions(nats.Name(workerName)),
+			WithNatsOptions(natsbroker.Name(workerName)),
 			WithGoroutinesPoolSize(goroutinesPoolSize),
 			WithMessageChannelBufferSize(messageChannelBufferSize),
-			WithCloseHandler(func(connection *nats.Conn) {
+			WithCloseHandler(func(_ *natsbroker.Conn) {
 				t.Log("close handler called")
 			}),
-			WithErrorHandler(func(_ *nats.Conn, _ *nats.Subscription, err error) {
+			WithErrorHandler(func(_ *natsbroker.Conn, _ *natsbroker.Subscription, err error) {
 				t.Logf("error handler called. Error: %v", err)
 			}),
-			WithMessageHandler(func(m *nats.Msg) {
+			WithMessageHandler(func(m *natsbroker.Msg) {
 				data := string(m.Data)
 				t.Logf("message handler called. Message: %s", data)
 				resultStorage = append(resultStorage, data)
 			}),
-			WithDisconnectErrorHandler(func(_ *nats.Conn, err error) {
+			WithDisconnectErrorHandler(func(_ *natsbroker.Conn, err error) {
 				t.Logf("disconnect handler called. Error: %v", err)
 			}),
 		)
@@ -116,21 +116,21 @@ func TestWorkerStop(t *testing.T) {
 		worker, err := NewWorker(
 			url,
 			subject,
-			WithNatsOptions(nats.Name(workerName)),
+			WithNatsOptions(natsbroker.Name(workerName)),
 			WithGoroutinesPoolSize(goroutinesPoolSize),
 			WithMessageChannelBufferSize(messageChannelBufferSize),
-			WithCloseHandler(func(connection *nats.Conn) {
+			WithCloseHandler(func(_ *natsbroker.Conn) {
 				t.Log("close handler called")
 			}),
-			WithErrorHandler(func(_ *nats.Conn, _ *nats.Subscription, err error) {
+			WithErrorHandler(func(_ *natsbroker.Conn, _ *natsbroker.Subscription, err error) {
 				t.Logf("error handler called. Error: %v", err)
 			}),
-			WithMessageHandler(func(m *nats.Msg) {
+			WithMessageHandler(func(m *natsbroker.Msg) {
 				data := string(m.Data)
 				t.Logf("message handler called. Message: %s", data)
 				resultStorage = append(resultStorage, data)
 			}),
-			WithDisconnectErrorHandler(func(_ *nats.Conn, err error) {
+			WithDisconnectErrorHandler(func(_ *natsbroker.Conn, err error) {
 				t.Logf("disconnect handler called. Error: %v", err)
 			}),
 		)
@@ -142,7 +142,7 @@ func TestWorkerStop(t *testing.T) {
 		worker.isStopped = true
 		err = worker.Stop()
 		require.Error(t, err)
-		assert.IsType(t, err, &WorkerAlreadyStoppedError{})
+		assert.IsType(t, &WorkerAlreadyStoppedError{}, err)
 		require.Empty(t, resultStorage)
 	})
 
@@ -151,21 +151,21 @@ func TestWorkerStop(t *testing.T) {
 		worker, err := NewWorker(
 			url,
 			subject,
-			WithNatsOptions(nats.Name(workerName)),
+			WithNatsOptions(natsbroker.Name(workerName)),
 			WithGoroutinesPoolSize(1),
 			WithMessageChannelBufferSize(1),
-			WithCloseHandler(func(connection *nats.Conn) {
+			WithCloseHandler(func(_ *natsbroker.Conn) {
 				t.Log("close handler called")
 			}),
-			WithErrorHandler(func(_ *nats.Conn, _ *nats.Subscription, err error) {
+			WithErrorHandler(func(_ *natsbroker.Conn, _ *natsbroker.Subscription, err error) {
 				t.Logf("error handler called. Error: %v", err)
 			}),
-			WithMessageHandler(func(m *nats.Msg) {
+			WithMessageHandler(func(m *natsbroker.Msg) {
 				data := string(m.Data)
 				t.Logf("message handler called. Message: %s", data)
 				resultStorage = append(resultStorage, data)
 			}),
-			WithDisconnectErrorHandler(func(_ *nats.Conn, err error) {
+			WithDisconnectErrorHandler(func(_ *natsbroker.Conn, err error) {
 				t.Logf("disconnect handler called. Error: %v", err)
 			}),
 		)

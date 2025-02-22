@@ -3,7 +3,7 @@ package nats
 import (
 	"fmt"
 
-	"github.com/nats-io/nats.go"
+	natsbroker "github.com/nats-io/nats.go"
 )
 
 const (
@@ -12,21 +12,21 @@ const (
 )
 
 var (
-	defaultMessageHandler = func(message *nats.Msg) {
+	defaultMessageHandler = func(message *natsbroker.Msg) {
 		fmt.Printf("nats message: %s\n", string(message.Data))
 	}
 
-	defaultErrorHandler = func(_ *nats.Conn, _ *nats.Subscription, err error) {
+	defaultErrorHandler = func(_ *natsbroker.Conn, _ *natsbroker.Subscription, err error) {
 		fmt.Printf("nats error: %v\n", err)
 	}
 
-	defaultDisconnectErrorHandler = func(_ *nats.Conn, err error) {
+	defaultDisconnectErrorHandler = func(_ *natsbroker.Conn, err error) {
 		if err != nil {
 			fmt.Printf("nats disconnect error: %v\n", err)
 		}
 	}
 
-	defaultCloseHandler = func(connection *nats.Conn) {
+	defaultCloseHandler = func(connection *natsbroker.Conn) {
 		fmt.Printf("nats close connection. Status: %d\n", connection.Status())
 	}
 )
@@ -47,11 +47,11 @@ func newWorkerOptions() *workerOptions {
 type workerOptions struct {
 	messageChannelBufferSize int
 	goroutinesPoolSize       int
-	messageHandler           func(message *nats.Msg)
-	errorHandler             func(connection *nats.Conn, subscription *nats.Subscription, err error)
-	disconnectErrorHandler   func(connection *nats.Conn, err error)
-	closeHandler             func(connection *nats.Conn)
-	natsOpts                 []nats.Option
+	messageHandler           func(message *natsbroker.Msg)
+	errorHandler             func(connection *natsbroker.Conn, subscription *natsbroker.Subscription, err error)
+	disconnectErrorHandler   func(connection *natsbroker.Conn, err error)
+	closeHandler             func(connection *natsbroker.Conn)
+	natsOpts                 []natsbroker.Option
 }
 
 // WorkerOption represents golang functional option pattern func for Worker configuration.
@@ -74,7 +74,7 @@ func WithGoroutinesPoolSize(size int) WorkerOption {
 }
 
 // WithMessageHandler sets handler for received message.
-func WithMessageHandler(handler func(message *nats.Msg)) WorkerOption {
+func WithMessageHandler(handler func(message *natsbroker.Msg)) WorkerOption {
 	return func(options *workerOptions) error {
 		options.messageHandler = handler
 		return nil
@@ -82,7 +82,9 @@ func WithMessageHandler(handler func(message *nats.Msg)) WorkerOption {
 }
 
 // WithErrorHandler sets handler for processing error during message processing.
-func WithErrorHandler(handler func(connection *nats.Conn, subscription *nats.Subscription, err error)) WorkerOption {
+func WithErrorHandler(
+	handler func(connection *natsbroker.Conn, subscription *natsbroker.Subscription, err error),
+) WorkerOption {
 	return func(options *workerOptions) error {
 		options.errorHandler = handler
 		return nil
@@ -90,7 +92,7 @@ func WithErrorHandler(handler func(connection *nats.Conn, subscription *nats.Sub
 }
 
 // WithDisconnectErrorHandler sets handler for disconnection from server.
-func WithDisconnectErrorHandler(handler func(connection *nats.Conn, err error)) WorkerOption {
+func WithDisconnectErrorHandler(handler func(connection *natsbroker.Conn, err error)) WorkerOption {
 	return func(options *workerOptions) error {
 		options.disconnectErrorHandler = handler
 		return nil
@@ -98,7 +100,7 @@ func WithDisconnectErrorHandler(handler func(connection *nats.Conn, err error)) 
 }
 
 // WithCloseHandler sets handler for connection with NATS closure.
-func WithCloseHandler(handler func(connection *nats.Conn)) WorkerOption {
+func WithCloseHandler(handler func(connection *natsbroker.Conn)) WorkerOption {
 	return func(options *workerOptions) error {
 		options.closeHandler = handler
 		return nil
@@ -106,7 +108,7 @@ func WithCloseHandler(handler func(connection *nats.Conn)) WorkerOption {
 }
 
 // WithNatsOptions sets NATS option for connection with broker configuration.
-func WithNatsOptions(opts ...nats.Option) WorkerOption {
+func WithNatsOptions(opts ...natsbroker.Option) WorkerOption {
 	return func(options *workerOptions) error {
 		options.natsOpts = append(options.natsOpts, opts...)
 		return nil

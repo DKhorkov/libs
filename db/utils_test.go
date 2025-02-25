@@ -2,13 +2,15 @@ package db_test
 
 import (
 	"context"
-	"log/slog"
 	"testing"
+
+	"go.uber.org/mock/gomock"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/DKhorkov/libs/db"
+	loggermock "github.com/DKhorkov/libs/logging/mocks"
 )
 
 func TestGetEntityColumns(t *testing.T) {
@@ -46,11 +48,9 @@ func TestBuildDsn(t *testing.T) {
 
 func TestCloseConnectionContext(t *testing.T) {
 	t.Run("should close connection context", func(t *testing.T) {
-		var (
-			logger = &slog.Logger{}
-			ctx    = context.Background()
-		)
-
+		ctx := context.Background()
+		ctrl := gomock.NewController(t)
+		logger := loggermock.NewMockLogger(ctrl)
 		connector, err := db.New(dsn, driver, logger)
 		require.NoError(t, err)
 

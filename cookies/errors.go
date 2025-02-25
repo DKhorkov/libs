@@ -2,6 +2,7 @@ package cookies
 
 import "fmt"
 
+// NotFoundError represents, that there is no http.Cookie with provided name in http.ResponseWriter.
 type NotFoundError struct {
 	Message string
 	BaseErr error

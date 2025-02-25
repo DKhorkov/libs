@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	"github.com/DKhorkov/libs/contextlib"
+	"github.com/DKhorkov/libs/logging"
 	"github.com/DKhorkov/libs/requestid"
 )
 
@@ -19,7 +20,7 @@ const (
 )
 
 // UnaryServerLoggingInterceptor intercepts gRPC handler, logs request with provided request ID and calls handler.
-func UnaryServerLoggingInterceptor(logger *slog.Logger) grpc.UnaryServerInterceptor {
+func UnaryServerLoggingInterceptor(logger logging.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		var requestID string
 		if md, ok := metadata.FromIncomingContext(ctx); ok {
@@ -67,8 +68,8 @@ func UnaryServerLoggingInterceptor(logger *slog.Logger) grpc.UnaryServerIntercep
 	}
 }
 
-// UnaryClientLoggingInterceptor adapts slog logger to interceptor logger.
-func UnaryClientLoggingInterceptor(logger *slog.Logger) grpclogging.Logger {
+// UnaryClientLoggingInterceptor adapts logging.logger to interceptor logger.
+func UnaryClientLoggingInterceptor(logger logging.Logger) grpclogging.Logger {
 	return grpclogging.LoggerFunc(
 		func(
 			ctx context.Context,
@@ -93,6 +94,11 @@ func UnaryClientLoggingInterceptor(logger *slog.Logger) grpclogging.Logger {
 						}
 					}
 				}
+			}
+
+			logger, ok := logger.(*slog.Logger)
+			if ok {
+				panic("error during conversion to grpc logger")
 			}
 
 			logger.Log(

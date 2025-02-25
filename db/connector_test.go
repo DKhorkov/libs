@@ -3,15 +3,16 @@ package db_test
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 	"testing"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 
 	"github.com/DKhorkov/libs/db"
+	loggermock "github.com/DKhorkov/libs/logging/mocks"
 )
 
 var (
@@ -21,7 +22,9 @@ var (
 
 func TestTransaction(t *testing.T) {
 	t.Run("should return transaction", func(t *testing.T) {
-		connector, err := db.New(dsn, driver, &slog.Logger{})
+		ctrl := gomock.NewController(t)
+		logger := loggermock.NewMockLogger(ctrl)
+		connector, err := db.New(dsn, driver, logger)
 		require.NoError(t, err)
 
 		defer func() {
@@ -54,7 +57,9 @@ func TestTransaction(t *testing.T) {
 	})
 
 	t.Run("transaction with options", func(t *testing.T) {
-		connector, err := db.New(dsn, driver, &slog.Logger{})
+		ctrl := gomock.NewController(t)
+		logger := loggermock.NewMockLogger(ctrl)
+		connector, err := db.New(dsn, driver, logger)
 		require.NoError(t, err)
 
 		defer func() {
@@ -79,7 +84,9 @@ func TestTransaction(t *testing.T) {
 
 func TestConnection(t *testing.T) {
 	t.Run("should return connection", func(t *testing.T) {
-		connector, err := db.New(dsn, driver, &slog.Logger{})
+		ctrl := gomock.NewController(t)
+		logger := loggermock.NewMockLogger(ctrl)
+		connector, err := db.New(dsn, driver, logger)
 		require.NoError(t, err)
 
 		defer func() {
@@ -119,7 +126,9 @@ func TestConnection(t *testing.T) {
 
 func TestNewConnector(t *testing.T) {
 	t.Run("new connector without options", func(t *testing.T) {
-		connector, err := db.New(dsn, driver, &slog.Logger{})
+		ctrl := gomock.NewController(t)
+		logger := loggermock.NewMockLogger(ctrl)
+		connector, err := db.New(dsn, driver, logger)
 		require.NoError(t, err)
 		require.NotNil(t, connector)
 
@@ -128,10 +137,12 @@ func TestNewConnector(t *testing.T) {
 	})
 
 	t.Run("new connector with options", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		logger := loggermock.NewMockLogger(ctrl)
 		connector, err := db.New(
 			dsn,
 			driver,
-			&slog.Logger{},
+			logger,
 			db.WithMaxConnectionIdleTime(time.Minute),
 			db.WithMaxConnectionLifetime(time.Minute),
 			db.WithMaxIdleConnections(1),
@@ -148,7 +159,9 @@ func TestNewConnector(t *testing.T) {
 
 func TestPool(t *testing.T) {
 	t.Run("should return connections pool", func(t *testing.T) {
-		connector, err := db.New(dsn, driver, &slog.Logger{})
+		ctrl := gomock.NewController(t)
+		logger := loggermock.NewMockLogger(ctrl)
+		connector, err := db.New(dsn, driver, logger)
 		require.NoError(t, err)
 
 		assert.NotNil(t, connector.Pool())

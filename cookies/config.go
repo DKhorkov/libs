@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Config provides all necessary settings for http.Cookie.
 type Config struct {
 	// See http.Cookie as reference.
 

@@ -8,10 +8,10 @@ import (
 	"github.com/DKhorkov/libs/pointers"
 )
 
-func TestCreatePointer(t *testing.T) {
+func TestNewPointer(t *testing.T) {
 	t.Run("simple pointer", func(t *testing.T) {
 		value := 2
-		ptr := pointers.Pointer(value)
+		ptr := pointers.New(value)
 		assert.Equal(t, &value, ptr)
 		assert.IsType(t, &value, ptr)
 	})

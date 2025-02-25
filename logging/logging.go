@@ -26,7 +26,7 @@ var (
 )
 
 // GetInstance implemented as singleton pattern to get Logger instance, created once for whole app:.
-func GetInstance(logLevel slog.Level, logFilePath string) *slog.Logger {
+func GetInstance(logLevel Level, logFilePath string) Logger {
 	var logWriter io.Writer
 
 	if logFile, err := os.OpenFile(
@@ -45,7 +45,7 @@ func GetInstance(logLevel slog.Level, logFilePath string) *slog.Logger {
 			slog.NewJSONHandler(
 				logWriter,
 				&slog.HandlerOptions{
-					Level: logLevel,
+					Level: slog.Level(logLevel),
 				},
 			),
 		)
@@ -71,7 +71,7 @@ func GetLogTraceback(skipLevel int) string {
 }
 
 // LogRequest uses provided logger to save request info and connect it with request ID from the context.
-func LogRequest(ctx context.Context, logger *slog.Logger, request any) {
+func LogRequest(ctx context.Context, logger Logger, request any) {
 	requestID, err := contextlib.GetValue[string](ctx, requestid.Key)
 	if err != nil {
 		requestID = ""
@@ -110,7 +110,7 @@ func LogRequest(ctx context.Context, logger *slog.Logger, request any) {
 
 // LogErrorContext uses provided logger to save error with message info and context.
 // Context is used to get request ID and connect it with error.
-func LogErrorContext(ctx context.Context, logger *slog.Logger, msg string, err error) {
+func LogErrorContext(ctx context.Context, logger Logger, msg string, err error) {
 	requestID, contextErr := contextlib.GetValue[string](ctx, requestid.Key)
 	if contextErr != nil {
 		requestID = ""
@@ -129,7 +129,7 @@ func LogErrorContext(ctx context.Context, logger *slog.Logger, msg string, err e
 }
 
 // LogError logs error with message info, using provided logger.
-func LogError(logger *slog.Logger, msg string, err error) {
+func LogError(logger Logger, msg string, err error) {
 	logger.Error(
 		msg,
 		"Traceback",
@@ -140,7 +140,7 @@ func LogError(logger *slog.Logger, msg string, err error) {
 }
 
 // LogInfo logs message, using provided logger.
-func LogInfo(logger *slog.Logger, msg string) {
+func LogInfo(logger Logger, msg string) {
 	logger.Info(
 		msg,
 		"Traceback",

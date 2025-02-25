@@ -1,5 +1,6 @@
 package pointers
 
-func Pointer[T any](value T) *T {
+// New create new pointer to provided value.
+func New[T any](value T) *T {
 	return &value
 }

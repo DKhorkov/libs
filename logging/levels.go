@@ -2,12 +2,14 @@ package logging
 
 import "log/slog"
 
+type Level int
+
 // Levels are a simple abstractions on slog.Level.
 var Levels = struct {
-	INFO, DEBUG, WARN, ERROR slog.Level
+	INFO, DEBUG, WARN, ERROR Level
 }{
-	INFO:  slog.LevelInfo,
-	DEBUG: slog.LevelDebug,
-	WARN:  slog.LevelWarn,
-	ERROR: slog.LevelError,
+	INFO:  Level(slog.LevelInfo),
+	DEBUG: Level(slog.LevelDebug),
+	WARN:  Level(slog.LevelWarn),
+	ERROR: Level(slog.LevelError),
 }

@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Set sets http.Cookie to provided http.ResponseWriter.
 func Set(
 	writer http.ResponseWriter,
 	name string,

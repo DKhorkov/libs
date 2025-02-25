@@ -3,13 +3,14 @@ package db
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 
 	_ "github.com/lib/pq" // Postgres driver
+
+	"github.com/DKhorkov/libs/logging"
 )
 
-// New is constructor of CommonConnector. Gets database Config and *slog.Logger to create an instance.
-func New(dsn, driver string, logger *slog.Logger, opts ...PoolOption) (*CommonConnector, error) {
+// New is constructor of CommonConnector. Gets database Config and logging.Logger to create an instance.
+func New(dsn, driver string, logger logging.Logger, opts ...PoolOption) (*CommonConnector, error) {
 	pool, err := connect(dsn, driver, opts...)
 	if err != nil {
 		return nil, err
@@ -26,7 +27,7 @@ func New(dsn, driver string, logger *slog.Logger, opts ...PoolOption) (*CommonCo
 // CommonConnector is base connector to work with database.
 type CommonConnector struct {
 	connectionsPool *sql.DB
-	logger          *slog.Logger
+	logger          logging.Logger
 }
 
 // connect connects to database and stores connections pool for later usage.

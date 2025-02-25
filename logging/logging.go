@@ -25,8 +25,8 @@ var (
 	once     sync.Once
 )
 
-// GetInstance implemented as singleton pattern to get Logger instance, created once for whole app:.
-func GetInstance(logLevel Level, logFilePath string) Logger {
+// New implements as singleton pattern to get Logger instance, created once for whole app:.
+func New(logLevel Level, logFilePath string) Logger {
 	var logWriter io.Writer
 
 	if logFile, err := os.OpenFile(

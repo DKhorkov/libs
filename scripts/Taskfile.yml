@@ -14,7 +14,7 @@ tasks:
     dir: ../
     cmds:
       - mkdir -p ./coverage
-      - go test -v -shuffle=on -coverprofile ./coverage/coverage.out -coverpkg=./... ./...
+      - go test -v -shuffle=on -coverprofile ./coverage/coverage.out -coverpkg=./... ./... -tags=integration
       - go tool cover -html ./coverage/coverage.out -o ./coverage/coverage.html
 
   benchmarks:

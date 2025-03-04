@@ -29,7 +29,7 @@ func UnaryServerLoggingInterceptor(logger logging.Logger) grpc.UnaryServerInterc
 				requestID = md[requestIDKey][0] // md is a map[string][]string
 			}
 
-			ctx = contextlib.SetValue(ctx, requestid.Key, requestID) // setting to context value for inner usage
+			ctx = contextlib.WithValue(ctx, requestid.Key, requestID) // setting to context value for inner usage
 		}
 
 		// Making password field empty not to store in logs:
@@ -97,7 +97,7 @@ func UnaryClientLoggingInterceptor(logger logging.Logger) grpclogging.Logger {
 			}
 
 			logger, ok := logger.(*slog.Logger)
-			if ok {
+			if !ok {
 				panic("error during conversion to grpc logger")
 			}
 

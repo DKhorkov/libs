@@ -8,7 +8,7 @@ import (
 // https://vishnubharathi.codes/blog/context-with-value-pitfall/
 type contextKey string
 
-func GetValue[T any](ctx context.Context, key string) (T, error) {
+func ValueFromContext[T any](ctx context.Context, key string) (T, error) {
 	value, ok := ctx.Value(contextKey(key)).(T)
 	if !ok {
 		return value, &ValueNotFoundError{Message: key}
@@ -17,6 +17,6 @@ func GetValue[T any](ctx context.Context, key string) (T, error) {
 	return value, nil
 }
 
-func SetValue(ctx context.Context, key string, value any) context.Context {
+func WithValue(ctx context.Context, key string, value any) context.Context {
 	return context.WithValue(ctx, contextKey(key), value)
 }

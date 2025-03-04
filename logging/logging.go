@@ -72,7 +72,7 @@ func GetLogTraceback(skipLevel int) string {
 
 // LogRequest uses provided logger to save request info and connect it with request ID from the context.
 func LogRequest(ctx context.Context, logger Logger, request any) {
-	requestID, err := contextlib.GetValue[string](ctx, requestid.Key)
+	requestID, err := contextlib.ValueFromContext[string](ctx, requestid.Key)
 	if err != nil {
 		requestID = ""
 	}
@@ -111,7 +111,7 @@ func LogRequest(ctx context.Context, logger Logger, request any) {
 // LogErrorContext uses provided logger to save error with message info and context.
 // Context is used to get request ID and connect it with error.
 func LogErrorContext(ctx context.Context, logger Logger, msg string, err error) {
-	requestID, contextErr := contextlib.GetValue[string](ctx, requestid.Key)
+	requestID, contextErr := contextlib.ValueFromContext[string](ctx, requestid.Key)
 	if contextErr != nil {
 		requestID = ""
 	}

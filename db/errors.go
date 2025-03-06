@@ -9,7 +9,7 @@ type NilDBConnectionError struct {
 }
 
 func (e NilDBConnectionError) Error() string {
-	template := "DB connections pool error. Making operation on nil database connections pool."
+	template := "DB connections pool error. Making operation on nil database connections pool"
 	if e.Message != "" {
 		template = e.Message
 	}

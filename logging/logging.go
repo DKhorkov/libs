@@ -6,7 +6,6 @@ import (
 	"io"
 	"log/slog"
 	"os"
-	"reflect"
 	"runtime"
 	"sync"
 
@@ -15,9 +14,8 @@ import (
 )
 
 const (
-	skipLevel         = 2
-	passwordFieldName = "Password"
-	permission        = 0777
+	skipLevel  = 2
+	permission = 0777
 )
 
 var (
@@ -70,44 +68,6 @@ func GetLogTraceback(skipLevel int) string {
 	return fmt.Sprintf("%s on line %d: %s", file, line, fn.Name())
 }
 
-// LogRequest uses provided logger to save request info and connect it with request ID from the context.
-func LogRequest(ctx context.Context, logger Logger, request any) {
-	requestID, err := contextlib.ValueFromContext[string](ctx, requestid.Key)
-	if err != nil {
-		requestID = ""
-	}
-
-	// Making password field empty not to store in logs.
-	var reflectValue reflect.Value
-	if reflect.ValueOf(request).Kind() == reflect.Ptr {
-		reflectValue = reflect.ValueOf(request).Elem()
-	} else {
-		reflectValue = reflect.ValueOf(&request).Elem()
-	}
-
-	if reflectValue.IsValid() && !reflectValue.IsZero() && reflectValue.Kind() == reflect.Struct {
-		// https://stackoverflow.com/questions/63421976/panic-reflect-call-of-reflect-value-fieldbyname-on-interface-value
-		tempValue := reflect.New(reflectValue.Elem().Type()).Elem()
-		tempValue.Set(reflectValue.Elem())
-		passwordField := tempValue.FieldByName(passwordFieldName)
-		if passwordField.IsValid() && !reflectValue.IsZero() {
-			passwordField.SetString("")
-		}
-		reflectValue.Set(tempValue)
-	}
-
-	logger.InfoContext(
-		ctx,
-		"Received new request",
-		"Request ID",
-		requestID,
-		"Request",
-		request,
-		"Traceback",
-		GetLogTraceback(skipLevel), // 2 because 1 - is this func and 2 - it's caller
-	)
-}
-
 // LogErrorContext uses provided logger to save error with message info and context.
 // Context is used to get request ID and connect it with error.
 func LogErrorContext(ctx context.Context, logger Logger, msg string, err error) {
@@ -125,6 +85,24 @@ func LogErrorContext(ctx context.Context, logger Logger, msg string, err error) 
 		GetLogTraceback(skipLevel),
 		"Error",
 		err,
+	)
+}
+
+// LogInfoContext uses provided logger to save message info and context.
+// Context is used to get request ID and connect it with error.
+func LogInfoContext(ctx context.Context, logger Logger, msg string) {
+	requestID, err := contextlib.ValueFromContext[string](ctx, requestid.Key)
+	if err != nil {
+		requestID = ""
+	}
+
+	logger.ErrorContext(
+		ctx,
+		msg,
+		"Request ID",
+		requestID,
+		"Traceback",
+		GetLogTraceback(skipLevel),
 	)
 }
 

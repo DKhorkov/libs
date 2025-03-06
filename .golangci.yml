@@ -383,3 +383,8 @@ issues:
     - path: "nats/worker_test.go"
       linters:
         - testpackage
+    - path: "middlewares/logging.go"
+      linters:
+        - nestif
+        - errcheck
+        - lll

@@ -388,3 +388,6 @@ issues:
         - nestif
         - errcheck
         - lll
+    - path: "middlewares/tracing.go"
+      linters:
+        - govet

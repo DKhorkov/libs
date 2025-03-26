@@ -32,7 +32,11 @@ func TracingMiddleware(
 		defer span.AddEvent(spanConfig.Events.End.Name, spanConfig.Events.End.Opts...)
 
 		traceID := span.SpanContext().TraceID().String()
-		ctx = metadata.AppendToOutgoingContext(ctx, tracing.Key, traceID) // setting for cross-service usage
+		ctx = metadata.AppendToOutgoingContext(
+			ctx,
+			tracing.Key,
+			traceID,
+		) // setting for cross-service usage
 		r = r.WithContext(ctx)
 
 		// Create new traceResponseWriter for response intercepting purpose:
@@ -40,7 +44,7 @@ func TracingMiddleware(
 		next.ServeHTTP(trw, r)
 
 		// Parsing response body for investigating errors:
-		var response map[string]interface{}
+		var response map[string]any
 		if err := json.Unmarshal(trw.Body, &response); err != nil {
 			logger.InfoContext(
 				r.Context(),
@@ -52,13 +56,18 @@ func TracingMiddleware(
 		}
 
 		// Check errors section in response body:
-		if errorsSection, ok := response["errors"].([]interface{}); ok && len(errorsSection) > 0 {
+		if errorsSection, ok := response["errors"].([]any); ok && len(errorsSection) > 0 {
 			concatenatedErrBuilder := strings.Builder{}
-			concatenatedErrBuilder.WriteString("Next errors were received during processing request:\n")
+			concatenatedErrBuilder.WriteString(
+				"Next errors were received during processing request:\n",
+			)
 			for i, errInfo := range errorsSection {
-				errInfo, ok := errInfo.(map[string]interface{})
+				errInfo, ok := errInfo.(map[string]any)
 				if !ok {
-					logger.InfoContext(r.Context(), "Failed to parse response body for tracing errors purpose\n")
+					logger.InfoContext(
+						r.Context(),
+						"Failed to parse response body for tracing errors purpose\n",
+					)
 
 					continue
 				}

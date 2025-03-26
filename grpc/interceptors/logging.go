@@ -6,9 +6,10 @@ import (
 	"reflect"
 	"strings"
 
-	grpclogging "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+
+	grpclogging "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 
 	"github.com/DKhorkov/libs/contextlib"
 	"github.com/DKhorkov/libs/logging"
@@ -29,7 +30,11 @@ func UnaryServerLoggingInterceptor(logger logging.Logger) grpc.UnaryServerInterc
 				requestID = md[requestIDKey][0] // md is a map[string][]string
 			}
 
-			ctx = contextlib.WithValue(ctx, requestid.Key, requestID) // setting to context value for inner usage
+			ctx = contextlib.WithValue(
+				ctx,
+				requestid.Key,
+				requestID,
+			) // setting to context value for inner usage
 		}
 
 		// Making password field empty not to store in logs:
@@ -81,7 +86,8 @@ func UnaryClientLoggingInterceptor(logger logging.Logger) grpclogging.Logger {
 			var passwordField reflect.Value
 			var passwordCopy string
 			for _, field := range fields {
-				if reflectValue := reflect.ValueOf(field); reflectValue.IsValid() && !reflectValue.IsZero() {
+				if reflectValue := reflect.ValueOf(field); reflectValue.IsValid() &&
+					!reflectValue.IsZero() {
 					if reflectValue.Kind() == reflect.Ptr {
 						reflectValue = reflectValue.Elem()
 					}

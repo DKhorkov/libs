@@ -23,7 +23,7 @@ func init() {
 }
 
 // GetEnv is a helper function to read an environment or return a default value.
-func GetEnv(key string, defaultVal string) string {
+func GetEnv(key, defaultVal string) string {
 	value := os.Getenv(key)
 	if value != "" {
 		return value
@@ -68,7 +68,7 @@ func GetEnvAsSlice(name string, defaultVal []string, separator string) []string 
 
 // IsStringIsValidSlice is a helper to check, if string is a valid slice to convert it into []string.
 // Can also be used outside loadenv package for other cases.
-func IsStringIsValidSlice(str string, separator string) bool {
+func IsStringIsValidSlice(str, separator string) bool {
 	str = strings.TrimSpace(str)
 	slice := strings.Split(str, separator)
 	for i := range slice {

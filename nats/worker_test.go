@@ -19,7 +19,7 @@ const (
 	messageChannelBufferSize = 1
 )
 
-func TestWorkerRun(t *testing.T) {
+func TestWorker_Run(t *testing.T) {
 	t.Run("worker is already running", func(t *testing.T) {
 		var resultStorage []string
 		worker, err := NewWorker(
@@ -110,7 +110,7 @@ func TestWorkerRun(t *testing.T) {
 	})
 }
 
-func TestWorkerStop(t *testing.T) {
+func TestWorker_Stop(t *testing.T) {
 	t.Run("worker is already stopped", func(t *testing.T) {
 		var resultStorage []string
 		worker, err := NewWorker(

@@ -12,7 +12,11 @@ import (
 //go:generate mockgen -source=interfaces.go -destination=mocks/providers.go -package=mocks
 type Provider interface {
 	Shutdown(ctx context.Context) error
-	Span(ctx context.Context, name string, opts ...trace.SpanStartOption) (context.Context, trace.Span)
+	Span(
+		ctx context.Context,
+		name string,
+		opts ...trace.SpanStartOption,
+	) (context.Context, trace.Span)
 	TraceIDFromHex(traceHex string) (trace.TraceID, error)
 	SpanFromTraceID(
 		ctx context.Context,

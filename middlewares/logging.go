@@ -30,7 +30,12 @@ func GraphQLLoggingMiddleware(next http.Handler, logger logging.Logger) http.Han
 		// Reading request body:
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
-			logging.LogErrorContext(ctx, logger, "Failed to log request due to reading request body failure", err)
+			logging.LogErrorContext(
+				ctx,
+				logger,
+				"Failed to log request due to reading request body failure",
+				err,
+			)
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -53,7 +58,12 @@ func GraphQLLoggingMiddleware(next http.Handler, logger logging.Logger) http.Han
 		// Retrieving request info:
 		info, err := graphqlparser.ParseQuery(requestBody.Query)
 		if err != nil {
-			logging.LogErrorContext(ctx, logger, "Failed to log request due to GraphQL query parse failure", err)
+			logging.LogErrorContext(
+				ctx,
+				logger,
+				"Failed to log request due to GraphQL query parse failure",
+				err,
+			)
 			next.ServeHTTP(w, r)
 			return
 		}

@@ -46,7 +46,7 @@ func ParseJWT(tokenString, secretKey string, opts ...jwt.ParserOption) (any, err
 	token, err := jwt.ParseWithClaims(
 		tokenString,
 		jwt.MapClaims{},
-		func(token *jwt.Token) (interface{}, error) {
+		func(token *jwt.Token) (any, error) {
 			return []byte(secretKey), nil
 		},
 		opts...,

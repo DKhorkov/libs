@@ -66,7 +66,10 @@ func (connector *CommonConnector) Connection(ctx context.Context) (*sql.Conn, er
 }
 
 // Transaction return database transaction object for external usage with atomicity of operations.
-func (connector *CommonConnector) Transaction(ctx context.Context, opts ...TransactionOption) (*sql.Tx, error) {
+func (connector *CommonConnector) Transaction(
+	ctx context.Context,
+	opts ...TransactionOption,
+) (*sql.Tx, error) {
 	if connector.connectionsPool == nil {
 		return nil, &NilDBConnectionError{}
 	}

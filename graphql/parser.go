@@ -28,7 +28,6 @@ func ParseQuery(query string) (*QueryInfo, error) {
 			Source: query,
 		},
 	)
-
 	if err != nil {
 		return nil, &ParseError{BaseErr: err}
 	}

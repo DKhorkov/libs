@@ -15,7 +15,7 @@ import (
 
 const (
 	skipLevel  = 2
-	permission = 0777
+	permission = 0o777
 )
 
 var (

@@ -16,6 +16,11 @@ recorded to ```coverage``` folder:
 task -d scripts tests -v
 ```
 
+To include integration tests, add `integration` flag:
+```shell
+task -d scripts tests integration=true -v
+```
+
 ## Benchmarks
 
 To run benchmarks, use next command:

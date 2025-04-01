@@ -19,6 +19,7 @@ type PoolOption func(options *poolOptions) error
 func WithMaxOpenConnections(num int) PoolOption {
 	return func(options *poolOptions) error {
 		options.maxOpenConnections = num
+
 		return nil
 	}
 }
@@ -27,6 +28,7 @@ func WithMaxOpenConnections(num int) PoolOption {
 func WithMaxIdleConnections(num int) PoolOption {
 	return func(options *poolOptions) error {
 		options.maxIdleConnections = num
+
 		return nil
 	}
 }
@@ -35,6 +37,7 @@ func WithMaxIdleConnections(num int) PoolOption {
 func WithMaxConnectionLifetime(lifetime time.Duration) PoolOption {
 	return func(options *poolOptions) error {
 		options.maxConnectionLifetime = lifetime
+
 		return nil
 	}
 }
@@ -44,6 +47,7 @@ func WithMaxConnectionLifetime(lifetime time.Duration) PoolOption {
 func WithMaxConnectionIdleTime(idleTime time.Duration) PoolOption {
 	return func(options *poolOptions) error {
 		options.maxConnectionIdleTime = idleTime
+
 		return nil
 	}
 }

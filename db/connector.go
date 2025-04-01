@@ -53,6 +53,7 @@ func connect(dsn, driver string, opts ...PoolOption) (*sql.DB, error) {
 	pool.SetMaxIdleConns(options.maxIdleConnections)
 	pool.SetConnMaxLifetime(options.maxConnectionLifetime)
 	pool.SetConnMaxIdleTime(options.maxConnectionIdleTime)
+
 	return pool, nil
 }
 

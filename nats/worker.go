@@ -65,6 +65,7 @@ func (w *CommonWorker) Run() error {
 	}
 
 	w.wg.Add(w.goroutinesPoolSize)
+
 	for range w.goroutinesPoolSize {
 		go func() {
 			defer w.wg.Done()
@@ -76,6 +77,7 @@ func (w *CommonWorker) Run() error {
 	}
 
 	w.isRunning = true
+
 	return nil
 }
 
@@ -94,5 +96,6 @@ func (w *CommonWorker) Stop() error {
 
 	w.connection.Close()
 	w.isStopped = true
+
 	return nil
 }

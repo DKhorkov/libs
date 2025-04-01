@@ -33,6 +33,7 @@ func New(logLevel Level, logFilePath string) Logger {
 		permission,
 	); err != nil {
 		fmt.Printf("Failed to open log file %s: %s\n", logFilePath, err)
+
 		logWriter = os.Stdout
 	} else {
 		logWriter = io.MultiWriter(os.Stdout, logFile)

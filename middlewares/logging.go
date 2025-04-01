@@ -22,6 +22,7 @@ func GraphQLLoggingMiddleware(next http.Handler, logger logging.Logger) http.Han
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != graphqlURLPath {
 			next.ServeHTTP(w, r)
+
 			return
 		}
 
@@ -37,6 +38,7 @@ func GraphQLLoggingMiddleware(next http.Handler, logger logging.Logger) http.Han
 				err,
 			)
 			next.ServeHTTP(w, r)
+
 			return
 		}
 
@@ -52,6 +54,7 @@ func GraphQLLoggingMiddleware(next http.Handler, logger logging.Logger) http.Han
 		if err = json.Unmarshal(body, &requestBody); err != nil {
 			logging.LogErrorContext(ctx, logger, "Failed to log request due to invalid JSON", err)
 			next.ServeHTTP(w, r)
+
 			return
 		}
 
@@ -65,6 +68,7 @@ func GraphQLLoggingMiddleware(next http.Handler, logger logging.Logger) http.Han
 				err,
 			)
 			next.ServeHTTP(w, r)
+
 			return
 		}
 

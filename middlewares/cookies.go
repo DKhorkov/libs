@@ -13,6 +13,7 @@ var CookiesWriterName = "cookiesWriterName"
 func CookiesMiddleware(next http.Handler, cookieNames []string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
+
 		for _, cookieName := range cookieNames {
 			cookie, err := r.Cookie(cookieName)
 			if err != nil {

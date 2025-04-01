@@ -24,6 +24,7 @@ const (
 func UnaryServerLoggingInterceptor(logger logging.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		var requestID string
+
 		if md, ok := metadata.FromIncomingContext(ctx); ok {
 			requestIDKey := strings.ToLower(requestid.Key) // metadata sends all keys in lowercase
 			if _, ok = md[requestIDKey]; ok {
@@ -39,7 +40,9 @@ func UnaryServerLoggingInterceptor(logger logging.Logger) grpc.UnaryServerInterc
 
 		// Making password field empty not to store in logs:
 		var passwordField reflect.Value
+
 		var passwordCopy string
+
 		if reflectValue := reflect.ValueOf(req); reflectValue.IsValid() && !reflectValue.IsZero() {
 			if reflectValue.Kind() == reflect.Ptr {
 				passwordField = reflectValue.Elem().FieldByName(passwordFieldName)
@@ -84,7 +87,9 @@ func UnaryClientLoggingInterceptor(logger logging.Logger) grpclogging.Logger {
 		) {
 			// Making password field empty not to store in logs:
 			var passwordField reflect.Value
+
 			var passwordCopy string
+
 			for _, field := range fields {
 				if reflectValue := reflect.ValueOf(field); reflectValue.IsValid() &&
 					!reflectValue.IsZero() {

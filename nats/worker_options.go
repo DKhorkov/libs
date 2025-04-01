@@ -61,6 +61,7 @@ type WorkerOption func(options *workerOptions) error
 func WithMessageChannelBufferSize(size int) WorkerOption {
 	return func(options *workerOptions) error {
 		options.messageChannelBufferSize = size
+
 		return nil
 	}
 }
@@ -69,6 +70,7 @@ func WithMessageChannelBufferSize(size int) WorkerOption {
 func WithGoroutinesPoolSize(size int) WorkerOption {
 	return func(options *workerOptions) error {
 		options.goroutinesPoolSize = size
+
 		return nil
 	}
 }
@@ -77,6 +79,7 @@ func WithGoroutinesPoolSize(size int) WorkerOption {
 func WithMessageHandler(handler func(message *natsbroker.Msg)) WorkerOption {
 	return func(options *workerOptions) error {
 		options.messageHandler = handler
+
 		return nil
 	}
 }
@@ -87,6 +90,7 @@ func WithErrorHandler(
 ) WorkerOption {
 	return func(options *workerOptions) error {
 		options.errorHandler = handler
+
 		return nil
 	}
 }
@@ -95,6 +99,7 @@ func WithErrorHandler(
 func WithDisconnectErrorHandler(handler func(connection *natsbroker.Conn, err error)) WorkerOption {
 	return func(options *workerOptions) error {
 		options.disconnectErrorHandler = handler
+
 		return nil
 	}
 }
@@ -103,6 +108,7 @@ func WithDisconnectErrorHandler(handler func(connection *natsbroker.Conn, err er
 func WithCloseHandler(handler func(connection *natsbroker.Conn)) WorkerOption {
 	return func(options *workerOptions) error {
 		options.closeHandler = handler
+
 		return nil
 	}
 }
@@ -111,6 +117,7 @@ func WithCloseHandler(handler func(connection *natsbroker.Conn)) WorkerOption {
 func WithNatsOptions(opts ...natsbroker.Option) WorkerOption {
 	return func(options *workerOptions) error {
 		options.natsOpts = append(options.natsOpts, opts...)
+
 		return nil
 	}
 }

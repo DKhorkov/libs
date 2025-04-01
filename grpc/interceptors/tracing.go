@@ -28,6 +28,7 @@ func UnaryServerTracingInterceptor(
 			traceKey := strings.ToLower(tracing.Key) // metadata sends all keys in lowercase
 			if _, ok = md[traceKey]; ok {
 				traceHex := md[traceKey][0] // md is a map[string][]string
+
 				traceID, err := tp.TraceIDFromHex(traceHex)
 				if err != nil {
 					return nil, err
@@ -70,6 +71,7 @@ func UnaryClientTracingInterceptor(
 
 		if err := invoker(ctx, method, req, reply, cc, opts...); err != nil {
 			span.SetStatus(tracing.StatusError, err.Error())
+
 			return err
 		}
 

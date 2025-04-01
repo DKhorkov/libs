@@ -70,6 +70,7 @@ func GetEnvAsSlice(name string, defaultVal []string, separator string) []string 
 // Can also be used outside loadenv package for other cases.
 func IsStringIsValidSlice(str, separator string) bool {
 	str = strings.TrimSpace(str)
+
 	slice := strings.Split(str, separator)
 	for i := range slice {
 		if slice[i] == "" {

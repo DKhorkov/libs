@@ -15,6 +15,7 @@ type TransactionOption func(options *transactionOptions) error
 func WithTransactionIsolationLevel(isolationLevel sql.IsolationLevel) TransactionOption {
 	return func(options *transactionOptions) error {
 		options.isolationLevel = isolationLevel
+
 		return nil
 	}
 }
@@ -23,6 +24,7 @@ func WithTransactionIsolationLevel(isolationLevel sql.IsolationLevel) Transactio
 func WithTransactionReadOnly(readOnly bool) TransactionOption {
 	return func(options *transactionOptions) error {
 		options.readOnly = readOnly
+
 		return nil
 	}
 }

@@ -25,6 +25,7 @@ func GenerateJWT(
 	opts ...jwt.TokenOption,
 ) (string, error) {
 	token := jwt.New(jwt.GetSigningMethod(algorithm), opts...)
+
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
 		return "", &JWTClaimsError{}
@@ -32,6 +33,7 @@ func GenerateJWT(
 
 	claims["value"] = value
 	claims["exp"] = time.Now().UTC().Add(ttl).Unix()
+
 	return token.SignedString([]byte(secretKey))
 }
 

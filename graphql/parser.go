@@ -89,17 +89,20 @@ func extractFields(selectionSet *ast.SelectionSet) []FieldInfo {
 			fields = append(fields, fieldInfo)
 		}
 	}
+
 	return fields
 }
 
 // extractArguments extracts field arguments.
 func extractArguments(args []*ast.Argument) map[string]any {
 	arguments := make(map[string]any)
+
 	for _, arg := range args {
 		if arg.Value != nil {
 			arguments[arg.Name.Value] = extractValue(arg.Value)
 		}
 	}
+
 	return arguments
 }
 

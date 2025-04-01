@@ -27,5 +27,6 @@ func (p *CommonPublisher) Publish(topic string, data []byte) error {
 // Close closes NATS connection.
 func (p *CommonPublisher) Close() error {
 	p.connection.Close()
+
 	return nil
 }

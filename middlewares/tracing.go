@@ -61,6 +61,7 @@ func TracingMiddleware(
 			concatenatedErrBuilder.WriteString(
 				"Next errors were received during processing request:\n",
 			)
+
 			for i, errInfo := range errorsSection {
 				errInfo, ok := errInfo.(map[string]any)
 				if !ok {
@@ -103,5 +104,6 @@ func (trw *tracingResponseWriter) WriteHeader(code int) {
 // Write intercepts response body for later usage in trace.Span.
 func (trw *tracingResponseWriter) Write(body []byte) (int, error) {
 	trw.Body = body
+
 	return trw.ResponseWriter.Write(body)
 }

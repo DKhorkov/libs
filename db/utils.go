@@ -16,6 +16,7 @@ func GetEntityColumns(entity any) []any {
 	structure := reflect.ValueOf(entity).Elem()
 	numCols := structure.NumField()
 	columns := make([]any, numCols)
+
 	for i := range numCols {
 		field := structure.Field(i)
 		columns[i] = field.Addr().Interface()

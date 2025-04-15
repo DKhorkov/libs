@@ -6,6 +6,18 @@ import (
 	natsbroker "github.com/nats-io/nats.go"
 )
 
+// CommonWorker is a base worker for processing NATS messages.
+type CommonWorker struct {
+	connection         *natsbroker.Conn
+	subscription       *natsbroker.Subscription
+	messageChannel     chan *natsbroker.Msg
+	goroutinesPoolSize int
+	messageHandler     func(message *natsbroker.Msg)
+	isRunning          bool
+	isStopped          bool
+	wg                 *sync.WaitGroup
+}
+
 // NewWorker creates *CommonWorker with provided options.
 func NewWorker(
 	url string,
@@ -44,18 +56,6 @@ func NewWorker(
 		goroutinesPoolSize: options.goroutinesPoolSize,
 		wg:                 new(sync.WaitGroup),
 	}, nil
-}
-
-// CommonWorker is a base worker for processing NATS messages.
-type CommonWorker struct {
-	connection         *natsbroker.Conn
-	subscription       *natsbroker.Subscription
-	messageChannel     chan *natsbroker.Msg
-	goroutinesPoolSize int
-	messageHandler     func(message *natsbroker.Msg)
-	isRunning          bool
-	isStopped          bool
-	wg                 *sync.WaitGroup
 }
 
 // Run starts goroutines for NATS messages processing.

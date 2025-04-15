@@ -2,6 +2,11 @@ package nats
 
 import natsbroker "github.com/nats-io/nats.go"
 
+// CommonPublisher is a base NATS publisher.
+type CommonPublisher struct {
+	connection *natsbroker.Conn
+}
+
 // NewPublisher creates *CommonPublisher.
 func NewPublisher(url string, opts ...natsbroker.Option) (*CommonPublisher, error) {
 	connection, err := natsbroker.Connect(url, opts...)
@@ -12,11 +17,6 @@ func NewPublisher(url string, opts ...natsbroker.Option) (*CommonPublisher, erro
 	return &CommonPublisher{
 		connection: connection,
 	}, nil
-}
-
-// CommonPublisher is a base NATS publisher.
-type CommonPublisher struct {
-	connection *natsbroker.Conn
 }
 
 // Publish sends message to provided topic (subject).

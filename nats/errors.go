@@ -10,16 +10,16 @@ type WorkerAlreadyRunningError struct {
 }
 
 func (e WorkerAlreadyRunningError) Error() string {
-	template := "worker is already running."
+	template := "worker is already running"
 	if e.Message != "" {
 		template = e.Message
 	}
 
 	if e.BaseErr != nil {
-		return fmt.Sprintf(template+". Base error: %v", e.Message, e.BaseErr)
+		return fmt.Sprintf(template+". Base error: %v", e.BaseErr)
 	}
 
-	return fmt.Sprintf(template, e.Message)
+	return template
 }
 
 func (e WorkerAlreadyRunningError) Unwrap() error {
@@ -33,16 +33,16 @@ type WorkerAlreadyStoppedError struct {
 }
 
 func (e WorkerAlreadyStoppedError) Error() string {
-	template := "worker is already stopped."
+	template := "worker is already stopped"
 	if e.Message != "" {
 		template = e.Message
 	}
 
 	if e.BaseErr != nil {
-		return fmt.Sprintf(template+". Base error: %v", e.Message, e.BaseErr)
+		return fmt.Sprintf(template+". Base error: %v", e.BaseErr)
 	}
 
-	return fmt.Sprintf(template, e.Message)
+	return template
 }
 
 func (e WorkerAlreadyStoppedError) Unwrap() error {

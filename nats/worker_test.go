@@ -108,6 +108,42 @@ func TestWorker_Run(t *testing.T) {
 		err = worker.Stop()
 		require.NoError(t, err)
 	})
+
+	t.Run("worker without options successfully started", func(t *testing.T) {
+		var resultStorage []string
+		worker, err := NewWorker(
+			url,
+			subject,
+		)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		publisher, err := NewPublisher(url)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		defer func() {
+			require.NoError(t, publisher.Close())
+		}()
+
+		message := "test"
+		err = publisher.Publish(subject, []byte(message))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = worker.Run()
+		require.NoError(t, err)
+
+		time.Sleep(100 * time.Millisecond)
+		require.Empty(t, resultStorage)
+
+		err = worker.Stop()
+		require.NoError(t, err)
+	})
 }
 
 func TestWorker_Stop(t *testing.T) {
@@ -168,6 +204,20 @@ func TestWorker_Stop(t *testing.T) {
 			WithDisconnectErrorHandler(func(_ *natsbroker.Conn, err error) {
 				t.Logf("disconnect handler called. Error: %v", err)
 			}),
+		)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = worker.Stop()
+		require.NoError(t, err)
+	})
+
+	t.Run("worker without options successfully stopped", func(t *testing.T) {
+		worker, err := NewWorker(
+			url,
+			subject,
 		)
 
 		if err != nil {

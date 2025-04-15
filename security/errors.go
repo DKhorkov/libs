@@ -15,10 +15,10 @@ func (e InvalidJWTError) Error() string {
 	}
 
 	if e.BaseErr != nil {
-		return fmt.Sprintf(template+". Base error: %v", e.Message, e.BaseErr)
+		return fmt.Sprintf(template+". Base error: %v", e.BaseErr)
 	}
 
-	return fmt.Sprintf(template, e.Message)
+	return template
 }
 
 func (e InvalidJWTError) Unwrap() error {
@@ -38,10 +38,10 @@ func (e JWTClaimsError) Error() string {
 	}
 
 	if e.BaseErr != nil {
-		return fmt.Sprintf(template+". Base error: %v", e.Message, e.BaseErr)
+		return fmt.Sprintf(template+". Base error: %v", e.BaseErr)
 	}
 
-	return fmt.Sprintf(template, e.Message)
+	return template
 }
 
 func (e JWTClaimsError) Unwrap() error {

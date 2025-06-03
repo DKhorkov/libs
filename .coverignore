@@ -2,5 +2,6 @@
 /logging/mocks
 /nats/mocks
 /tracing/mocks
+/cache/mocks
 /api/
 /cmd/

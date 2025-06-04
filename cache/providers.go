@@ -45,10 +45,12 @@ func New(opts ...Option) (*CommonProvider, error) {
 	}
 
 	client := redis.NewClient(clientOptions)
+	provider := &CommonProvider{client: client}
+	if _, err := provider.Ping(context.Background()); err != nil {
+		return nil, err
+	}
 
-	return &CommonProvider{
-		client: client,
-	}, nil
+	return provider, nil
 }
 
 // Set sets key.

@@ -45,6 +45,7 @@ func New(opts ...Option) (*CommonProvider, error) {
 	}
 
 	client := redis.NewClient(clientOptions)
+
 	provider := &CommonProvider{client: client}
 	if _, err := provider.Ping(context.Background()); err != nil {
 		return nil, err

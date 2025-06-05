@@ -135,18 +135,18 @@ func (mr *MockProviderMockRecorder) GetDel(ctx, key any) *gomock.Call {
 }
 
 // GetEx mocks base method.
-func (m *MockProvider) GetEx(ctx context.Context, key string) (string, error) {
+func (m *MockProvider) GetEx(ctx context.Context, key string, expiration time.Duration) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEx", ctx, key)
+	ret := m.ctrl.Call(m, "GetEx", ctx, key, expiration)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetEx indicates an expected call of GetEx.
-func (mr *MockProviderMockRecorder) GetEx(ctx, key any) *gomock.Call {
+func (mr *MockProviderMockRecorder) GetEx(ctx, key, expiration any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEx", reflect.TypeOf((*MockProvider)(nil).GetEx), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEx", reflect.TypeOf((*MockProvider)(nil).GetEx), ctx, key, expiration)
 }
 
 // Incr mocks base method.
@@ -177,6 +177,21 @@ func (m *MockProvider) IncrBy(ctx context.Context, key string, value int64) (int
 func (mr *MockProviderMockRecorder) IncrBy(ctx, key, value any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IncrBy", reflect.TypeOf((*MockProvider)(nil).IncrBy), ctx, key, value)
+}
+
+// Ping mocks base method.
+func (m *MockProvider) Ping(ctx context.Context) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Ping", ctx)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Ping indicates an expected call of Ping.
+func (mr *MockProviderMockRecorder) Ping(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ping", reflect.TypeOf((*MockProvider)(nil).Ping), ctx)
 }
 
 // Set mocks base method.

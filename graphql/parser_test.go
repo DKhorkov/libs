@@ -20,7 +20,7 @@ func TestParseQuery(t *testing.T) {
 			name:  "mutation success",
 			query: "mutation CreateUser { createUser(input: { name: \"John\", age: 30 }) { id name } }",
 			expected: &graphqlparser.QueryInfo{
-				Name:       "CreateUser",
+				Name:       "createUser",
 				Type:       "mutation",
 				Parameters: make(map[string]string),
 				Variables:  make(map[string]any),
@@ -44,7 +44,31 @@ func TestParseQuery(t *testing.T) {
 			name:  "query success",
 			query: "query GetUser { user(id: \"123\") { id name } }",
 			expected: &graphqlparser.QueryInfo{
-				Name:       "GetUser",
+				Name:       "user",
+				Type:       "query",
+				Parameters: make(map[string]string),
+				Variables:  make(map[string]any),
+				Fields: []graphqlparser.FieldInfo{
+					{
+						Name:      "id",
+						Arguments: make(map[string]any),
+					},
+					{
+						Name:      "name",
+						Arguments: make(map[string]any),
+					},
+					{
+						Name:      "user",
+						Arguments: map[string]any{"id": "123"},
+					},
+				},
+			},
+		},
+		{
+			name:  "query user",
+			query: "query { users { user(id: \"123\") { id name } } }",
+			expected: &graphqlparser.QueryInfo{
+				Name:       "user",
 				Type:       "query",
 				Parameters: make(map[string]string),
 				Variables:  make(map[string]any),

@@ -12,9 +12,10 @@ import (
 )
 
 const (
+	graphqlURLPath = "/query"
+
 	inputFieldName    = "input"
 	passwordFieldName = "password"
-	graphqlURLPath    = "/query"
 )
 
 // GraphQLLoggingMiddleware logs GraphQL request info, such as query type, name, fields, variables and return fields.
@@ -37,6 +38,7 @@ func GraphQLLoggingMiddleware(next http.Handler, logger logging.Logger) http.Han
 				"Failed to log request due to reading request body failure",
 				err,
 			)
+
 			next.ServeHTTP(w, r)
 
 			return
@@ -46,13 +48,15 @@ func GraphQLLoggingMiddleware(next http.Handler, logger logging.Logger) http.Han
 		r.Body = io.NopCloser(bytes.NewBuffer(body))
 
 		// Parsing request body:
-		var requestBody struct {
-			Query     string         `json:"query"`
-			Variables map[string]any `json:"variables"`
-		}
+		requestBody := &graphqlparser.RequestBody{}
+		if err = json.Unmarshal(body, requestBody); err != nil {
+			logging.LogErrorContext(
+				ctx,
+				logger,
+				"Failed to log request due to invalid JSON",
+				err,
+			)
 
-		if err = json.Unmarshal(body, &requestBody); err != nil {
-			logging.LogErrorContext(ctx, logger, "Failed to log request due to invalid JSON", err)
 			next.ServeHTTP(w, r)
 
 			return
@@ -67,6 +71,7 @@ func GraphQLLoggingMiddleware(next http.Handler, logger logging.Logger) http.Han
 				"Failed to log request due to GraphQL query parse failure",
 				err,
 			)
+
 			next.ServeHTTP(w, r)
 
 			return

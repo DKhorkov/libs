@@ -96,9 +96,9 @@ type tracingResponseWriter struct {
 }
 
 // WriteHeader intercepts response body for later usage in trace.Span.
-func (trw *tracingResponseWriter) WriteHeader(code int) {
-	trw.StatusCode = code
-	trw.ResponseWriter.WriteHeader(code)
+func (trw *tracingResponseWriter) WriteHeader(statusCode int) {
+	trw.StatusCode = statusCode
+	trw.ResponseWriter.WriteHeader(statusCode)
 }
 
 // Write intercepts response body for later usage in trace.Span.

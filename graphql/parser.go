@@ -5,6 +5,12 @@ import (
 	"github.com/graphql-go/graphql/language/parser"
 )
 
+// RequestBody represents information about Request Body for later parsing.
+type RequestBody struct {
+	Query     string         `json:"query"`
+	Variables map[string]any `json:"variables"`
+}
+
 // QueryInfo represents information about GraphQL query, it's params and variables.
 type QueryInfo struct {
 	Type       string            `json:"type"`       // Request type (query, mutation, subscription)
@@ -61,6 +67,19 @@ func ParseQuery(query string) (*QueryInfo, error) {
 				info.Fields = extractFields(op.SelectionSet)
 			}
 		}
+	}
+
+	// Real name of operation in GraphQL Schema. Last element should be removed from Fields.
+	// For example
+	//
+	// "query { users { user(id: "123") { id name } } }"
+	//
+	// name of operation is user and users if custom name, which is useless.
+	if info.Name == "" {
+		info.Name = info.Fields[len(info.Fields)-2].Name
+		info.Fields = info.Fields[:len(info.Fields)-1]
+	} else {
+		info.Name = info.Fields[len(info.Fields)-1].Name
 	}
 
 	return info, nil

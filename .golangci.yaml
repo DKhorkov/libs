@@ -102,6 +102,9 @@ linters:
       - path: "middlewares/tracing.go"
         linters:
           - govet
+      - path: "middlewares/metrics.go"
+        linters:
+          - gochecknoglobals
       - path: "validation/forbidden_words.go"
         linters:
           - gochecknoglobals

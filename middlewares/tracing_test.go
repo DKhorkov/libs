@@ -64,6 +64,26 @@ func TestTracingMiddleware(t *testing.T) {
 		require.Equal(t, http.StatusOK, rr.Code)
 	})
 
+	t.Run("Ignores metrics url", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		provider := mocktracing.NewMockProvider(ctrl)
+		logger := mocklogging.NewMockLogger(ctrl)
+		spanConfig := tracing.SpanConfig{}
+
+		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		})
+
+		middleware := TracingMiddleware(nextHandler, logger, provider, spanConfig)
+
+		req := httptest.NewRequest(http.MethodGet, metricsURLPath, nil)
+		rr := httptest.NewRecorder()
+
+		middleware.ServeHTTP(rr, req)
+
+		require.Equal(t, http.StatusOK, rr.Code)
+	})
+
 	t.Run("Handles response with errors", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		provider := mocktracing.NewMockProvider(ctrl)

@@ -20,6 +20,12 @@ func TracingMiddleware(
 	spanConfig tracing.SpanConfig,
 ) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == metricsURLPath {
+			next.ServeHTTP(w, r)
+
+			return
+		}
+
 		ctx, span := tp.Span(
 			r.Context(),
 			spanConfig.Name,
@@ -40,7 +46,7 @@ func TracingMiddleware(
 		r = r.WithContext(ctx)
 
 		// Create new traceResponseWriter for response intercepting purpose:
-		trw := &tracingResponseWriter{ResponseWriter: w}
+		trw := newTracingResponseWriter(w)
 		next.ServeHTTP(trw, r)
 
 		// Parsing response body for investigating errors:
@@ -86,6 +92,10 @@ func TracingMiddleware(
 			span.SetStatus(tracing.StatusError, concatenatedErrBuilder.String())
 		}
 	})
+}
+
+func newTracingResponseWriter(w http.ResponseWriter) *tracingResponseWriter {
+	return &tracingResponseWriter{ResponseWriter: w, StatusCode: http.StatusOK}
 }
 
 // tracingResponseWriter intercepts response from GraphQL for checking errors.

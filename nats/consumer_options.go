@@ -31,9 +31,9 @@ var (
 	}
 )
 
-// newWorkerOptions creates *workerOptions with default values.
-func newWorkerOptions() *workerOptions {
-	return &workerOptions{
+// newConsumerOptions creates *consumerOptions with default values.
+func newConsumerOptions() *consumerOptions {
+	return &consumerOptions{
 		messageChannelBufferSize: defaultMessageChannelBufferSize,
 		goroutinesPoolSize:       defaultGoroutinesPoolSize,
 		messageHandler:           defaultMessageHandler,
@@ -43,8 +43,8 @@ func newWorkerOptions() *workerOptions {
 	}
 }
 
-// workerOptions represents options for Worker configuration.
-type workerOptions struct {
+// consumerOptions represents options for Consumer configuration.
+type consumerOptions struct {
 	messageChannelBufferSize int
 	goroutinesPoolSize       int
 	messageHandler           func(message *natsbroker.Msg)
@@ -54,12 +54,12 @@ type workerOptions struct {
 	natsOpts                 []natsbroker.Option
 }
 
-// WorkerOption represents golang functional option pattern func for Worker configuration.
-type WorkerOption func(options *workerOptions) error
+// ConsumerOption represents golang functional option pattern func for Consumer configuration.
+type ConsumerOption func(options *consumerOptions) error
 
 // WithMessageChannelBufferSize sets buffer for channel, where NATS will store messages for processing.
-func WithMessageChannelBufferSize(size int) WorkerOption {
-	return func(options *workerOptions) error {
+func WithMessageChannelBufferSize(size int) ConsumerOption {
+	return func(options *consumerOptions) error {
 		options.messageChannelBufferSize = size
 
 		return nil
@@ -67,8 +67,8 @@ func WithMessageChannelBufferSize(size int) WorkerOption {
 }
 
 // WithGoroutinesPoolSize sets number of goroutines for process messages from NATS via message channel.
-func WithGoroutinesPoolSize(size int) WorkerOption {
-	return func(options *workerOptions) error {
+func WithGoroutinesPoolSize(size int) ConsumerOption {
+	return func(options *consumerOptions) error {
 		options.goroutinesPoolSize = size
 
 		return nil
@@ -76,8 +76,8 @@ func WithGoroutinesPoolSize(size int) WorkerOption {
 }
 
 // WithMessageHandler sets handler for received message.
-func WithMessageHandler(handler func(message *natsbroker.Msg)) WorkerOption {
-	return func(options *workerOptions) error {
+func WithMessageHandler(handler func(message *natsbroker.Msg)) ConsumerOption {
+	return func(options *consumerOptions) error {
 		options.messageHandler = handler
 
 		return nil
@@ -87,8 +87,8 @@ func WithMessageHandler(handler func(message *natsbroker.Msg)) WorkerOption {
 // WithErrorHandler sets handler for processing error during message processing.
 func WithErrorHandler(
 	handler func(connection *natsbroker.Conn, subscription *natsbroker.Subscription, err error),
-) WorkerOption {
-	return func(options *workerOptions) error {
+) ConsumerOption {
+	return func(options *consumerOptions) error {
 		options.errorHandler = handler
 
 		return nil
@@ -96,8 +96,8 @@ func WithErrorHandler(
 }
 
 // WithDisconnectErrorHandler sets handler for disconnection from server.
-func WithDisconnectErrorHandler(handler func(connection *natsbroker.Conn, err error)) WorkerOption {
-	return func(options *workerOptions) error {
+func WithDisconnectErrorHandler(handler func(connection *natsbroker.Conn, err error)) ConsumerOption {
+	return func(options *consumerOptions) error {
 		options.disconnectErrorHandler = handler
 
 		return nil
@@ -105,8 +105,8 @@ func WithDisconnectErrorHandler(handler func(connection *natsbroker.Conn, err er
 }
 
 // WithCloseHandler sets handler for connection with NATS closure.
-func WithCloseHandler(handler func(connection *natsbroker.Conn)) WorkerOption {
-	return func(options *workerOptions) error {
+func WithCloseHandler(handler func(connection *natsbroker.Conn)) ConsumerOption {
+	return func(options *consumerOptions) error {
 		options.closeHandler = handler
 
 		return nil
@@ -114,8 +114,8 @@ func WithCloseHandler(handler func(connection *natsbroker.Conn)) WorkerOption {
 }
 
 // WithNatsOptions sets NATS option for connection with broker configuration.
-func WithNatsOptions(opts ...natsbroker.Option) WorkerOption {
-	return func(options *workerOptions) error {
+func WithNatsOptions(opts ...natsbroker.Option) ConsumerOption {
+	return func(options *consumerOptions) error {
 		options.natsOpts = append(options.natsOpts, opts...)
 
 		return nil

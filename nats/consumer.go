@@ -6,8 +6,8 @@ import (
 	natsbroker "github.com/nats-io/nats.go"
 )
 
-// CommonWorker is a base worker for processing NATS messages.
-type CommonWorker struct {
+// CommonConsumer is a base consumer for processing NATS messages.
+type CommonConsumer struct {
 	connection         *natsbroker.Conn
 	subscription       *natsbroker.Subscription
 	messageChannel     chan *natsbroker.Msg
@@ -18,13 +18,13 @@ type CommonWorker struct {
 	wg                 *sync.WaitGroup
 }
 
-// NewWorker creates *CommonWorker with provided options.
-func NewWorker(
+// NewConsumer creates *CommonConsumer with provided options.
+func NewConsumer(
 	url string,
 	subject string,
-	opts ...WorkerOption,
-) (*CommonWorker, error) {
-	options := newWorkerOptions()
+	opts ...ConsumerOption,
+) (*CommonConsumer, error) {
+	options := newConsumerOptions()
 	for _, opt := range opts {
 		err := opt(options)
 		if err != nil {
@@ -48,7 +48,7 @@ func NewWorker(
 		return nil, err
 	}
 
-	return &CommonWorker{
+	return &CommonConsumer{
 		connection:         connection,
 		subscription:       subscription,
 		messageChannel:     messageChannel,
@@ -59,43 +59,43 @@ func NewWorker(
 }
 
 // Run starts goroutines for NATS messages processing.
-func (w *CommonWorker) Run() error {
-	if w.isRunning {
-		return &WorkerAlreadyRunningError{}
+func (c *CommonConsumer) Run() error {
+	if c.isRunning {
+		return &ConsumerAlreadyRunningError{}
 	}
 
-	w.wg.Add(w.goroutinesPoolSize)
+	c.wg.Add(c.goroutinesPoolSize)
 
-	for range w.goroutinesPoolSize {
+	for range c.goroutinesPoolSize {
 		go func() {
-			defer w.wg.Done()
+			defer c.wg.Done()
 
-			for msg := range w.messageChannel {
-				w.messageHandler(msg)
+			for msg := range c.messageChannel {
+				c.messageHandler(msg)
 			}
 		}()
 	}
 
-	w.isRunning = true
+	c.isRunning = true
 
 	return nil
 }
 
 // Stop stops launched goroutines, which processes NATS messages.
-func (w *CommonWorker) Stop() error {
-	if w.isStopped {
-		return &WorkerAlreadyStoppedError{}
+func (c *CommonConsumer) Stop() error {
+	if c.isStopped {
+		return &ConsumerAlreadyStoppedError{}
 	}
 
-	if err := w.subscription.Unsubscribe(); err != nil {
+	if err := c.subscription.Unsubscribe(); err != nil {
 		return err
 	}
 
-	close(w.messageChannel)
-	w.wg.Wait()
+	close(c.messageChannel)
+	c.wg.Wait()
 
-	w.connection.Close()
-	w.isStopped = true
+	c.connection.Close()
+	c.isStopped = true
 
 	return nil
 }

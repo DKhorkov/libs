@@ -14,18 +14,18 @@ import (
 const (
 	url                      = natsbroker.DefaultURL
 	subject                  = "test"
-	workerName               = "nats-worker"
+	consumerName             = "nats-consumer"
 	goroutinesPoolSize       = 1
 	messageChannelBufferSize = 1
 )
 
-func TestWorker_Run(t *testing.T) {
-	t.Run("worker is already running", func(t *testing.T) {
+func TestConsumer_Run(t *testing.T) {
+	t.Run("consumer is already running", func(t *testing.T) {
 		var resultStorage []string
-		worker, err := NewWorker(
+		consumer, err := NewConsumer(
 			url,
 			subject,
-			WithNatsOptions(natsbroker.Name(workerName)),
+			WithNatsOptions(natsbroker.Name(consumerName)),
 			WithGoroutinesPoolSize(goroutinesPoolSize),
 			WithMessageChannelBufferSize(messageChannelBufferSize),
 			WithCloseHandler(func(_ *natsbroker.Conn) {
@@ -48,19 +48,19 @@ func TestWorker_Run(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		worker.isRunning = true
-		err = worker.Run()
+		consumer.isRunning = true
+		err = consumer.Run()
 		require.Error(t, err)
-		assert.IsType(t, &WorkerAlreadyRunningError{}, err)
+		assert.IsType(t, &ConsumerAlreadyRunningError{}, err)
 		require.Empty(t, resultStorage)
 	})
 
-	t.Run("worker successfully started", func(t *testing.T) {
+	t.Run("consumer successfully started", func(t *testing.T) {
 		var resultStorage []string
-		worker, err := NewWorker(
+		consumer, err := NewConsumer(
 			url,
 			subject,
-			WithNatsOptions(natsbroker.Name(workerName)),
+			WithNatsOptions(natsbroker.Name(consumerName)),
 			WithGoroutinesPoolSize(goroutinesPoolSize),
 			WithMessageChannelBufferSize(messageChannelBufferSize),
 			WithCloseHandler(func(_ *natsbroker.Conn) {
@@ -99,19 +99,19 @@ func TestWorker_Run(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		err = worker.Run()
+		err = consumer.Run()
 		require.NoError(t, err)
 
 		time.Sleep(100 * time.Millisecond)
 		require.Equal(t, expected, resultStorage)
 
-		err = worker.Stop()
+		err = consumer.Stop()
 		require.NoError(t, err)
 	})
 
-	t.Run("worker without options successfully started", func(t *testing.T) {
+	t.Run("consumer without options successfully started", func(t *testing.T) {
 		var resultStorage []string
-		worker, err := NewWorker(
+		consumer, err := NewConsumer(
 			url,
 			subject,
 		)
@@ -135,24 +135,24 @@ func TestWorker_Run(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		err = worker.Run()
+		err = consumer.Run()
 		require.NoError(t, err)
 
 		time.Sleep(100 * time.Millisecond)
 		require.Empty(t, resultStorage)
 
-		err = worker.Stop()
+		err = consumer.Stop()
 		require.NoError(t, err)
 	})
 }
 
-func TestWorker_Stop(t *testing.T) {
-	t.Run("worker is already stopped", func(t *testing.T) {
+func TestConsumer_Stop(t *testing.T) {
+	t.Run("consumer is already stopped", func(t *testing.T) {
 		var resultStorage []string
-		worker, err := NewWorker(
+		consumer, err := NewConsumer(
 			url,
 			subject,
-			WithNatsOptions(natsbroker.Name(workerName)),
+			WithNatsOptions(natsbroker.Name(consumerName)),
 			WithGoroutinesPoolSize(goroutinesPoolSize),
 			WithMessageChannelBufferSize(messageChannelBufferSize),
 			WithCloseHandler(func(_ *natsbroker.Conn) {
@@ -175,19 +175,19 @@ func TestWorker_Stop(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		worker.isStopped = true
-		err = worker.Stop()
+		consumer.isStopped = true
+		err = consumer.Stop()
 		require.Error(t, err)
-		assert.IsType(t, &WorkerAlreadyStoppedError{}, err)
+		assert.IsType(t, &ConsumerAlreadyStoppedError{}, err)
 		require.Empty(t, resultStorage)
 	})
 
-	t.Run("worker successfully stopped", func(t *testing.T) {
+	t.Run("consumer successfully stopped", func(t *testing.T) {
 		var resultStorage []string
-		worker, err := NewWorker(
+		consumer, err := NewConsumer(
 			url,
 			subject,
-			WithNatsOptions(natsbroker.Name(workerName)),
+			WithNatsOptions(natsbroker.Name(consumerName)),
 			WithGoroutinesPoolSize(1),
 			WithMessageChannelBufferSize(1),
 			WithCloseHandler(func(_ *natsbroker.Conn) {
@@ -210,12 +210,12 @@ func TestWorker_Stop(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		err = worker.Stop()
+		err = consumer.Stop()
 		require.NoError(t, err)
 	})
 
-	t.Run("worker without options successfully stopped", func(t *testing.T) {
-		worker, err := NewWorker(
+	t.Run("consumer without options successfully stopped", func(t *testing.T) {
+		consumer, err := NewConsumer(
 			url,
 			subject,
 		)
@@ -224,7 +224,7 @@ func TestWorker_Stop(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		err = worker.Stop()
+		err = consumer.Stop()
 		require.NoError(t, err)
 	})
 }

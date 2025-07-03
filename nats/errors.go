@@ -2,15 +2,15 @@ package nats
 
 import "fmt"
 
-// WorkerAlreadyRunningError is an error, which represents, that worker was already started and can not be started
+// ConsumerAlreadyRunningError is an error, which represents, that consumer was already started and can not be started
 // again.
-type WorkerAlreadyRunningError struct {
+type ConsumerAlreadyRunningError struct {
 	Message string
 	BaseErr error
 }
 
-func (e WorkerAlreadyRunningError) Error() string {
-	template := "worker is already running"
+func (e ConsumerAlreadyRunningError) Error() string {
+	template := "consumer is already running"
 	if e.Message != "" {
 		template = e.Message
 	}
@@ -22,18 +22,18 @@ func (e WorkerAlreadyRunningError) Error() string {
 	return template
 }
 
-func (e WorkerAlreadyRunningError) Unwrap() error {
+func (e ConsumerAlreadyRunningError) Unwrap() error {
 	return e.BaseErr
 }
 
-// WorkerAlreadyStoppedError is an error, which represents, that worker was not started yet or was already stopped.
-type WorkerAlreadyStoppedError struct {
+// ConsumerAlreadyStoppedError is an error, which represents, that consumer was not started yet or was already stopped.
+type ConsumerAlreadyStoppedError struct {
 	Message string
 	BaseErr error
 }
 
-func (e WorkerAlreadyStoppedError) Error() string {
-	template := "worker is already stopped"
+func (e ConsumerAlreadyStoppedError) Error() string {
+	template := "consumer is already stopped"
 	if e.Message != "" {
 		template = e.Message
 	}
@@ -45,6 +45,6 @@ func (e WorkerAlreadyStoppedError) Error() string {
 	return template
 }
 
-func (e WorkerAlreadyStoppedError) Unwrap() error {
+func (e ConsumerAlreadyStoppedError) Unwrap() error {
 	return e.BaseErr
 }

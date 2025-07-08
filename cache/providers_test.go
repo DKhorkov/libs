@@ -4,6 +4,8 @@ package cache_test
 
 import (
 	"context"
+	"fmt"
+	"github.com/DKhorkov/libs/pointers"
 	"testing"
 	"time"
 
@@ -83,7 +85,7 @@ func TestCommonProvider_CRUD(t *testing.T) {
 	defer func(provider *cache.CommonProvider) {
 		err = provider.Close()
 		if err != nil {
-
+			t.Fatalf(err.Error())
 		}
 	}(provider)
 
@@ -164,7 +166,7 @@ func TestCommonProvider_IncrDecr(t *testing.T) {
 	defer func(provider *cache.CommonProvider) {
 		err = provider.Close()
 		if err != nil {
-
+			t.Fatalf(err.Error())
 		}
 	}(provider)
 
@@ -301,7 +303,7 @@ func TestCommonProvider_GetEx(t *testing.T) {
 	defer func(provider *cache.CommonProvider) {
 		err = provider.Close()
 		if err != nil {
-
+			t.Fatalf(err.Error())
 		}
 	}(provider)
 
@@ -386,7 +388,7 @@ func TestCommonProvider_GetDel(t *testing.T) {
 	defer func(provider *cache.CommonProvider) {
 		err = provider.Close()
 		if err != nil {
-
+			t.Fatalf(err.Error())
 		}
 	}(provider)
 
@@ -458,6 +460,151 @@ func TestCommonProvider_GetDel(t *testing.T) {
 			_, err = provider.Get(ctx, tt.key)
 			require.Error(t, err)
 			assert.Equal(t, redis.Nil, err)
+		})
+	}
+}
+
+func TestCommonProvider_DelByPattern(t *testing.T) {
+	ctx := context.Background()
+	provider, err := cache.New(cache.WithPassword(password), cache.WithPort(port))
+	require.NoError(t, err)
+
+	defer func(provider *cache.CommonProvider) {
+		err = provider.Close()
+		if err != nil {
+			t.Fatalf(err.Error())
+		}
+	}(provider)
+
+	// Вспомогательная функция для создания тестовых ключей
+	setupKeys := func(prefix string, count int) []string {
+		keys := make([]string, 0, count)
+		for i := 0; i < count; i++ {
+			key := fmt.Sprintf("%s:%d", prefix, i)
+			err = provider.Set(ctx, key, fmt.Sprintf("value%d", i), time.Second*15)
+			require.NoError(t, err)
+			keys = append(keys, key)
+		}
+		return keys
+	}
+
+	// Вспомогательная функция для проверки существования ключей
+	assertKeysExist := func(t *testing.T, keys []string, shouldExist bool) {
+		for _, key := range keys {
+			_, err = provider.Get(ctx, key)
+			if shouldExist {
+				assert.NoError(t, err, "key %s should exist", key)
+			} else {
+				assert.Equal(t, redis.Nil, err, "key %s should not exist", key)
+			}
+		}
+	}
+
+	tests := []struct {
+		name          string
+		pattern       string
+		setupKeys     []string // ключи, которые должны быть созданы
+		extraKeys     []string // дополнительные ключи, которые не должны удаляться
+		batchSize     *int64
+		wantErr       bool
+		expectedErr   error
+		checkLeftKeys bool // проверять оставшиеся ключи
+	}{
+		{
+			name:      "delete single key",
+			pattern:   "testpattern:single*",
+			setupKeys: []string{"testpattern:single-key"},
+			batchSize: nil,
+			wantErr:   false,
+		},
+		{
+			name:      "delete multiple keys",
+			pattern:   "testpattern:multi*",
+			setupKeys: setupKeys("testpattern:multi", 5),
+			batchSize: nil,
+			wantErr:   false,
+		},
+		{
+			name:          "delete with batch size",
+			pattern:       "testpattern:batch*",
+			setupKeys:     setupKeys("testpattern:batch", 10),
+			batchSize:     pointers.New[int64](3),
+			wantErr:       false,
+			checkLeftKeys: true,
+		},
+		{
+			name:      "no keys to delete",
+			pattern:   "testpattern:nonexistent*",
+			setupKeys: []string{},
+			batchSize: nil,
+			wantErr:   false,
+		},
+		{
+			name:          "partial pattern match",
+			pattern:       "testpattern:partial*",
+			setupKeys:     []string{"testpattern:partial-match", "testpattern:partial-match2"},
+			extraKeys:     []string{"otherprefix:partial-match"},
+			batchSize:     nil,
+			wantErr:       false,
+			checkLeftKeys: true,
+		},
+		{
+			name:    "complex pattern",
+			pattern: "testpattern:complex:*_*",
+			setupKeys: []string{
+				"testpattern:complex:123_abc",
+				"testpattern:complex:456_def",
+			},
+			batchSize:     nil,
+			wantErr:       false,
+			checkLeftKeys: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Cleanup - удаляем все тестовые ключи перед началом
+			for _, key := range append(tt.setupKeys, tt.extraKeys...) {
+				_ = provider.Del(ctx, key)
+			}
+
+			// Создаем тестовые ключи
+			for _, key := range tt.setupKeys {
+				err = provider.Set(ctx, key, "test-value", time.Second*15)
+				require.NoError(t, err)
+			}
+
+			// Создаем дополнительные ключи, которые не должны удаляться
+			for _, key := range tt.extraKeys {
+				err = provider.Set(ctx, key, "test-value", time.Second*15)
+				require.NoError(t, err)
+			}
+
+			// Проверяем, что ключи созданы
+			assertKeysExist(t, tt.setupKeys, true)
+			if len(tt.extraKeys) > 0 {
+				assertKeysExist(t, tt.extraKeys, true)
+			}
+
+			// Выполняем тестируемый метод
+			err = provider.DelByPattern(ctx, tt.pattern, tt.batchSize)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				if tt.expectedErr != nil {
+					assert.ErrorIs(t, err, tt.expectedErr)
+				}
+				return
+			}
+			require.NoError(t, err)
+
+			// Проверяем, что целевые ключи удалены
+			assertKeysExist(t, tt.setupKeys, false)
+
+			// Проверяем, что дополнительные ключи остались
+			if tt.checkLeftKeys && len(tt.extraKeys) > 0 {
+				assertKeysExist(t, tt.extraKeys, true)
+			}
 		})
 	}
 }

@@ -39,6 +39,9 @@ type Provider interface {
 	// Del deletes key.
 	Del(ctx context.Context, keys ...string) error
 
+	// DelByPattern deletes all keys, which matches provided pattern.
+	DelByPattern(ctx context.Context, pattern string, batchSize *int64) error
+
 	// Ping checks status.
 	Ping(ctx context.Context) (string, error)
 

@@ -104,6 +104,20 @@ func (mr *MockProviderMockRecorder) Del(ctx any, keys ...any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Del", reflect.TypeOf((*MockProvider)(nil).Del), varargs...)
 }
 
+// DelByPattern mocks base method.
+func (m *MockProvider) DelByPattern(ctx context.Context, pattern string, batchSize *int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DelByPattern", ctx, pattern, batchSize)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DelByPattern indicates an expected call of DelByPattern.
+func (mr *MockProviderMockRecorder) DelByPattern(ctx, pattern, batchSize any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DelByPattern", reflect.TypeOf((*MockProvider)(nil).DelByPattern), ctx, pattern, batchSize)
+}
+
 // Get mocks base method.
 func (m *MockProvider) Get(ctx context.Context, key string) (string, error) {
 	m.ctrl.T.Helper()

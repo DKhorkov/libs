@@ -8,6 +8,10 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+const (
+	defaultBatchSize int64 = 500
+)
+
 type CommonProvider struct {
 	client *redis.Client
 }
@@ -99,9 +103,40 @@ func (p *CommonProvider) DecrBy(ctx context.Context, key string, decrement int64
 	return p.client.DecrBy(ctx, key, decrement).Result()
 }
 
-// Del deletes key.
+// Del deletes keys.
 func (p *CommonProvider) Del(ctx context.Context, keys ...string) error {
 	return p.client.Del(ctx, keys...).Err()
+}
+
+// DelByPattern deletes all keys, which matches provided pattern.
+func (p *CommonProvider) DelByPattern(ctx context.Context, pattern string, batchSize *int64) error {
+	var cursor uint64
+	var err error
+
+	bs := defaultBatchSize
+	if batchSize != nil {
+		bs = *batchSize
+	}
+
+	for {
+		var keys []string
+		keys, cursor, err = p.client.Scan(ctx, cursor, pattern, bs).Result()
+		if err != nil {
+			return fmt.Errorf("error scanning keys: %w", err)
+		}
+
+		if len(keys) > 0 {
+			if err = p.client.Del(ctx, keys...).Err(); err != nil {
+				return fmt.Errorf("error deleting keys: %w", err)
+			}
+		}
+
+		if cursor == 0 {
+			break
+		}
+	}
+
+	return nil
 }
 
 // Ping checks status.

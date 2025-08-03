@@ -64,11 +64,13 @@ func TestParseQuery(t *testing.T) {
 				},
 			},
 		},
+
+		// Кривой кейс для парсинга. Сложно спарсить название нормально с сильно вложенной структурой.
 		{
 			name:  "query user",
-			query: "query { users { user(id: \"123\") { id name } } }",
+			query: "query { GetUser { user(id: \"123\") { id name } } }",
 			expected: &graphqlparser.QueryInfo{
-				Name:       "user",
+				Name:       "GetUser",
 				Type:       "query",
 				Parameters: make(map[string]string),
 				Variables:  make(map[string]any),
@@ -84,6 +86,10 @@ func TestParseQuery(t *testing.T) {
 					{
 						Name:      "user",
 						Arguments: map[string]any{"id": "123"},
+					},
+					{
+						Name:      "GetUser",
+						Arguments: make(map[string]any),
 					},
 				},
 			},

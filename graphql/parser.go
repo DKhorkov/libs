@@ -49,9 +49,6 @@ func ParseQuery(query string) (*QueryInfo, error) {
 		// Check, if an expression is an operation (query, mutation, subscription):
 		if op, ok := def.(*ast.OperationDefinition); ok {
 			info.Type = op.Operation
-			if op.Name != nil {
-				info.Name = op.Name.Value
-			}
 
 			// Parsing variables (parameters):
 			for _, variable := range op.VariableDefinitions {
@@ -75,16 +72,8 @@ func ParseQuery(query string) (*QueryInfo, error) {
 	// "query { users { user(id: "123") { id name } } }"
 	//
 	// name of operation is user and users if custom name, which is useless.
-	if info.Name == "" {
-		switch len(info.Fields) {
-		case 0:
-			return info, nil
-		case 1:
-			info.Name = info.Fields[len(info.Fields)-1].Name
-		default:
-			info.Name = info.Fields[len(info.Fields)-2].Name
-			info.Fields = info.Fields[:len(info.Fields)-1]
-		}
+	if info.Name == "" && len(info.Fields) > 0 {
+		info.Name = info.Fields[len(info.Fields)-1].Name
 	}
 
 	return info, nil

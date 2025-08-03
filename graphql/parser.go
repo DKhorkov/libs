@@ -76,10 +76,15 @@ func ParseQuery(query string) (*QueryInfo, error) {
 	//
 	// name of operation is user and users if custom name, which is useless.
 	if info.Name == "" {
-		info.Name = info.Fields[len(info.Fields)-2].Name
-		info.Fields = info.Fields[:len(info.Fields)-1]
-	} else {
-		info.Name = info.Fields[len(info.Fields)-1].Name
+		switch len(info.Fields) {
+		case 0:
+			return info, nil
+		case 1:
+			info.Name = info.Fields[len(info.Fields)-1].Name
+		default:
+			info.Name = info.Fields[len(info.Fields)-2].Name
+			info.Fields = info.Fields[:len(info.Fields)-1]
+		}
 	}
 
 	return info, nil

@@ -1,5 +1,6 @@
 /mocks/
 /logging/mocks
+/db/mocks
 /nats/mocks
 /tracing/mocks
 /cache/mocks

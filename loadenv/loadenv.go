@@ -2,22 +2,17 @@ package loadenv
 
 import (
 	"fmt"
+	"github.com/joho/godotenv"
 	"os"
 	"strconv"
 	"strings"
-
-	"github.com/joho/godotenv"
 )
 
-/*
-init is invoked before main()
-
-https://pkg.go.dev/github.com/joho/godotenv#section-readme
-https://habr.com/ru/articles/446468/
-*/
-func init() {
+// Init подразумевает явный вызов и инициализацию переменных с указанным путем перед
+// поулчением переменных окружения
+func Init(paths ...string) {
 	// loads values from .env into the system.
-	if err := godotenv.Load(); err != nil {
+	if err := godotenv.Load(paths...); err != nil {
 		fmt.Println("No .env file found")
 	}
 }

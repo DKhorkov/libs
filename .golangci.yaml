@@ -69,7 +69,7 @@ linters:
       - path: "security/encoding_test.go"
         linters:
           - testifylint
-      - path: "db/connector_test.go"
+      - path: "postgresql/connector_test.go"
         linters:
           - gochecknoglobals
           - govet

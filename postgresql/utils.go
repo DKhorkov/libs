@@ -1,4 +1,4 @@
-package db
+package postgresql
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 )
 
 // GetEntityColumns receives a POINTER on entity (NOT A VALUE), parses is using reflection and returns
-// a slice of columns for db/sql Query() method purpose for retrieving data from result rows.
+// a slice of columns for postgresql/sql Query() method purpose for retrieving data from result rows.
 // https://stackoverflow.com/questions/56525471/how-to-use-rows-scan-of-gos-database-sql
 func GetEntityColumns(entity any) []any {
 	structure := reflect.ValueOf(entity).Elem()

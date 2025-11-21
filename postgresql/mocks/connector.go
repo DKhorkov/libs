@@ -14,7 +14,7 @@ import (
 	sql "database/sql"
 	reflect "reflect"
 
-	db "github.com/DKhorkov/libs/db"
+	db "github.com/DKhorkov/libs/postgresql"
 	gomock "go.uber.org/mock/gomock"
 )
 

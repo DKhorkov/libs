@@ -3,6 +3,7 @@ package postgresql_test
 import (
 	"context"
 	"database/sql"
+	postgresql2 "github.com/DKhorkov/libs/db/postgresql"
 	"testing"
 	"time"
 
@@ -12,7 +13,6 @@ import (
 	"go.uber.org/mock/gomock"
 
 	loggermock "github.com/DKhorkov/libs/logging/mocks"
-	"github.com/DKhorkov/libs/postgresql"
 )
 
 var (
@@ -24,7 +24,7 @@ func TestTransaction(t *testing.T) {
 	t.Run("should return transaction", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		logger := loggermock.NewMockLogger(ctrl)
-		connector, err := postgresql.New(dsn, driver, logger)
+		connector, err := postgresql2.New(dsn, driver, logger)
 		require.NoError(t, err)
 
 		defer func() {
@@ -42,15 +42,15 @@ func TestTransaction(t *testing.T) {
 	})
 
 	t.Run("nil connections pool", func(t *testing.T) {
-		connector := &postgresql.CommonConnector{}
+		connector := &postgresql2.CommonConnector{}
 
 		transaction, err := connector.Transaction(context.Background())
 		require.Error(t, err)
 		assert.IsTypef(
 			t,
-			&postgresql.NilDBConnectionError{},
+			&postgresql2.NilDBConnectionError{},
 			err,
-			"error should be %T", &postgresql.NilDBConnectionError{},
+			"error should be %T", &postgresql2.NilDBConnectionError{},
 		)
 
 		assert.Nil(t, transaction)
@@ -59,7 +59,7 @@ func TestTransaction(t *testing.T) {
 	t.Run("transaction with options", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		logger := loggermock.NewMockLogger(ctrl)
-		connector, err := postgresql.New(dsn, driver, logger)
+		connector, err := postgresql2.New(dsn, driver, logger)
 		require.NoError(t, err)
 
 		defer func() {
@@ -69,8 +69,8 @@ func TestTransaction(t *testing.T) {
 
 		transaction, err := connector.Transaction(
 			context.Background(),
-			postgresql.WithTransactionReadOnly(true),
-			postgresql.WithTransactionIsolationLevel(sql.LevelReadUncommitted),
+			postgresql2.WithTransactionReadOnly(true),
+			postgresql2.WithTransactionIsolationLevel(sql.LevelReadUncommitted),
 		)
 
 		require.NoError(t, err)
@@ -86,7 +86,7 @@ func TestConnection(t *testing.T) {
 	t.Run("should return connection", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		logger := loggermock.NewMockLogger(ctrl)
-		connector, err := postgresql.New(dsn, driver, logger)
+		connector, err := postgresql2.New(dsn, driver, logger)
 		require.NoError(t, err)
 
 		defer func() {
@@ -108,16 +108,16 @@ func TestConnection(t *testing.T) {
 	})
 
 	t.Run("nil connections pool", func(t *testing.T) {
-		connector := &postgresql.CommonConnector{}
+		connector := &postgresql2.CommonConnector{}
 
 		connection, err := connector.Connection(context.Background())
 		require.Error(t, err)
 		require.Error(t, err)
 		assert.IsTypef(
 			t,
-			&postgresql.NilDBConnectionError{},
+			&postgresql2.NilDBConnectionError{},
 			err,
-			"error should be %T", &postgresql.NilDBConnectionError{},
+			"error should be %T", &postgresql2.NilDBConnectionError{},
 		)
 
 		assert.Nil(t, connection)
@@ -128,7 +128,7 @@ func TestNewConnector(t *testing.T) {
 	t.Run("new connector without options", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		logger := loggermock.NewMockLogger(ctrl)
-		connector, err := postgresql.New(dsn, driver, logger)
+		connector, err := postgresql2.New(dsn, driver, logger)
 		require.NoError(t, err)
 		require.NotNil(t, connector)
 
@@ -139,14 +139,14 @@ func TestNewConnector(t *testing.T) {
 	t.Run("new connector with options", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		logger := loggermock.NewMockLogger(ctrl)
-		connector, err := postgresql.New(
+		connector, err := postgresql2.New(
 			dsn,
 			driver,
 			logger,
-			postgresql.WithMaxConnectionIdleTime(time.Minute),
-			postgresql.WithMaxConnectionLifetime(time.Minute),
-			postgresql.WithMaxIdleConnections(1),
-			postgresql.WithMaxOpenConnections(1),
+			postgresql2.WithMaxConnectionIdleTime(time.Minute),
+			postgresql2.WithMaxConnectionLifetime(time.Minute),
+			postgresql2.WithMaxIdleConnections(1),
+			postgresql2.WithMaxOpenConnections(1),
 		)
 
 		require.NoError(t, err)
@@ -161,7 +161,7 @@ func TestPool(t *testing.T) {
 	t.Run("should return connections pool", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		logger := loggermock.NewMockLogger(ctrl)
-		connector, err := postgresql.New(dsn, driver, logger)
+		connector, err := postgresql2.New(dsn, driver, logger)
 		require.NoError(t, err)
 
 		assert.NotNil(t, connector.Pool())
@@ -171,7 +171,7 @@ func TestPool(t *testing.T) {
 	})
 
 	t.Run("nil connections pool", func(t *testing.T) {
-		connector := &postgresql.CommonConnector{}
+		connector := &postgresql2.CommonConnector{}
 		assert.Nil(t, connector.Pool())
 	})
 }

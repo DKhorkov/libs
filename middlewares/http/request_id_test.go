@@ -1,12 +1,12 @@
-package middlewares_test
+package http_test
 
 import (
+	http2 "github.com/DKhorkov/libs/middlewares/http"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/DKhorkov/libs/contextlib"
-	"github.com/DKhorkov/libs/middlewares"
 	"github.com/DKhorkov/libs/requestid"
 	"github.com/stretchr/testify/require"
 )
@@ -24,7 +24,7 @@ func TestRequestIDMiddleware(t *testing.T) {
 		})
 
 		// Создаём middleware
-		middleware := middlewares.RequestIDMiddleware(nextHandler)
+		middleware := http2.RequestIDMiddleware(nextHandler)
 
 		// Создаём тестовый запрос
 		req := httptest.NewRequest(http.MethodGet, "/", nil)

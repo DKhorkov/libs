@@ -1,9 +1,10 @@
-package middlewares_test
+package graphql_test
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	graphql2 "github.com/DKhorkov/libs/middlewares/graphql"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,7 +14,6 @@ import (
 
 	"github.com/DKhorkov/libs/graphql"
 	mocklogging "github.com/DKhorkov/libs/logging/mocks"
-	"github.com/DKhorkov/libs/middlewares"
 )
 
 func TestGraphQLLoggingMiddleware(t *testing.T) {
@@ -27,7 +27,7 @@ func TestGraphQLLoggingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := middlewares.GraphQLLoggingMiddleware(nextHandler, logger)
+		middleware := graphql2.GraphQLLoggingMiddleware(nextHandler, logger)
 
 		req := httptest.NewRequest(http.MethodPost, "/not-query", nil)
 		rr := httptest.NewRecorder()
@@ -53,7 +53,7 @@ func TestGraphQLLoggingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := middlewares.GraphQLLoggingMiddleware(nextHandler, logger)
+		middleware := graphql2.GraphQLLoggingMiddleware(nextHandler, logger)
 
 		// Создаём запрос с телом, которое нельзя прочитать
 		req := httptest.NewRequest(http.MethodPost, "/query", nil)
@@ -81,7 +81,7 @@ func TestGraphQLLoggingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := middlewares.GraphQLLoggingMiddleware(nextHandler, logger)
+		middleware := graphql2.GraphQLLoggingMiddleware(nextHandler, logger)
 
 		body := []byte("invalid json")
 		req := httptest.NewRequest(http.MethodPost, "/query", bytes.NewReader(body))
@@ -110,7 +110,7 @@ func TestGraphQLLoggingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := middlewares.GraphQLLoggingMiddleware(nextHandler, logger)
+		middleware := graphql2.GraphQLLoggingMiddleware(nextHandler, logger)
 
 		body := map[string]any{"query": query}
 		bodyBytes, _ := json.Marshal(body)
@@ -167,7 +167,7 @@ func TestGraphQLLoggingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := middlewares.GraphQLLoggingMiddleware(nextHandler, logger)
+		middleware := graphql2.GraphQLLoggingMiddleware(nextHandler, logger)
 
 		body := map[string]any{
 			"query":     query,

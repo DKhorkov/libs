@@ -1,7 +1,8 @@
-package middlewares_test
+package http_test
 
 import (
 	"context"
+	http2 "github.com/DKhorkov/libs/middlewares/http"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -9,7 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/DKhorkov/libs/contextlib"
-	"github.com/DKhorkov/libs/middlewares"
 )
 
 func TestCookiesMiddleware(t *testing.T) {
@@ -31,7 +31,7 @@ func TestCookiesMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := middlewares.CookiesMiddleware(nextHandler, cookieNames)
+		middleware := http2.CookiesMiddleware(nextHandler, cookieNames)
 
 		rr := httptest.NewRecorder()
 		middleware.ServeHTTP(rr, req)
@@ -60,7 +60,7 @@ func TestCookiesMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := middlewares.CookiesMiddleware(nextHandler, cookieNames)
+		middleware := http2.CookiesMiddleware(nextHandler, cookieNames)
 
 		rr := httptest.NewRecorder()
 		middleware.ServeHTTP(rr, req)
@@ -78,13 +78,13 @@ func TestCookiesMiddleware(t *testing.T) {
 
 		var capturedWriter http.ResponseWriter
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			writer, err := contextlib.ValueFromContext[http.ResponseWriter](r.Context(), middlewares.CookiesWriterName)
+			writer, err := contextlib.ValueFromContext[http.ResponseWriter](r.Context(), http2.CookiesWriterName)
 			require.NoError(t, err)
 			capturedWriter = writer
 			w.WriteHeader(http.StatusCreated)
 		})
 
-		middleware := middlewares.CookiesMiddleware(nextHandler, cookieNames)
+		middleware := http2.CookiesMiddleware(nextHandler, cookieNames)
 
 		rr := httptest.NewRecorder()
 		middleware.ServeHTTP(rr, req)
@@ -103,13 +103,13 @@ func TestCookiesMiddleware(t *testing.T) {
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			handlerCalled = true
 			// Проверяем, что ResponseWriter всё равно добавлен
-			writer, err := contextlib.ValueFromContext[http.ResponseWriter](r.Context(), middlewares.CookiesWriterName)
+			writer, err := contextlib.ValueFromContext[http.ResponseWriter](r.Context(), http2.CookiesWriterName)
 			require.NoError(t, err)
 			require.NotNil(t, writer)
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := middlewares.CookiesMiddleware(nextHandler, cookieNames)
+		middleware := http2.CookiesMiddleware(nextHandler, cookieNames)
 
 		rr := httptest.NewRecorder()
 		middleware.ServeHTTP(rr, req)
@@ -135,13 +135,13 @@ func TestCookiesMiddleware(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, "abc123", cookie.Value)
 			// Проверяем ResponseWriter
-			writer, err := contextlib.ValueFromContext[http.ResponseWriter](r.Context(), middlewares.CookiesWriterName)
+			writer, err := contextlib.ValueFromContext[http.ResponseWriter](r.Context(), http2.CookiesWriterName)
 			require.NoError(t, err)
 			require.NotNil(t, writer)
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := middlewares.CookiesMiddleware(nextHandler, cookieNames)
+		middleware := http2.CookiesMiddleware(nextHandler, cookieNames)
 
 		rr := httptest.NewRecorder()
 		middleware.ServeHTTP(rr, req)

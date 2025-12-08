@@ -12,9 +12,9 @@ package mocks
 import (
 	context "context"
 	sql "database/sql"
+	db "github.com/DKhorkov/libs/db/postgresql"
 	reflect "reflect"
 
-	db "github.com/DKhorkov/libs/postgresql"
 	gomock "go.uber.org/mock/gomock"
 )
 

@@ -3,11 +3,10 @@ package postgresql_test
 import (
 	"errors"
 	"fmt"
+	"github.com/DKhorkov/libs/db/postgresql"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
-	"github.com/DKhorkov/libs/postgresql"
 )
 
 func TestNilDBConnectionError(t *testing.T) {

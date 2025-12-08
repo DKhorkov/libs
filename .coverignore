@@ -1,6 +1,6 @@
 /mocks/
 /logging/mocks
-/db/mocks
+/db/postgresql/mocks
 /nats/mocks
 /tracing/mocks
 /cache/mocks

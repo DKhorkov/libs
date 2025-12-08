@@ -2,6 +2,7 @@ package postgresql_test
 
 import (
 	"context"
+	postgresql2 "github.com/DKhorkov/libs/db/postgresql"
 	"testing"
 
 	"go.uber.org/mock/gomock"
@@ -10,7 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	loggermock "github.com/DKhorkov/libs/logging/mocks"
-	"github.com/DKhorkov/libs/postgresql"
 )
 
 func TestGetEntityColumns(t *testing.T) {
@@ -20,7 +20,7 @@ func TestGetEntityColumns(t *testing.T) {
 			Column2 string
 		}{}
 
-		columns := postgresql.GetEntityColumns(testStruct)
+		columns := postgresql2.GetEntityColumns(testStruct)
 		assert.Len(t, columns, 2)
 		assert.IsTypef(
 			t,
@@ -32,7 +32,7 @@ func TestGetEntityColumns(t *testing.T) {
 
 func TestBuildDsn(t *testing.T) {
 	expected := "host=0.0.0.0 port=5432 user=postgres password=postgres dbname=postgres sslmode=disable"
-	config := postgresql.Config{
+	config := postgresql2.Config{
 		Host:         "0.0.0.0",
 		Port:         5432,
 		User:         "postgres",
@@ -42,7 +42,7 @@ func TestBuildDsn(t *testing.T) {
 		Driver:       "postgres",
 	}
 
-	actual := postgresql.BuildDsn(config)
+	actual := postgresql2.BuildDsn(config)
 	assert.Equal(t, expected, actual)
 }
 
@@ -51,7 +51,7 @@ func TestCloseConnectionContext(t *testing.T) {
 		ctx := context.Background()
 		ctrl := gomock.NewController(t)
 		logger := loggermock.NewMockLogger(ctrl)
-		connector, err := postgresql.New(dsn, driver, logger)
+		connector, err := postgresql2.New(dsn, driver, logger)
 		require.NoError(t, err)
 
 		defer func() {
@@ -63,6 +63,6 @@ func TestCloseConnectionContext(t *testing.T) {
 		connection, err := connector.Connection(ctx)
 		require.NoError(t, err)
 
-		postgresql.CloseConnectionContext(ctx, connection, logger)
+		postgresql2.CloseConnectionContext(ctx, connection, logger)
 	})
 }

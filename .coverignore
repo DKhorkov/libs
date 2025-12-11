@@ -1,5 +1,6 @@
 /mocks/
 /logging/mocks
+/db/mongodb/mocks
 /db/postgresql/mocks
 /nats/mocks
 /tracing/mocks

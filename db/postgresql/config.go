@@ -2,7 +2,7 @@ package postgresql
 
 import "time"
 
-// Config is a database config, on base of which new connector is created.
+// Config is a database config, on base of which new Connector is created.
 type Config struct {
 	Host         string
 	Port         int

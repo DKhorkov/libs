@@ -12,7 +12,6 @@ import (
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/metadata"
 
-	mocklogging "github.com/DKhorkov/libs/logging/mocks"
 	"github.com/DKhorkov/libs/tracing"
 	mocktracing "github.com/DKhorkov/libs/tracing/mocks"
 )
@@ -22,7 +21,6 @@ func TestTracingMiddleware(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		provider := mocktracing.NewMockProvider(ctrl)
 		span := mocktracing.NewMockSpan()
-		logger := mocklogging.NewMockLogger(ctrl)
 
 		spanConfig := tracing.SpanConfig{
 			Name: "test-span",
@@ -40,11 +38,6 @@ func TestTracingMiddleware(t *testing.T) {
 			Return(ctx, span).
 			Times(1)
 
-		logger.
-			EXPECT().
-			InfoContext(gomock.Any(), gomock.Any(), gomock.Any()).
-			Times(1)
-
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Проверяем метаданные
 			md, ok := metadata.FromOutgoingContext(r.Context())
@@ -54,7 +47,7 @@ func TestTracingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := TracingMiddleware(nextHandler, logger, provider, spanConfig)
+		middleware := TracingMiddleware(provider, spanConfig)(nextHandler)
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 		rr := httptest.NewRecorder()
@@ -67,16 +60,15 @@ func TestTracingMiddleware(t *testing.T) {
 	t.Run("Ignores metrics url", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		provider := mocktracing.NewMockProvider(ctrl)
-		logger := mocklogging.NewMockLogger(ctrl)
 		spanConfig := tracing.SpanConfig{}
 
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := TracingMiddleware(nextHandler, logger, provider, spanConfig)
+		middleware := TracingMiddleware(provider, spanConfig)(nextHandler)
 
-		req := httptest.NewRequest(http.MethodGet, metricsURLPath, nil)
+		req := httptest.NewRequest(http.MethodGet, MetricsURLPath, nil)
 		rr := httptest.NewRecorder()
 
 		middleware.ServeHTTP(rr, req)
@@ -88,7 +80,6 @@ func TestTracingMiddleware(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		provider := mocktracing.NewMockProvider(ctrl)
 		span := mocktracing.NewMockSpan()
-		logger := mocklogging.NewMockLogger(ctrl)
 
 		spanConfig := tracing.SpanConfig{
 			Name: "test-span",
@@ -119,7 +110,7 @@ func TestTracingMiddleware(t *testing.T) {
 			require.NoError(t, err)
 		})
 
-		middleware := TracingMiddleware(nextHandler, logger, provider, spanConfig)
+		middleware := TracingMiddleware(provider, spanConfig)(nextHandler)
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 		rr := httptest.NewRecorder()
@@ -134,7 +125,6 @@ func TestTracingMiddleware(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		provider := mocktracing.NewMockProvider(ctrl)
 		span := mocktracing.NewMockSpan()
-		logger := mocklogging.NewMockLogger(ctrl)
 
 		spanConfig := tracing.SpanConfig{
 			Name: "test-span",
@@ -151,18 +141,13 @@ func TestTracingMiddleware(t *testing.T) {
 			Return(ctx, span).
 			Times(1)
 
-		logger.
-			EXPECT().
-			InfoContext(gomock.Any(), gomock.Any(), gomock.Any()).
-			Times(1)
-
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			_, err := w.Write([]byte("invalid json"))
 			require.NoError(t, err)
 		})
 
-		middleware := TracingMiddleware(nextHandler, logger, provider, spanConfig)
+		middleware := TracingMiddleware(provider, spanConfig)(nextHandler)
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 		rr := httptest.NewRecorder()
@@ -176,7 +161,6 @@ func TestTracingMiddleware(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		provider := mocktracing.NewMockProvider(ctrl)
 		span := mocktracing.NewMockSpan()
-		logger := mocklogging.NewMockLogger(ctrl)
 
 		spanConfig := tracing.SpanConfig{
 			Name: "test-span",
@@ -204,7 +188,7 @@ func TestTracingMiddleware(t *testing.T) {
 			require.NoError(t, err)
 		})
 
-		middleware := TracingMiddleware(nextHandler, logger, provider, spanConfig)
+		middleware := TracingMiddleware(provider, spanConfig)(nextHandler)
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 		rr := httptest.NewRecorder()

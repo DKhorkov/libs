@@ -60,7 +60,7 @@ func TestMetricsMiddleware_RegularRequests(t *testing.T) {
 		{
 			name:           "metrics endpoint skipped",
 			handler:        successHandler,
-			path:           metricsURLPath,
+			path:           MetricsURLPath,
 			expectedStatus: http.StatusOK,
 			expectedLabels: nil, // shouldn't be recorded
 		},

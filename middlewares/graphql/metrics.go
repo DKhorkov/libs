@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	metricsURLPath = "/metrics"
+	MetricsURLPath = "/metrics"
 
 	urlLabel        = "url"
 	statusLabel     = "status"
@@ -61,7 +61,7 @@ func MetricsMiddleware(
 	logger logging.Logger,
 ) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == metricsURLPath {
+		if r.URL.Path == MetricsURLPath {
 			next.ServeHTTP(w, r)
 
 			return

@@ -199,26 +199,3 @@ func TestTracingMiddleware(t *testing.T) {
 		require.JSONEq(t, string(responseBody), rr.Body.String())
 	})
 }
-
-func TestTracingResponseWriter(t *testing.T) {
-	t.Run("WriteHeader captures status code", func(t *testing.T) {
-		rr := httptest.NewRecorder()
-		trw := &tracingResponseWriter{ResponseWriter: rr}
-
-		trw.WriteHeader(http.StatusCreated)
-		require.Equal(t, http.StatusCreated, trw.StatusCode)
-		require.Equal(t, http.StatusCreated, rr.Code)
-	})
-
-	t.Run("Write captures body", func(t *testing.T) {
-		rr := httptest.NewRecorder()
-		trw := &tracingResponseWriter{ResponseWriter: rr}
-
-		body := []byte(`{"data":"test"}`)
-		n, err := trw.Write(body)
-		require.NoError(t, err)
-		require.Equal(t, len(body), n)
-		require.Equal(t, body, trw.Body)
-		require.Equal(t, string(body), rr.Body.String())
-	})
-}

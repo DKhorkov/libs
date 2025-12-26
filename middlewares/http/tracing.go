@@ -39,8 +39,8 @@ func TracingMiddleware(
 			) // setting for cross-service usage
 			r = r.WithContext(ctx)
 
-			// Create new traceResponseWriter for response intercepting purpose:
-			trw := newTracingResponseWriter(w)
+			// Create new newInterceptingResponseWriter for response intercepting purpose:
+			trw := newInterceptingResponseWriter(w)
 			next.ServeHTTP(trw, r)
 
 			if trw.StatusCode >= http.StatusBadRequest {
@@ -48,28 +48,4 @@ func TracingMiddleware(
 			}
 		})
 	}
-}
-
-func newTracingResponseWriter(w http.ResponseWriter) *tracingResponseWriter {
-	return &tracingResponseWriter{ResponseWriter: w, StatusCode: http.StatusOK}
-}
-
-// tracingResponseWriter intercepts response from GraphQL for checking errors.
-type tracingResponseWriter struct {
-	http.ResponseWriter
-	StatusCode int
-	Body       []byte
-}
-
-// WriteHeader intercepts response body for later usage in trace.Span.
-func (trw *tracingResponseWriter) WriteHeader(statusCode int) {
-	trw.StatusCode = statusCode
-	trw.ResponseWriter.WriteHeader(statusCode)
-}
-
-// Write intercepts response body for later usage in trace.Span.
-func (trw *tracingResponseWriter) Write(body []byte) (int, error) {
-	trw.Body = body
-
-	return trw.ResponseWriter.Write(body)
 }

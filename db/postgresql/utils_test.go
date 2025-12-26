@@ -2,8 +2,10 @@ package postgresql_test
 
 import (
 	"context"
-	postgresql2 "github.com/DKhorkov/libs/db/postgresql"
+	"database/sql"
 	"testing"
+
+	postgresql2 "github.com/DKhorkov/libs/db/postgresql"
 
 	"go.uber.org/mock/gomock"
 
@@ -63,6 +65,9 @@ func TestCloseConnectionContext(t *testing.T) {
 		connection, err := connector.Connection(ctx)
 		require.NoError(t, err)
 
-		postgresql2.CloseConnectionContext(ctx, connection, logger)
+		conn, ok := connection.(*sql.Conn)
+		require.True(t, ok)
+
+		postgresql2.CloseConnectionContext(ctx, conn, logger)
 	})
 }

@@ -58,7 +58,7 @@ func connect(dsn, driver string, opts ...PoolOption) (*sql.DB, error) {
 }
 
 // Connection creates connection with database, if not exists. Returns connection for external usage.
-func (connector *CommonConnector) Connection(ctx context.Context) (*sql.Conn, error) {
+func (connector *CommonConnector) Connection(ctx context.Context) (Connection, error) {
 	if connector.connectionsPool == nil {
 		return nil, &NilDBConnectionError{}
 	}
@@ -70,7 +70,7 @@ func (connector *CommonConnector) Connection(ctx context.Context) (*sql.Conn, er
 func (connector *CommonConnector) Transaction(
 	ctx context.Context,
 	opts ...TransactionOption,
-) (*sql.Tx, error) {
+) (Transaction, error) {
 	if connector.connectionsPool == nil {
 		return nil, &NilDBConnectionError{}
 	}
@@ -93,7 +93,7 @@ func (connector *CommonConnector) Transaction(
 }
 
 // Pool returns database connections pool.
-func (connector *CommonConnector) Pool() *sql.DB {
+func (connector *CommonConnector) Pool() Pool {
 	return connector.connectionsPool
 }
 

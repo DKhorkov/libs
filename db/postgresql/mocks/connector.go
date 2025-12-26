@@ -11,7 +11,6 @@ package mocks
 
 import (
 	context "context"
-	sql "database/sql"
 	reflect "reflect"
 
 	postgresql "github.com/DKhorkov/libs/db/postgresql"
@@ -57,10 +56,10 @@ func (mr *MockConnectorMockRecorder) Close() *gomock.Call {
 }
 
 // Connection mocks base method.
-func (m *MockConnector) Connection(ctx context.Context) (*sql.Conn, error) {
+func (m *MockConnector) Connection(ctx context.Context) (postgresql.Connection, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Connection", ctx)
-	ret0, _ := ret[0].(*sql.Conn)
+	ret0, _ := ret[0].(postgresql.Connection)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -72,10 +71,10 @@ func (mr *MockConnectorMockRecorder) Connection(ctx any) *gomock.Call {
 }
 
 // Pool mocks base method.
-func (m *MockConnector) Pool() *sql.DB {
+func (m *MockConnector) Pool() postgresql.Pool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Pool")
-	ret0, _ := ret[0].(*sql.DB)
+	ret0, _ := ret[0].(postgresql.Pool)
 	return ret0
 }
 

@@ -26,7 +26,7 @@ func New(dsn, driver string, logger logging.Logger, opts ...PoolOption) (*Common
 
 // CommonConnector is base connector to work with database.
 type CommonConnector struct {
-	connectionsPool *sql.DB
+	connectionsPool Pool
 	logger          logging.Logger
 }
 

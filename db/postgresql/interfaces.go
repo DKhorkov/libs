@@ -13,8 +13,8 @@ import (
 type Connector interface {
 	Close() error
 	Transaction(ctx context.Context, opts ...TransactionOption) (Transaction, error)
-	Connection(ctx context.Context) (*sql.Conn, error)
-	Pool() *sql.DB
+	Connection(ctx context.Context) (Connection, error)
+	Pool() Pool
 }
 
 // Transaction represents abstraction of Database to comply Atomicity principle

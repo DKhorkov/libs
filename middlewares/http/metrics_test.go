@@ -1,15 +1,15 @@
 package http
 
 import (
-	"errors"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/testutil"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/testutil"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMetricsMiddleware_RegularRequests(t *testing.T) {
@@ -115,7 +115,7 @@ func TestMetricsMiddleware_RegularRequests(t *testing.T) {
 			requestDuration.Reset()
 
 			mw := MetricsMiddleware(tc.handler)
-			req := httptest.NewRequest(tc.method, tc.path, nil)
+			req := httptest.NewRequest(tc.method, tc.path, http.NoBody)
 			rr := httptest.NewRecorder()
 
 			mw.ServeHTTP(rr, req)
@@ -131,7 +131,7 @@ func TestMetricsMiddleware_RegularRequests(t *testing.T) {
 				// Проверяем, что метрика requestDuration была обновлена
 				// Используем CollectAndCount для проверки наличия наблюдений
 				metricCount := testutil.CollectAndCount(requestDuration)
-				assert.Greater(t, metricCount, 0, "request_duration_seconds должен иметь наблюдения")
+				assert.Positive(t, metricCount, "request_duration_seconds должен иметь наблюдения")
 			} else {
 				// Проверяем, что метрики не были записаны для /metrics
 				count := testutil.CollectAndCount(requestsTotal)
@@ -164,7 +164,7 @@ func TestMetricsMiddleware_MethodLabel(t *testing.T) {
 			})
 
 			mw := MetricsMiddleware(handler)
-			req := httptest.NewRequest(tc.method, "/test", nil)
+			req := httptest.NewRequest(tc.method, "/test", http.NoBody)
 			rr := httptest.NewRecorder()
 
 			mw.ServeHTTP(rr, req)
@@ -184,20 +184,25 @@ func TestMetricsMiddleware_MethodLabel(t *testing.T) {
 
 func TestCollectGoMetrics(t *testing.T) {
 	// Сброс метрик
-	goroutinesCount.Set(0)
+	goroutinesNumber.Set(0)
 	memoryUsage.Set(0)
 
 	// Вызов функции сбора метрик Go
 	collectGoMetrics()
 
 	// Проверяем, что метрики были установлены (значения могут быть любые, но не 0)
-	goroutinesValue := testutil.ToFloat64(goroutinesCount)
+	goroutinesValue := testutil.ToFloat64(goroutinesNumber)
 	memoryValue := testutil.ToFloat64(memoryUsage)
 
 	// Мы не можем точно знать значения, но можем проверить, что они не остались 0
 	// после вызова runtime.GC() и metrics.Read()
-	assert.True(t, goroutinesValue >= 0, "goroutinesCount должен быть неотрицательным")
-	assert.True(t, memoryValue >= 0, "memoryUsage должен быть неотрицательным")
+	assert.GreaterOrEqual(
+		t,
+		goroutinesValue,
+		float64(0),
+		"goroutinesNumber должен быть неотрицательным",
+	)
+	assert.GreaterOrEqual(t, memoryValue, float64(0), "memoryUsage должен быть неотрицательным")
 }
 
 func TestMetricsResponseWriter(t *testing.T) {
@@ -242,7 +247,7 @@ func TestMetricsResponseWriter(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			// Создаем recorder и обертку
 			rr := httptest.NewRecorder()
-			mrw := newMetricsResponseWriter(rr)
+			mrw := newInterceptingResponseWriter(rr)
 
 			// Тестируем WriteHeader
 			mrw.WriteHeader(tc.statusCode)
@@ -310,7 +315,7 @@ func TestMetricsMiddleware_ErrorStatusCodeClassification(t *testing.T) {
 			})
 
 			mw := MetricsMiddleware(handler)
-			req := httptest.NewRequest("GET", "/test", nil)
+			req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
 			rr := httptest.NewRecorder()
 
 			mw.ServeHTTP(rr, req)
@@ -345,32 +350,26 @@ func TestMetricsMiddleware_ConcurrentAccess(t *testing.T) {
 	done := make(chan bool)
 	concurrentRequests := 10
 
-	for i := 0; i < concurrentRequests; i++ {
+	for i := range concurrentRequests {
 		go func(id int) {
 			path := "/api/test/" + strconv.Itoa(id)
-			req := httptest.NewRequest("GET", path, nil)
+			req := httptest.NewRequest(http.MethodGet, path, http.NoBody)
 			rr := httptest.NewRecorder()
 			mw.ServeHTTP(rr, req)
 			assert.Equal(t, http.StatusOK, rr.Code)
+
 			done <- true
 		}(i)
 	}
 
 	// Ждем завершения всех горутин
-	for i := 0; i < concurrentRequests; i++ {
+	for range concurrentRequests {
 		<-done
 	}
 
 	// Проверяем, что все метрики были записаны
 	metrics := testutil.CollectAndCount(requestsTotal)
 	assert.Equal(t, concurrentRequests, metrics, "должны быть записаны метрики для всех запросов")
-}
-
-// errorReader - io.Reader, который всегда возвращает ошибку
-type errorReader struct{}
-
-func (er *errorReader) Read(p []byte) (n int, err error) {
-	return 0, errors.New("mock read error")
 }
 
 func TestMetricsRegistration(t *testing.T) {
@@ -384,8 +383,8 @@ func TestMetricsRegistration(t *testing.T) {
 	err = registry.Register(requestDuration)
 	assert.NoError(t, err, "requestDuration должен регистрироваться без ошибок")
 
-	err = registry.Register(goroutinesCount)
-	assert.NoError(t, err, "goroutinesCount должен регистрироваться без ошибок")
+	err = registry.Register(goroutinesNumber)
+	assert.NoError(t, err, "goroutinesNumber должен регистрироваться без ошибок")
 
 	err = registry.Register(memoryUsage)
 	assert.NoError(t, err, "memoryUsage должен регистрироваться без ошибок")
@@ -408,7 +407,7 @@ func TestMetricsMiddleware_DurationMeasurement(t *testing.T) {
 	})
 
 	mw := MetricsMiddleware(slowHandler)
-	req := httptest.NewRequest("GET", "/slow", nil)
+	req := httptest.NewRequest(http.MethodGet, "/slow", http.NoBody)
 	rr := httptest.NewRecorder()
 
 	mw.ServeHTTP(rr, req)
@@ -418,7 +417,7 @@ func TestMetricsMiddleware_DurationMeasurement(t *testing.T) {
 	// Проверяем, что duration было измерено
 	// Просто проверяем, что метрика существует и имеет наблюдения
 	metricCount := testutil.CollectAndCount(requestDuration)
-	assert.Greater(t, metricCount, 0, "request_duration_seconds должен иметь наблюдения")
+	assert.Positive(t, metricCount, "request_duration_seconds должен иметь наблюдения")
 }
 
 func TestMetricsMiddleware_EmptyResponse(t *testing.T) {
@@ -431,7 +430,7 @@ func TestMetricsMiddleware_EmptyResponse(t *testing.T) {
 	})
 
 	mw := MetricsMiddleware(handler)
-	req := httptest.NewRequest("GET", "/empty", nil)
+	req := httptest.NewRequest(http.MethodGet, "/empty", http.NoBody)
 	rr := httptest.NewRecorder()
 
 	mw.ServeHTTP(rr, req)
@@ -453,7 +452,7 @@ func TestMetricsMiddleware_EmptyResponse(t *testing.T) {
 
 func TestNewMetricsResponseWriter_NilResponseWriter(t *testing.T) {
 	// Тестируем создание с nil ResponseWriter
-	mrw := newMetricsResponseWriter(nil)
+	mrw := newInterceptingResponseWriter(nil)
 	assert.NotNil(t, mrw)
 	assert.Nil(t, mrw.ResponseWriter)
 	assert.Equal(t, http.StatusOK, mrw.StatusCode)

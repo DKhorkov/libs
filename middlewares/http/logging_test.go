@@ -8,14 +8,15 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	mocklogging "github.com/DKhorkov/libs/logging/mocks"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
-
-	mocklogging "github.com/DKhorkov/libs/logging/mocks"
 )
 
-// TestLoggingMiddleware тестирует middleware логирования в table-driven стиле
+// TestLoggingMiddleware тестирует middleware логирования в table-driven стиле.
 func TestLoggingMiddleware(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 
 	tests := []struct {
@@ -56,6 +57,7 @@ func TestLoggingMiddleware(t *testing.T) {
 				if err != nil {
 					t.Errorf("handler failed to read body: %v", err)
 					w.WriteHeader(http.StatusInternalServerError)
+
 					return
 				}
 
@@ -63,6 +65,7 @@ func TestLoggingMiddleware(t *testing.T) {
 				if err = json.Unmarshal(body, &data); err != nil {
 					t.Errorf("handler failed to unmarshal body: %v", err)
 					w.WriteHeader(http.StatusInternalServerError)
+
 					return
 				}
 
@@ -71,10 +74,16 @@ func TestLoggingMiddleware(t *testing.T) {
 				}
 
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`{"test": "data"}`))
+
+				if _, err = w.Write([]byte(`{"test": "data"}`)); err != nil {
+					t.Fatalf("handler failed to write body: %v", err)
+				}
 			},
 			setupMockLogger: func(logger *mocklogging.MockLogger) {
-				logger.EXPECT().InfoContext(gomock.Any(), gomock.Any(), gomock.Any()).Times(2) // Request and response
+				logger.EXPECT().
+					InfoContext(gomock.Any(), gomock.Any(), gomock.Any()).
+					Times(2)
+				// Request and response
 			},
 			expectations: func(t *testing.T, r *http.Request, rr *httptest.ResponseRecorder) {
 				if rr.Code != http.StatusOK {
@@ -86,6 +95,7 @@ func TestLoggingMiddleware(t *testing.T) {
 				if err != nil {
 					t.Errorf("failed to read restored body: %v", err)
 				}
+
 				if string(body) != `{"test": "data"}` {
 					t.Errorf("restored body mismatch: got %s", string(body))
 				}
@@ -149,7 +159,8 @@ func TestLoggingMiddleware(t *testing.T) {
 				if err != nil {
 					t.Errorf("failed to read empty body: %v", err)
 				}
-				if string(body) != "" {
+
+				if len(body) != 0 {
 					t.Errorf("empty body mismatch: got %s", string(body))
 				}
 			},
@@ -166,6 +177,7 @@ func TestLoggingMiddleware(t *testing.T) {
 				if err != nil {
 					t.Errorf("handler failed to read body: %v", err)
 					w.WriteHeader(http.StatusInternalServerError)
+
 					return
 				}
 
@@ -174,7 +186,10 @@ func TestLoggingMiddleware(t *testing.T) {
 				}
 
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`{"error": "invalid json"}`))
+
+				if _, err = w.Write([]byte(`{"error": "invalid json"}`)); err != nil {
+					t.Fatalf("handler failed to write body: %v", err)
+				}
 			},
 			setupMockLogger: func(logger *mocklogging.MockLogger) {
 				// Should log error for invalid JSON
@@ -234,6 +249,7 @@ func TestLoggingMiddleware(t *testing.T) {
 				if err != nil {
 					t.Errorf("handler failed to read body: %v", err)
 					w.WriteHeader(http.StatusInternalServerError)
+
 					return
 				}
 
@@ -271,7 +287,10 @@ func TestLoggingMiddleware(t *testing.T) {
 			sensitiveFields: []string{},
 			handler: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusNotFound)
-				w.Write([]byte(`{"error": "not found"}`))
+
+				if _, err := w.Write([]byte(`{"error": "not found"}`)); err != nil {
+					t.Fatalf("handler failed to write body: %v", err)
+				}
 			},
 			setupMockLogger: func(logger *mocklogging.MockLogger) {
 				// Should log both request and response
@@ -287,6 +306,8 @@ func TestLoggingMiddleware(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			// Setup mock logger
 			logger := mocklogging.NewMockLogger(ctrl)
 			tt.setupMockLogger(logger)
@@ -319,8 +340,10 @@ func TestLoggingMiddleware(t *testing.T) {
 	}
 }
 
-// TestLoggingMiddleware_MultipleSensitiveFields тестирует множественные чувствительные поля
+// TestLoggingMiddleware_MultipleSensitiveFields тестирует множественные чувствительные поля.
 func TestLoggingMiddleware_MultipleSensitiveFields(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 
 	tests := []struct {
@@ -351,6 +374,8 @@ func TestLoggingMiddleware_MultipleSensitiveFields(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			logger := mocklogging.NewMockLogger(ctrl)
 
 			logger.EXPECT().InfoContext(gomock.Any(), gomock.Any(), gomock.Any()).Times(2)
@@ -361,7 +386,11 @@ func TestLoggingMiddleware_MultipleSensitiveFields(t *testing.T) {
 				w.WriteHeader(http.StatusOK)
 			}))
 
-			req := httptest.NewRequest("POST", "/api/test", bytes.NewBufferString(tt.requestBody))
+			req := httptest.NewRequest(
+				http.MethodPost,
+				"/api/test",
+				bytes.NewBufferString(tt.requestBody),
+			)
 			rr := httptest.NewRecorder()
 
 			handler.ServeHTTP(rr, req)
@@ -371,6 +400,7 @@ func TestLoggingMiddleware_MultipleSensitiveFields(t *testing.T) {
 			if err != nil {
 				t.Errorf("failed to read restored body: %v", err)
 			}
+
 			if string(body) != tt.requestBody {
 				t.Errorf("restored body mismatch: got %s", string(body))
 			}
@@ -378,8 +408,10 @@ func TestLoggingMiddleware_MultipleSensitiveFields(t *testing.T) {
 	}
 }
 
-// TestLoggingMiddleware_HandlerError тестирует обработку ошибок в хендлере
+// TestLoggingMiddleware_HandlerError тестирует обработку ошибок в хендлере.
 func TestLoggingMiddleware_HandlerError(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 
 	tests := []struct {
@@ -400,7 +432,9 @@ func TestLoggingMiddleware_HandlerError(t *testing.T) {
 				})
 				require.NoError(t, err)
 
-				w.Write(data)
+				if _, err = w.Write(data); err != nil {
+					t.Fatalf("failed to write body: %v", err)
+				}
 			},
 			setupMock: func(logger *mocklogging.MockLogger) {
 				logger.EXPECT().InfoContext(gomock.Any(), gomock.Any(), gomock.Any()).Times(2)
@@ -411,13 +445,15 @@ func TestLoggingMiddleware_HandlerError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			logger := mocklogging.NewMockLogger(ctrl)
 			tt.setupMock(logger)
 
 			middleware := LoggingMiddleware(logger)
 			handler := middleware(tt.handler)
 
-			req := httptest.NewRequest("GET", "/api/test", nil)
+			req := httptest.NewRequest(http.MethodGet, "/api/test", http.NoBody)
 			rr := httptest.NewRecorder()
 
 			// For panic test, ensure we recover

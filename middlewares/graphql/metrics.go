@@ -7,10 +7,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/prometheus/client_golang/prometheus"
-
 	graphqlparser "github.com/DKhorkov/libs/graphql"
 	"github.com/DKhorkov/libs/logging"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 const (
@@ -162,6 +161,7 @@ func newMetricsResponseWriter(w http.ResponseWriter) *metricsResponseWriter {
 // metricsResponseWriter intercepts response from GraphQL for MetricsMiddleware usage.
 type metricsResponseWriter struct {
 	http.ResponseWriter
+
 	StatusCode int
 	Body       []byte
 }

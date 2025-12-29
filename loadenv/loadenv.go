@@ -2,14 +2,15 @@ package loadenv
 
 import (
 	"fmt"
-	"github.com/joho/godotenv"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 // Init подразумевает явный вызов и инициализацию переменных с указанным путем перед
-// поулчением переменных окружения
+// поулчением переменных окружения.
 func Init(paths ...string) {
 	// loads values from .env into the system.
 	if err := godotenv.Load(paths...); err != nil {

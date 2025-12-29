@@ -5,29 +5,36 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/DKhorkov/libs/contextlib"
+	"github.com/stretchr/testify/require"
 )
 
 func TestValueNotFoundError(t *testing.T) {
+	t.Parallel()
+
 	t.Run("Default message without base error", func(t *testing.T) {
+		t.Parallel()
+
 		err := contextlib.ValueNotFoundError{
 			Message: "test-key",
 		}
 		expected := "context with value test-key not found"
 		require.Equal(t, expected, err.Error())
-		require.Nil(t, err.Unwrap())
+		require.NoError(t, err.Unwrap())
 	})
 
 	t.Run("Empty message without base error", func(t *testing.T) {
+		t.Parallel()
+
 		err := contextlib.ValueNotFoundError{}
 		expected := "context with value  not found"
 		require.Equal(t, expected, err.Error())
-		require.Nil(t, err.Unwrap())
+		require.NoError(t, err.Unwrap())
 	})
 
 	t.Run("Message with base error", func(t *testing.T) {
+		t.Parallel()
+
 		baseErr := errors.New("base error")
 		err := contextlib.ValueNotFoundError{
 			Message: "test-key",
@@ -39,6 +46,8 @@ func TestValueNotFoundError(t *testing.T) {
 	})
 
 	t.Run("Empty message with base error", func(t *testing.T) {
+		t.Parallel()
+
 		baseErr := errors.New("base error")
 		err := contextlib.ValueNotFoundError{
 			BaseErr: baseErr,

@@ -4,9 +4,8 @@ import (
 	"context"
 	"database/sql"
 
-	_ "github.com/lib/pq" // Postgres driver
-
 	"github.com/DKhorkov/libs/logging"
+	_ "github.com/lib/pq" // Postgres driver
 )
 
 // New is constructor of CommonConnector. Gets database Config and logging.Logger to create an instance.

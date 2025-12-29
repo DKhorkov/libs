@@ -5,29 +5,36 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	customgraphql "github.com/DKhorkov/libs/graphql"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseError(t *testing.T) {
+	t.Parallel()
+
 	t.Run("Default message without base error", func(t *testing.T) {
+		t.Parallel()
+
 		err := customgraphql.ParseError{}
 		expected := "failed to parse GraphQL query"
 		require.Equal(t, expected, err.Error())
-		require.Nil(t, err.Unwrap())
+		require.NoError(t, err.Unwrap())
 	})
 
 	t.Run("Custom message without base error", func(t *testing.T) {
+		t.Parallel()
+
 		err := customgraphql.ParseError{
 			Message: "custom parse error",
 		}
 		expected := "custom parse error"
 		require.Equal(t, expected, err.Error())
-		require.Nil(t, err.Unwrap())
+		require.NoError(t, err.Unwrap())
 	})
 
 	t.Run("Custom message with base error", func(t *testing.T) {
+		t.Parallel()
+
 		baseErr := errors.New("base error")
 		err := customgraphql.ParseError{
 			Message: "custom parse error",
@@ -39,6 +46,8 @@ func TestParseError(t *testing.T) {
 	})
 
 	t.Run("Default message with base error", func(t *testing.T) {
+		t.Parallel()
+
 		baseErr := errors.New("base error")
 		err := customgraphql.ParseError{
 			BaseErr: baseErr,

@@ -8,12 +8,11 @@ import (
 	"strconv"
 	"testing"
 
+	mocklogging "github.com/DKhorkov/libs/logging/mocks"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/testutil"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
-
-	mocklogging "github.com/DKhorkov/libs/logging/mocks"
 )
 
 func TestMetricsMiddleware_RegularRequests(t *testing.T) {
@@ -73,7 +72,7 @@ func TestMetricsMiddleware_RegularRequests(t *testing.T) {
 			requestDuration.Reset()
 
 			mw := MetricsMiddleware(tc.handler, logger)
-			req := httptest.NewRequest("GET", tc.path, nil)
+			req := httptest.NewRequest(http.MethodGet, tc.path, http.NoBody)
 			rr := httptest.NewRecorder()
 
 			mw.ServeHTTP(rr, req)
@@ -164,7 +163,11 @@ func TestMetricsMiddleware_GraphQLRequests(t *testing.T) {
 			})
 
 			mw := MetricsMiddleware(handler, logger)
-			req := httptest.NewRequest("POST", graphqlURLPath, bytes.NewBufferString(tc.body))
+			req := httptest.NewRequest(
+				http.MethodPost,
+				graphqlURLPath,
+				bytes.NewBufferString(tc.body),
+			)
 			rr := httptest.NewRecorder()
 
 			mw.ServeHTTP(rr, req)
@@ -196,7 +199,7 @@ func TestMetricsMiddleware_RequestBodyError(t *testing.T) {
 		Times(1)
 
 	// Create a request with a body that will fail to read
-	req := httptest.NewRequest("POST", graphqlURLPath, &errorReader{})
+	req := httptest.NewRequest(http.MethodPost, graphqlURLPath, &errorReader{})
 	rr := httptest.NewRecorder()
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -214,11 +217,12 @@ func TestMetricsMiddleware_RequestBodyError(t *testing.T) {
 	}
 
 	var expectedMetricCount float64 = 0
+
 	count := testutil.ToFloat64(requestsTotal.With(expectedLabels))
 	require.Equal(t, expectedMetricCount, count, "metric count should be incremented")
 }
 
-// errorReader is an io.Reader that always returns an error
+// errorReader is an io.Reader that always returns an error.
 type errorReader struct{}
 
 func (er *errorReader) Read(_ []byte) (n int, err error) {

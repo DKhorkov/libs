@@ -1,14 +1,19 @@
 package http
 
 import (
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestInterceptingResponseWriter(t *testing.T) {
+	t.Parallel()
+
 	t.Run("WriteHeader captures status code", func(t *testing.T) {
+		t.Parallel()
+
 		rr := httptest.NewRecorder()
 		trw := &interceptingResponseWriter{ResponseWriter: rr}
 
@@ -18,6 +23,8 @@ func TestInterceptingResponseWriter(t *testing.T) {
 	})
 
 	t.Run("Write captures body", func(t *testing.T) {
+		t.Parallel()
+
 		rr := httptest.NewRecorder()
 		trw := &interceptingResponseWriter{ResponseWriter: rr}
 

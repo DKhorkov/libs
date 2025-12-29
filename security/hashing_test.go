@@ -3,13 +3,14 @@ package security_test
 import (
 	"testing"
 
+	"github.com/DKhorkov/libs/security"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/DKhorkov/libs/security"
 )
 
 func TestHash(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		name          string
 		hashCost      int
@@ -35,20 +36,20 @@ func TestHash(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			hashedValue, err := security.Hash(tc.value, tc.hashCost)
 
 			if tc.errorExpected {
 				require.Error(t, err, tc.message)
-				assert.Equal(
+				assert.Empty(
 					t,
-					"",
 					hashedValue,
 					"\n%s - actual: '%v', expected: '%v'", tc.message, hashedValue, "")
 			} else {
 				require.NoError(t, err, tc.message)
-				assert.NotEqual(
+				assert.NotEmpty(
 					t,
-					"",
 					hashedValue,
 					"\n%s - actual: '%v', expected: '%v'", tc.message, hashedValue, "SomeHashedValue")
 			}
@@ -57,6 +58,8 @@ func TestHash(t *testing.T) {
 }
 
 func TestValidateHash(t *testing.T) {
+	t.Parallel()
+
 	valueToHash := "value"
 	testCases := []struct {
 		name     string
@@ -80,6 +83,8 @@ func TestValidateHash(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			hashedValue, _ := security.Hash(valueToHash, 0)
 			isValid := security.ValidateHash(tc.value, hashedValue)
 

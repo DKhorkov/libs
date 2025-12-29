@@ -3,13 +3,14 @@ package security_test
 import (
 	"testing"
 
+	"github.com/DKhorkov/libs/security"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/DKhorkov/libs/security"
 )
 
 func TestEncode(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		name    string
 		data    []byte
@@ -24,10 +25,11 @@ func TestEncode(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			hashedRefreshToken := security.Encode(tc.data)
-			assert.NotEqual(
+			assert.NotEmpty(
 				t,
-				"",
 				hashedRefreshToken,
 				tc.message)
 		})
@@ -35,6 +37,8 @@ func TestEncode(t *testing.T) {
 }
 
 func TestDecode(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		name          string
 		encoded       string
@@ -57,6 +61,8 @@ func TestDecode(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			value, err := security.Decode(tc.encoded)
 			if tc.errorExpected {
 				require.Error(t, err, tc.message)
@@ -76,6 +82,8 @@ func TestDecode(t *testing.T) {
 }
 
 func TestRawEncode(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		name    string
 		data    []byte
@@ -90,10 +98,11 @@ func TestRawEncode(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			hashedRefreshToken := security.RawEncode(tc.data)
-			assert.NotEqual(
+			assert.NotEmpty(
 				t,
-				"",
 				hashedRefreshToken,
 				tc.message)
 		})
@@ -101,6 +110,8 @@ func TestRawEncode(t *testing.T) {
 }
 
 func TestRawDecode(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		name          string
 		encoded       string
@@ -123,6 +134,8 @@ func TestRawDecode(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			value, err := security.RawDecode(tc.encoded)
 			if tc.errorExpected {
 				require.Error(t, err, tc.message)

@@ -10,7 +10,10 @@ import (
 	"github.com/DKhorkov/libs/logging"
 )
 
-func LoggingMiddleware(logger logging.Logger, sensitiveFields ...string) func(next http.Handler) http.Handler {
+func LoggingMiddleware(
+	logger logging.Logger,
+	sensitiveFields ...string,
+) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Не логгируем сбор метрик:
@@ -49,9 +52,7 @@ func LoggingMiddleware(logger logging.Logger, sensitiveFields ...string) func(ne
 				}
 
 				for _, field := range sensitiveFields {
-					if _, ok := payload[field]; ok {
-						delete(payload, field)
-					}
+					delete(payload, field)
 				}
 			}
 
@@ -77,12 +78,20 @@ func LoggingMiddleware(logger logging.Logger, sensitiveFields ...string) func(ne
 			payload = map[string]any{}
 
 			if len(trw.Body) > 0 {
-				if err = json.Unmarshal(trw.Body, &payload); err != nil {
-					logging.LogErrorContext(
-						ctx,
-						logger,
-						"Failed to log response body due to reading body failure",
-						err,
+				switch {
+				case trw.StatusCode >= http.StatusBadRequest:
+					if err = json.Unmarshal(trw.Body, &payload); err != nil {
+						logging.LogErrorContext(
+							ctx,
+							logger,
+							"Failed to log response body due to reading body failure",
+							err,
+						)
+					}
+				default:
+					// Ошибки пишутся как обычные строки в тело ответа:
+					payload["error"] = string(
+						trw.Body,
 					)
 				}
 			}

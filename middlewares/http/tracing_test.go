@@ -7,17 +7,20 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/DKhorkov/libs/tracing"
+	mocktracing "github.com/DKhorkov/libs/tracing/mocks"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/metadata"
-
-	"github.com/DKhorkov/libs/tracing"
-	mocktracing "github.com/DKhorkov/libs/tracing/mocks"
 )
 
 func TestTracingMiddleware(t *testing.T) {
+	t.Parallel()
+
 	t.Run("Creates span and adds traceID to metadata", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		provider := mocktracing.NewMockProvider(ctrl)
 		span := mocktracing.NewMockSpan()
@@ -49,7 +52,7 @@ func TestTracingMiddleware(t *testing.T) {
 
 		middleware := TracingMiddleware(provider, spanConfig)(nextHandler)
 
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 		rr := httptest.NewRecorder()
 
 		middleware.ServeHTTP(rr, req)
@@ -58,6 +61,8 @@ func TestTracingMiddleware(t *testing.T) {
 	})
 
 	t.Run("Ignores metrics url", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		provider := mocktracing.NewMockProvider(ctrl)
 		spanConfig := tracing.SpanConfig{}
@@ -68,7 +73,7 @@ func TestTracingMiddleware(t *testing.T) {
 
 		middleware := TracingMiddleware(provider, spanConfig)(nextHandler)
 
-		req := httptest.NewRequest(http.MethodGet, MetricsURLPath, nil)
+		req := httptest.NewRequest(http.MethodGet, MetricsURLPath, http.NoBody)
 		rr := httptest.NewRecorder()
 
 		middleware.ServeHTTP(rr, req)
@@ -77,6 +82,8 @@ func TestTracingMiddleware(t *testing.T) {
 	})
 
 	t.Run("Handles response with errors", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		provider := mocktracing.NewMockProvider(ctrl)
 		span := mocktracing.NewMockSpan()
@@ -112,7 +119,7 @@ func TestTracingMiddleware(t *testing.T) {
 
 		middleware := TracingMiddleware(provider, spanConfig)(nextHandler)
 
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 		rr := httptest.NewRecorder()
 
 		middleware.ServeHTTP(rr, req)
@@ -122,6 +129,8 @@ func TestTracingMiddleware(t *testing.T) {
 	})
 
 	t.Run("Handles invalid JSON response", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		provider := mocktracing.NewMockProvider(ctrl)
 		span := mocktracing.NewMockSpan()
@@ -149,7 +158,7 @@ func TestTracingMiddleware(t *testing.T) {
 
 		middleware := TracingMiddleware(provider, spanConfig)(nextHandler)
 
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 		rr := httptest.NewRecorder()
 
 		middleware.ServeHTTP(rr, req)
@@ -158,6 +167,8 @@ func TestTracingMiddleware(t *testing.T) {
 	})
 
 	t.Run("Handles response without errors", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		provider := mocktracing.NewMockProvider(ctrl)
 		span := mocktracing.NewMockSpan()
@@ -190,7 +201,7 @@ func TestTracingMiddleware(t *testing.T) {
 
 		middleware := TracingMiddleware(provider, spanConfig)(nextHandler)
 
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 		rr := httptest.NewRecorder()
 
 		middleware.ServeHTTP(rr, req)

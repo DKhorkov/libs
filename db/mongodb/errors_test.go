@@ -6,6 +6,8 @@ import (
 )
 
 func TestNilClientError(t *testing.T) {
+	t.Parallel()
+
 	baseErr := errors.New("underlying error")
 
 	tests := []struct {
@@ -54,6 +56,7 @@ func TestNilClientError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
 			// Тестируем Error()
 			errorString := tt.err.Error()
@@ -66,6 +69,7 @@ func TestNilClientError(t *testing.T) {
 			if tt.err.BaseErr != nil && !errors.Is(unwrapped, tt.err.BaseErr) {
 				t.Errorf("Unwrap() = %v, want %v", unwrapped, tt.err.BaseErr)
 			}
+
 			if tt.err.BaseErr == nil && unwrapped != nil {
 				t.Errorf("Unwrap() = %v, want nil", unwrapped)
 			}
@@ -81,6 +85,8 @@ func TestNilClientError(t *testing.T) {
 }
 
 func TestNilDatabaseError(t *testing.T) {
+	t.Parallel()
+
 	baseErr := errors.New("database connection failed")
 	anotherErr := errors.New("another error")
 
@@ -135,6 +141,8 @@ func TestNilDatabaseError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			// Тестируем Error() метод
 			errorString := tt.err.Error()
 			if errorString != tt.expectedErr {
@@ -143,6 +151,7 @@ func TestNilDatabaseError(t *testing.T) {
 
 			// Тестируем Unwrap() метод
 			unwrapped := tt.err.Unwrap()
+
 			if tt.shouldWrap {
 				if !errors.Is(tt.err, tt.wrappedErr) {
 					t.Errorf("errors.Is should return true for wrapped error")
@@ -157,6 +166,8 @@ func TestNilDatabaseError(t *testing.T) {
 }
 
 func TestErrorInterfaces(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		err      error
@@ -176,6 +187,8 @@ func TestErrorInterfaces(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			if tt.err == nil {
 				t.Fatal("error should not be nil")
 			}
@@ -201,6 +214,8 @@ func TestErrorInterfaces(t *testing.T) {
 }
 
 func TestErrorsIsChain(t *testing.T) {
+	t.Parallel()
+
 	baseErr := errors.New("original error")
 	wrappedErr := &NilClientError{
 		Message: "client error",
@@ -252,6 +267,8 @@ func TestErrorsIsChain(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			matches := errors.Is(tt.err, tt.target)
 			if matches != tt.shouldMatch {
 				t.Errorf("errors.Is(%v, %v) = %v, want %v",

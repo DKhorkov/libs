@@ -1,10 +1,10 @@
 package http
 
 import (
-	"google.golang.org/grpc/metadata"
 	"net/http"
 
 	"github.com/DKhorkov/libs/tracing"
+	"google.golang.org/grpc/metadata"
 )
 
 // TracingMiddleware creates root span of request and logs its Start and End events.

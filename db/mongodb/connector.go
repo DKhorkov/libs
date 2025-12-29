@@ -29,7 +29,12 @@ func New(
 }
 
 // connect connects to database and stores connections pool for later usage.
-func connect(ctx context.Context, dsn string, rp *readpref.ReadPref, opts ...Option) (*mongo.Client, error) {
+func connect(
+	ctx context.Context,
+	dsn string,
+	rp *readpref.ReadPref,
+	opts ...Option,
+) (*mongo.Client, error) {
 	var connectOpts options
 	for _, opt := range opts {
 		err := opt(&connectOpts)

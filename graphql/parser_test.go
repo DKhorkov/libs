@@ -3,12 +3,13 @@ package graphql_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	graphqlparser "github.com/DKhorkov/libs/graphql"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseQuery(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		name          string
 		query         string
@@ -34,8 +35,10 @@ func TestParseQuery(t *testing.T) {
 						Arguments: make(map[string]any),
 					},
 					{
-						Name:      "createUser",
-						Arguments: map[string]any{"input": map[string]any{"name": "John", "age": "30"}},
+						Name: "createUser",
+						Arguments: map[string]any{
+							"input": map[string]any{"name": "John", "age": "30"},
+						},
 					},
 				},
 			},
@@ -104,6 +107,8 @@ func TestParseQuery(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			actual, err := graphqlparser.ParseQuery(tc.query)
 			if tc.errorExpected {
 				require.Error(t, err)

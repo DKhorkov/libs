@@ -5,29 +5,36 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	customnats "github.com/DKhorkov/libs/nats"
+	"github.com/stretchr/testify/require"
 )
 
 func TestConsumerAlreadyRunningError(t *testing.T) {
+	t.Parallel()
+
 	t.Run("Default message without base error", func(t *testing.T) {
+		t.Parallel()
+
 		err := customnats.ConsumerAlreadyRunningError{}
 		expected := "consumer is already running"
 		require.Equal(t, expected, err.Error())
-		require.Nil(t, err.Unwrap())
+		require.NoError(t, err.Unwrap())
 	})
 
 	t.Run("Custom message without base error", func(t *testing.T) {
+		t.Parallel()
+
 		err := customnats.ConsumerAlreadyRunningError{
 			Message: "custom consumer running error",
 		}
 		expected := "custom consumer running error"
 		require.Equal(t, expected, err.Error())
-		require.Nil(t, err.Unwrap())
+		require.NoError(t, err.Unwrap())
 	})
 
 	t.Run("Custom message with base error", func(t *testing.T) {
+		t.Parallel()
+
 		baseErr := errors.New("base error")
 		err := customnats.ConsumerAlreadyRunningError{
 			Message: "custom consumer running error",
@@ -39,6 +46,8 @@ func TestConsumerAlreadyRunningError(t *testing.T) {
 	})
 
 	t.Run("Default message with base error", func(t *testing.T) {
+		t.Parallel()
+
 		baseErr := errors.New("base error")
 		err := customnats.ConsumerAlreadyRunningError{
 			BaseErr: baseErr,
@@ -50,23 +59,31 @@ func TestConsumerAlreadyRunningError(t *testing.T) {
 }
 
 func TestConsumerAlreadyStoppedError(t *testing.T) {
+	t.Parallel()
+
 	t.Run("Default message without base error", func(t *testing.T) {
+		t.Parallel()
+
 		err := customnats.ConsumerAlreadyStoppedError{}
 		expected := "consumer is already stopped"
 		require.Equal(t, expected, err.Error())
-		require.Nil(t, err.Unwrap())
+		require.NoError(t, err.Unwrap())
 	})
 
 	t.Run("Custom message without base error", func(t *testing.T) {
+		t.Parallel()
+
 		err := customnats.ConsumerAlreadyStoppedError{
 			Message: "custom consumer stopped error",
 		}
 		expected := "custom consumer stopped error"
 		require.Equal(t, expected, err.Error())
-		require.Nil(t, err.Unwrap())
+		require.NoError(t, err.Unwrap())
 	})
 
 	t.Run("Custom message with base error", func(t *testing.T) {
+		t.Parallel()
+
 		baseErr := errors.New("base error")
 		err := customnats.ConsumerAlreadyStoppedError{
 			Message: "custom consumer stopped error",
@@ -78,6 +95,8 @@ func TestConsumerAlreadyStoppedError(t *testing.T) {
 	})
 
 	t.Run("Default message with base error", func(t *testing.T) {
+		t.Parallel()
+
 		baseErr := errors.New("base error")
 		err := customnats.ConsumerAlreadyStoppedError{
 			BaseErr: baseErr,

@@ -4,13 +4,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/DKhorkov/libs/security"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/DKhorkov/libs/security"
 )
 
 func TestGenerateJWT(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		name          string
 		secretKey     string
@@ -33,20 +34,20 @@ func TestGenerateJWT(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			token, err := security.GenerateJWT(tc.value, tc.secretKey, tc.ttl, tc.algorithm)
 
 			if tc.errorExpected {
 				require.Error(t, err, tc.message)
-				assert.Equal(
+				assert.Empty(
 					t,
-					"",
 					token,
 					"\n%s - actual: '%v', expected: '%v'", tc.message, token, "")
 			} else {
 				require.NoError(t, err, tc.message)
-				assert.NotEqual(
+				assert.NotEmpty(
 					t,
-					"",
 					token,
 					"\n%s - actual: '%v', expected: '%v'", tc.message, token, "SomeJWTValue")
 			}
@@ -55,6 +56,8 @@ func TestGenerateJWT(t *testing.T) {
 }
 
 func TestParseJWT(t *testing.T) {
+	t.Parallel()
+
 	const (
 		userID    = 1
 		secretKey = "testSecret"
@@ -104,6 +107,8 @@ func TestParseJWT(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			token, err := security.GenerateJWT(userID, secretKey, tc.ttl, tc.algorithm)
 			require.NoError(t, err, tc.message)
 
@@ -114,6 +119,7 @@ func TestParseJWT(t *testing.T) {
 			} else {
 				floatValue, ok := value.(float64)
 				require.True(t, ok)
+
 				value = int(floatValue)
 			}
 

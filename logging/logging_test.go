@@ -10,14 +10,14 @@ import (
 	"testing"
 
 	"github.com/DKhorkov/libs/contextlib"
-
-	"github.com/stretchr/testify/require"
-
 	"github.com/DKhorkov/libs/logging"
 	"github.com/DKhorkov/libs/requestid"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
+
 	// Создаём временный файл для логов
 	tempDir := t.TempDir()
 	logFilePath := filepath.Join(tempDir, "test.log")
@@ -39,6 +39,8 @@ func TestNew(t *testing.T) {
 }
 
 func TestNewInvalidLogFile(t *testing.T) {
+	t.Parallel()
+
 	// Путь к невалидной директории
 	logFilePath := "/invalid/path/test.log"
 
@@ -51,6 +53,8 @@ func TestNewInvalidLogFile(t *testing.T) {
 }
 
 func TestGetLogTraceback(t *testing.T) {
+	t.Parallel()
+
 	traceback := logging.GetLogTraceback(1)
 	require.NotEmpty(t, traceback)
 	require.Contains(t, traceback, "logging_test.TestGetLogTraceback")
@@ -59,17 +63,22 @@ func TestGetLogTraceback(t *testing.T) {
 }
 
 func TestGetLogTracebackInvalidSkipLevel(t *testing.T) {
+	t.Parallel()
+
 	traceback := logging.GetLogTraceback(1000)
 	require.Contains(t, traceback, "Unknown")
 	require.Contains(t, traceback, "line 0")
 }
 
 func TestLogErrorContext(t *testing.T) {
+	t.Parallel()
+
 	// Настраиваем мок для contextlib.ValueFromContext
 	ctx := contextlib.WithValue(context.Background(), requestid.Key, "test-request-id")
 
 	// Создаём буфер для захвата логов
 	var buf bytes.Buffer
+
 	logger := slog.New(slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelError}))
 
 	err := errors.New("test error")
@@ -85,10 +94,13 @@ func TestLogErrorContext(t *testing.T) {
 }
 
 func TestLogErrorContextNoRequestID(t *testing.T) {
+	t.Parallel()
+
 	ctx := context.Background()
 
 	// Создаём буфер для захвата логов
 	var buf bytes.Buffer
+
 	logger := slog.New(slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelError}))
 
 	err := errors.New("test error")
@@ -104,11 +116,14 @@ func TestLogErrorContextNoRequestID(t *testing.T) {
 }
 
 func TestLogInfoContext(t *testing.T) {
+	t.Parallel()
+
 	// Настраиваем мок для contextlib.ValueFromContext
 	ctx := contextlib.WithValue(context.Background(), requestid.Key, "test-request-id")
 
 	// Создаём буфер для захвата логов
 	var buf bytes.Buffer
+
 	logger := slog.New(slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelInfo}))
 
 	logging.LogInfoContext(ctx, logger, "test info message")
@@ -122,10 +137,13 @@ func TestLogInfoContext(t *testing.T) {
 }
 
 func TestLogInfoContextNoRequestID(t *testing.T) {
+	t.Parallel()
+
 	ctx := context.Background()
 
 	// Создаём буфер для захвата логов
 	var buf bytes.Buffer
+
 	logger := slog.New(slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelInfo}))
 
 	logging.LogInfoContext(ctx, logger, "test info message")
@@ -139,8 +157,11 @@ func TestLogInfoContextNoRequestID(t *testing.T) {
 }
 
 func TestLogError(t *testing.T) {
+	t.Parallel()
+
 	// Создаём буфер для захвата логов
 	var buf bytes.Buffer
+
 	logger := slog.New(slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelError}))
 
 	err := errors.New("test error")
@@ -155,8 +176,11 @@ func TestLogError(t *testing.T) {
 }
 
 func TestLogInfo(t *testing.T) {
+	t.Parallel()
+
 	// Создаём буфер для захвата логов
 	var buf bytes.Buffer
+
 	logger := slog.New(slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelInfo}))
 
 	logging.LogInfo(logger, "test info message")

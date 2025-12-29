@@ -3,16 +3,15 @@ package postgresql_test
 import (
 	"context"
 	"database/sql"
-	postgresql2 "github.com/DKhorkov/libs/db/postgresql"
 	"testing"
 	"time"
 
+	postgresql2 "github.com/DKhorkov/libs/db/postgresql"
+	loggermock "github.com/DKhorkov/libs/logging/mocks"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
-
-	loggermock "github.com/DKhorkov/libs/logging/mocks"
 )
 
 var (
@@ -21,7 +20,11 @@ var (
 )
 
 func TestTransaction(t *testing.T) {
+	t.Parallel()
+
 	t.Run("should return transaction", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		logger := loggermock.NewMockLogger(ctrl)
 		connector, err := postgresql2.New(dsn, driver, logger)
@@ -42,6 +45,8 @@ func TestTransaction(t *testing.T) {
 	})
 
 	t.Run("nil connections pool", func(t *testing.T) {
+		t.Parallel()
+
 		connector := &postgresql2.CommonConnector{}
 
 		transaction, err := connector.Transaction(context.Background())
@@ -57,6 +62,8 @@ func TestTransaction(t *testing.T) {
 	})
 
 	t.Run("transaction with options", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		logger := loggermock.NewMockLogger(ctrl)
 		connector, err := postgresql2.New(dsn, driver, logger)
@@ -83,7 +90,11 @@ func TestTransaction(t *testing.T) {
 }
 
 func TestConnection(t *testing.T) {
+	t.Parallel()
+
 	t.Run("should return connection", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		logger := loggermock.NewMockLogger(ctrl)
 		connector, err := postgresql2.New(dsn, driver, logger)
@@ -108,6 +119,8 @@ func TestConnection(t *testing.T) {
 	})
 
 	t.Run("nil connections pool", func(t *testing.T) {
+		t.Parallel()
+
 		connector := &postgresql2.CommonConnector{}
 
 		connection, err := connector.Connection(context.Background())
@@ -125,7 +138,11 @@ func TestConnection(t *testing.T) {
 }
 
 func TestNewConnector(t *testing.T) {
+	t.Parallel()
+
 	t.Run("new connector without options", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		logger := loggermock.NewMockLogger(ctrl)
 		connector, err := postgresql2.New(dsn, driver, logger)
@@ -137,6 +154,8 @@ func TestNewConnector(t *testing.T) {
 	})
 
 	t.Run("new connector with options", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		logger := loggermock.NewMockLogger(ctrl)
 		connector, err := postgresql2.New(
@@ -158,7 +177,11 @@ func TestNewConnector(t *testing.T) {
 }
 
 func TestPool(t *testing.T) {
+	t.Parallel()
+
 	t.Run("should return connections pool", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		logger := loggermock.NewMockLogger(ctrl)
 		connector, err := postgresql2.New(dsn, driver, logger)
@@ -171,6 +194,8 @@ func TestPool(t *testing.T) {
 	})
 
 	t.Run("nil connections pool", func(t *testing.T) {
+		t.Parallel()
+
 		connector := &postgresql2.CommonConnector{}
 		assert.Nil(t, connector.Pool())
 	})

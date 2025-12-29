@@ -96,7 +96,9 @@ func WithErrorHandler(
 }
 
 // WithDisconnectErrorHandler sets handler for disconnection from server.
-func WithDisconnectErrorHandler(handler func(connection *natsbroker.Conn, err error)) ConsumerOption {
+func WithDisconnectErrorHandler(
+	handler func(connection *natsbroker.Conn, err error),
+) ConsumerOption {
 	return func(options *consumerOptions) error {
 		options.disconnectErrorHandler = handler
 

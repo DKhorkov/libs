@@ -9,6 +9,7 @@ func newInterceptingResponseWriter(w http.ResponseWriter) *interceptingResponseW
 // interceptingResponseWriter intercepts response from GraphQL for checking errors.
 type interceptingResponseWriter struct {
 	http.ResponseWriter
+
 	StatusCode int
 	Body       []byte
 }

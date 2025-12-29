@@ -4,11 +4,10 @@ import (
 	"context"
 	"strings"
 
+	"github.com/DKhorkov/libs/tracing"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-
-	"github.com/DKhorkov/libs/tracing"
 )
 
 // UnaryServerTracingInterceptor creates span on base of existing span and logs its Start and End events.
@@ -18,6 +17,7 @@ func UnaryServerTracingInterceptor(
 ) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		var span trace.Span
+
 		defer func() {
 			if span != nil {
 				span.End()
@@ -35,6 +35,7 @@ func UnaryServerTracingInterceptor(
 				}
 
 				ctx, span = tp.SpanFromTraceID(ctx, traceID, info.FullMethod, spanConfig.Opts...)
+
 				span.AddEvent(spanConfig.Events.Start.Name, spanConfig.Events.Start.Opts...)
 				defer span.AddEvent(spanConfig.Events.End.Name, spanConfig.Events.End.Opts...)
 			}

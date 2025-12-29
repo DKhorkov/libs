@@ -6,26 +6,32 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/DKhorkov/libs/grpc/interceptors"
+	"github.com/DKhorkov/libs/tracing"
+	mocktracing "github.com/DKhorkov/libs/tracing/mocks"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-
-	"github.com/DKhorkov/libs/grpc/interceptors"
-	"github.com/DKhorkov/libs/tracing"
-	mocktracing "github.com/DKhorkov/libs/tracing/mocks"
 )
 
 func TestUnaryServerTracingInterceptor(t *testing.T) {
+	t.Parallel()
+
 	t.Run("With valid traceID", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		provider := mocktracing.NewMockProvider(ctrl)
 		span := mocktracing.NewMockSpan()
 
 		traceID := trace.TraceID([16]byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16})
 		traceHex := traceID.String()
-		ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs(strings.ToLower(tracing.Key), traceHex))
+		ctx := metadata.NewIncomingContext(
+			context.Background(),
+			metadata.Pairs(strings.ToLower(tracing.Key), traceHex),
+		)
 		info := &grpc.UnaryServerInfo{FullMethod: "/test.Service/Method"}
 		spanConfig := tracing.SpanConfig{
 			Events: tracing.SpanEventsConfig{
@@ -61,9 +67,14 @@ func TestUnaryServerTracingInterceptor(t *testing.T) {
 	})
 
 	t.Run("With invalid traceID", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		provider := mocktracing.NewMockProvider(ctrl)
-		ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs(strings.ToLower(tracing.Key), "invalid-trace"))
+		ctx := metadata.NewIncomingContext(
+			context.Background(),
+			metadata.Pairs(strings.ToLower(tracing.Key), "invalid-trace"),
+		)
 		info := &grpc.UnaryServerInfo{FullMethod: "/test.Service/Method"}
 		spanConfig := tracing.SpanConfig{
 			Events: tracing.SpanEventsConfig{
@@ -91,6 +102,8 @@ func TestUnaryServerTracingInterceptor(t *testing.T) {
 	})
 
 	t.Run("Without traceID", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		provider := mocktracing.NewMockProvider(ctrl)
 		ctx := context.Background()
@@ -114,13 +127,18 @@ func TestUnaryServerTracingInterceptor(t *testing.T) {
 	})
 
 	t.Run("With handler error", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		provider := mocktracing.NewMockProvider(ctrl)
 		span := mocktracing.NewMockSpan()
 
 		traceID := trace.TraceID([16]byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16})
 		traceHex := traceID.String()
-		ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs(strings.ToLower(tracing.Key), traceHex))
+		ctx := metadata.NewIncomingContext(
+			context.Background(),
+			metadata.Pairs(strings.ToLower(tracing.Key), traceHex),
+		)
 		info := &grpc.UnaryServerInfo{FullMethod: "/test.Service/Method"}
 		spanConfig := tracing.SpanConfig{
 			Events: tracing.SpanEventsConfig{
@@ -157,7 +175,11 @@ func TestUnaryServerTracingInterceptor(t *testing.T) {
 }
 
 func TestUnaryClientTracingInterceptor(t *testing.T) {
+	t.Parallel()
+
 	t.Run("Successful invoker", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		provider := mocktracing.NewMockProvider(ctrl)
 		span := mocktracing.NewMockSpan()
@@ -183,16 +205,20 @@ func TestUnaryClientTracingInterceptor(t *testing.T) {
 		invoker := func(ctx context.Context, method string, req, reply any, cc *grpc.ClientConn, opts ...grpc.CallOption) error {
 			// Присваиваем значение через указатель
 			*reply.(*string) = "response"
+
 			return nil
 		}
 
 		var reply string
+
 		err := interceptor(ctx, method, nil, &reply, nil, invoker)
 		require.NoError(t, err)
 		require.Equal(t, "response", reply)
 	})
 
 	t.Run("Invoker error", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		provider := mocktracing.NewMockProvider(ctrl)
 		span := mocktracing.NewMockSpan()
@@ -219,6 +245,7 @@ func TestUnaryClientTracingInterceptor(t *testing.T) {
 		}
 
 		var reply string
+
 		err := interceptor(ctx, method, nil, &reply, nil, invoker)
 		require.Error(t, err)
 		require.Equal(t, "invoker error", err.Error())

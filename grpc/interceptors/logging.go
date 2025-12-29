@@ -6,14 +6,12 @@ import (
 	"reflect"
 	"strings"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/metadata"
-
-	grpclogging "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
-
 	"github.com/DKhorkov/libs/contextlib"
 	"github.com/DKhorkov/libs/logging"
 	"github.com/DKhorkov/libs/requestid"
+	grpclogging "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 const (

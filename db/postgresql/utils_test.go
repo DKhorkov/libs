@@ -6,17 +6,18 @@ import (
 	"testing"
 
 	postgresql2 "github.com/DKhorkov/libs/db/postgresql"
-
-	"go.uber.org/mock/gomock"
-
+	loggermock "github.com/DKhorkov/libs/logging/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	loggermock "github.com/DKhorkov/libs/logging/mocks"
+	"go.uber.org/mock/gomock"
 )
 
 func TestGetEntityColumns(t *testing.T) {
+	t.Parallel()
+
 	t.Run("should return slice of correct len and capacity", func(t *testing.T) {
+		t.Parallel()
+
 		testStruct := &struct {
 			Column1 int
 			Column2 string
@@ -26,13 +27,15 @@ func TestGetEntityColumns(t *testing.T) {
 		assert.Len(t, columns, 2)
 		assert.IsTypef(
 			t,
-			[]interface{}{},
+			[]any{},
 			columns,
 			"should return a slice of []interface{}")
 	})
 }
 
 func TestBuildDsn(t *testing.T) {
+	t.Parallel()
+
 	expected := "host=0.0.0.0 port=5432 user=postgres password=postgres dbname=postgres sslmode=disable"
 	config := postgresql2.Config{
 		Host:         "0.0.0.0",
@@ -49,7 +52,11 @@ func TestBuildDsn(t *testing.T) {
 }
 
 func TestCloseConnectionContext(t *testing.T) {
+	t.Parallel()
+
 	t.Run("should close connection context", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 		ctrl := gomock.NewController(t)
 		logger := loggermock.NewMockLogger(ctrl)

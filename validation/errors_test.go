@@ -9,6 +9,8 @@ import (
 )
 
 func TestError_Error(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		err      *validation.Error
@@ -45,6 +47,8 @@ func TestError_Error(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			actual := tc.err.Error()
 			if actual != tc.expected {
 				t.Errorf("Error() = %v, want %v", actual, tc.expected)
@@ -54,6 +58,8 @@ func TestError_Error(t *testing.T) {
 }
 
 func TestError_Unwrap(t *testing.T) {
+	t.Parallel()
+
 	baseErr := errors.New("base error")
 	wrappedErr := fmt.Errorf("wrapped: %w", baseErr)
 
@@ -85,8 +91,10 @@ func TestError_Unwrap(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			actual := tc.err.Unwrap()
-			if actual != tc.expected {
+			if !errors.Is(actual, tc.expected) {
 				t.Errorf("Unwrap() = %v, want %v", actual, tc.expected)
 			}
 		})

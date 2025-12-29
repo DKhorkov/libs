@@ -2,32 +2,38 @@ package http_test
 
 import (
 	"context"
-	http2 "github.com/DKhorkov/libs/middlewares/http"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/DKhorkov/libs/contextlib"
+	http2 "github.com/DKhorkov/libs/middlewares/http"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCookiesMiddleware(t *testing.T) {
+	t.Parallel()
+
 	t.Run("Adds cookies to context", func(t *testing.T) {
+		t.Parallel()
+
 		cookieNames := []string{"session_id", "user_token"}
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 		req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc123"})
 		req.AddCookie(&http.Cookie{Name: "user_token", Value: "xyz789"})
 
 		var capturedCookies map[string]*http.Cookie
+
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			capturedCookies = make(map[string]*http.Cookie)
+
 			for _, name := range cookieNames {
 				cookie, err := contextlib.ValueFromContext[*http.Cookie](r.Context(), name)
 				if err == nil {
 					capturedCookies[name] = cookie
 				}
 			}
+
 			w.WriteHeader(http.StatusOK)
 		})
 
@@ -43,20 +49,25 @@ func TestCookiesMiddleware(t *testing.T) {
 	})
 
 	t.Run("Handles missing cookies", func(t *testing.T) {
+		t.Parallel()
+
 		cookieNames := []string{"session_id", "user_token"}
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 		// Добавляем только одну cookie
 		req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc123"})
 
 		var capturedCookies map[string]*http.Cookie
+
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			capturedCookies = make(map[string]*http.Cookie)
+
 			for _, name := range cookieNames {
 				cookie, err := contextlib.ValueFromContext[*http.Cookie](r.Context(), name)
 				if err == nil {
 					capturedCookies[name] = cookie
 				}
 			}
+
 			w.WriteHeader(http.StatusOK)
 		})
 
@@ -72,15 +83,23 @@ func TestCookiesMiddleware(t *testing.T) {
 	})
 
 	t.Run("Adds ResponseWriter to context", func(t *testing.T) {
+		t.Parallel()
+
 		cookieNames := []string{"session_id"}
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 		req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc123"})
 
 		var capturedWriter http.ResponseWriter
+
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			writer, err := contextlib.ValueFromContext[http.ResponseWriter](r.Context(), http2.CookiesWriterName)
+			writer, err := contextlib.ValueFromContext[http.ResponseWriter](
+				r.Context(),
+				http2.CookiesWriterName,
+			)
 			require.NoError(t, err)
+
 			capturedWriter = writer
+
 			w.WriteHeader(http.StatusCreated)
 		})
 
@@ -96,14 +115,20 @@ func TestCookiesMiddleware(t *testing.T) {
 	})
 
 	t.Run("Calls next handler with empty cookie names", func(t *testing.T) {
+		t.Parallel()
+
 		cookieNames := []string{}
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 
 		var handlerCalled bool
+
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			handlerCalled = true
 			// Проверяем, что ResponseWriter всё равно добавлен
-			writer, err := contextlib.ValueFromContext[http.ResponseWriter](r.Context(), http2.CookiesWriterName)
+			writer, err := contextlib.ValueFromContext[http.ResponseWriter](
+				r.Context(),
+				http2.CookiesWriterName,
+			)
 			require.NoError(t, err)
 			require.NotNil(t, writer)
 			w.WriteHeader(http.StatusOK)
@@ -119,9 +144,11 @@ func TestCookiesMiddleware(t *testing.T) {
 	})
 
 	t.Run("Preserves original context values", func(t *testing.T) {
+		t.Parallel()
+
 		cookieNames := []string{"session_id"}
 		ctx := contextlib.WithValue(context.Background(), "custom-key", "custom-value")
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 		req = req.WithContext(ctx)
 		req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc123"})
 
@@ -135,7 +162,10 @@ func TestCookiesMiddleware(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, "abc123", cookie.Value)
 			// Проверяем ResponseWriter
-			writer, err := contextlib.ValueFromContext[http.ResponseWriter](r.Context(), http2.CookiesWriterName)
+			writer, err := contextlib.ValueFromContext[http.ResponseWriter](
+				r.Context(),
+				http2.CookiesWriterName,
+			)
 			require.NoError(t, err)
 			require.NotNil(t, writer)
 			w.WriteHeader(http.StatusOK)

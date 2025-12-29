@@ -1,13 +1,15 @@
 package validation_test
 
 import (
-	"github.com/DKhorkov/libs/validation"
 	"testing"
 
+	"github.com/DKhorkov/libs/validation"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestValidateValueByRule(t *testing.T) {
+	t.Parallel()
+
 	const commonRule = "^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,4}$"
 
 	testCases := []struct {
@@ -56,6 +58,8 @@ func TestValidateValueByRule(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			valid := validation.ValidateValueByRule(tc.email, tc.rule)
 			assert.Equal(t, tc.expected, valid)
 		})
@@ -63,7 +67,9 @@ func TestValidateValueByRule(t *testing.T) {
 }
 
 func TestValidateValueByRules(t *testing.T) {
-	var commonRules = []string{
+	t.Parallel()
+
+	commonRules := []string{
 		".{8,}",
 		"[a-z]",
 		"[A-Z]",
@@ -123,6 +129,8 @@ func TestValidateValueByRules(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			valid := validation.ValidateValueByRules(tc.password, tc.rules)
 			assert.Equal(t, tc.expected, valid)
 		})

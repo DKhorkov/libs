@@ -4,12 +4,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/DKhorkov/libs/validation"
+	"github.com/stretchr/testify/require"
 )
 
 func TestContainsForbiddenWords(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		input    string
@@ -64,6 +65,8 @@ func TestContainsForbiddenWords(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			actual := validation.ContainsForbiddenWords(tc.input)
 			require.Equal(t, tc.expected, actual, "Для входной строки: %q", tc.input)
 		})
@@ -91,7 +94,7 @@ func BenchmarkContainsForbiddenWords(b *testing.B) {
 
 	for _, bm := range benchmarks {
 		b.Run(bm.name, func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
+			for range b.N {
 				validation.ContainsForbiddenWords(bm.input)
 			}
 		})
@@ -99,6 +102,8 @@ func BenchmarkContainsForbiddenWords(b *testing.B) {
 }
 
 func TestFalsePositives(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		name  string
 		input string
@@ -123,6 +128,8 @@ func TestFalsePositives(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			actual := validation.ContainsForbiddenWords(tc.input)
 			require.False(t, actual, "Ожидалось отсутствие мата в слове: %q", tc.input)
 		})

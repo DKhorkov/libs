@@ -20,13 +20,15 @@ func CookiesMiddleware(next http.Handler, cookieNames []string) http.Handler {
 				continue
 			}
 
-			ctx = contextlib.WithValue(ctx, cookieName, cookie)
+			// Если будет ctx := то будут падать тесты и не будет работать
+			ctx = contextlib.WithValue(ctx, cookieName, cookie) //nolint:all
 			r = r.WithContext(ctx)
 		}
 
 		// Paste writer to context for writing cookies in resolvers purposes:
 		ctx = contextlib.WithValue(ctx, CookiesWriterName, w)
 		r = r.WithContext(ctx)
+
 		next.ServeHTTP(w, r)
 	})
 }

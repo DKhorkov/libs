@@ -1,31 +1,33 @@
 package loadenv_test
 
 import (
-	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/DKhorkov/libs/loadenv"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-// Тест в табличном стиле для функции Init
+// Тест в табличном стиле для функции Init.
 func TestInit(t *testing.T) {
+	t.Parallel()
+
 	// Подготовка временных .env файлов для тестов
-	const validEnvContent = "KEY=value\nANOTHER=123"
-	const invalidEnvContent = "KEY=value\n=invalid_line"
+	const (
+		validEnvContent   = "KEY=value\nANOTHER=123"
+		invalidEnvContent = "KEY=value\n=invalid_line"
+	)
 
 	// Создаём временные файлы
 	validFile := createTempFile(t, validEnvContent)
-	defer func() {
-		require.NoError(t, os.Remove(validFile))
-	}() // очистка после теста
 
 	invalidFile := createTempFile(t, invalidEnvContent)
-	defer func() {
+
+	t.Cleanup(func() {
+		require.NoError(t, os.Remove(validFile))
 		require.NoError(t, os.Remove(invalidFile))
-	}() // очистка после теста
+	})
 
 	nonExistentFile := "non_existent.env"
 
@@ -93,6 +95,8 @@ func TestInit(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			tt.setup()
 			defer tt.teardown()
 
@@ -118,19 +122,23 @@ func TestInit(t *testing.T) {
 	}
 }
 
-// Вспомогательная функция для создания временного .env файла
+// Вспомогательная функция для создания временного .env файла.
 func createTempFile(t *testing.T, content string) string {
 	t.Helper()
-	tmpfile, err := os.CreateTemp("", "*.env")
+
+	tmpfile, err := os.CreateTemp(t.TempDir(), "*.env")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = tmpfile.Write([]byte(content)); err != nil {
+
+	if _, err = tmpfile.WriteString(content); err != nil {
 		t.Fatal(err)
 	}
+
 	if err = tmpfile.Close(); err != nil {
 		t.Fatal(err)
 	}
+
 	return tmpfile.Name()
 }
 
@@ -166,6 +174,7 @@ func TestGetEnv(t *testing.T) {
 			if tc.envValue != "" {
 				t.Setenv(tc.envVar, tc.envValue)
 			}
+
 			actual := loadenv.GetEnv(tc.envVar, tc.defaultValue)
 			assert.Equal(
 				t,
@@ -216,6 +225,7 @@ func TestGetEnvAsInt(t *testing.T) {
 			if tc.envValue != "" {
 				t.Setenv(tc.envVar, tc.envValue)
 			}
+
 			actual := loadenv.GetEnvAsInt(tc.envVar, tc.defaultValue)
 			assert.Equal(
 				t,
@@ -279,6 +289,7 @@ func TestGetEnvAsSlice(t *testing.T) {
 			if tc.envValue != "" {
 				t.Setenv(tc.envVar, tc.envValue)
 			}
+
 			actual := loadenv.GetEnvAsSlice(tc.envVar, tc.defaultValue, tc.separator)
 			assert.Equal(
 				t,
@@ -337,6 +348,7 @@ func TestGetEnvAsBool(t *testing.T) {
 			if tc.envValue != "" {
 				t.Setenv(tc.envVar, tc.envValue)
 			}
+
 			actual := loadenv.GetEnvAsBool(tc.envVar, tc.defaultValue)
 			assert.Equal(
 				t,
@@ -348,6 +360,8 @@ func TestGetEnvAsBool(t *testing.T) {
 }
 
 func TestIsStringIsValidSlice(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		input     string
 		separator string
@@ -376,6 +390,8 @@ func TestIsStringIsValidSlice(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.message, func(t *testing.T) {
+			t.Parallel()
+
 			actual := loadenv.IsStringIsValidSlice(tc.input, tc.separator)
 			assert.Equal(
 				t,

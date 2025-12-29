@@ -8,16 +8,15 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/DKhorkov/libs/grpc/interceptors"
+	"github.com/DKhorkov/libs/logging"
+	mocklogging "github.com/DKhorkov/libs/logging/mocks"
+	"github.com/DKhorkov/libs/requestid"
 	grpclogging "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-
-	"github.com/DKhorkov/libs/grpc/interceptors"
-	"github.com/DKhorkov/libs/logging"
-	mocklogging "github.com/DKhorkov/libs/logging/mocks"
-	"github.com/DKhorkov/libs/requestid"
 )
 
 type testRequest struct {
@@ -26,7 +25,11 @@ type testRequest struct {
 }
 
 func TestUnaryServerLoggingInterceptor(t *testing.T) {
+	t.Parallel()
+
 	t.Run("Without requestID", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		logger := mocklogging.NewMockLogger(ctrl)
 
@@ -51,13 +54,18 @@ func TestUnaryServerLoggingInterceptor(t *testing.T) {
 	})
 
 	t.Run("With error from handler", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		logger := mocklogging.NewMockLogger(ctrl)
 
 		requestID := "test-request-id"
 		req := struct{ Username string }{Username: "user"}
 		info := &grpc.UnaryServerInfo{FullMethod: "/test.Service/Method"}
-		ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs(strings.ToLower(requestid.Key), requestID))
+		ctx := metadata.NewIncomingContext(
+			context.Background(),
+			metadata.Pairs(strings.ToLower(requestid.Key), requestID),
+		)
 
 		logger.
 			EXPECT().
@@ -76,13 +84,18 @@ func TestUnaryServerLoggingInterceptor(t *testing.T) {
 	})
 
 	t.Run("Non-struct request", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		logger := mocklogging.NewMockLogger(ctrl)
 
 		requestID := "test-request-id"
 		req := "non-struct-request"
 		info := &grpc.UnaryServerInfo{FullMethod: "/test.Service/Method"}
-		ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs(strings.ToLower(requestid.Key), requestID))
+		ctx := metadata.NewIncomingContext(
+			context.Background(),
+			metadata.Pairs(strings.ToLower(requestid.Key), requestID),
+		)
 
 		interceptor := interceptors.UnaryServerLoggingInterceptor(logger)
 
@@ -91,15 +104,23 @@ func TestUnaryServerLoggingInterceptor(t *testing.T) {
 		}
 
 		require.Panics(t, func() {
-			interceptor(ctx, req, info, handler)
+			_, err := interceptor(ctx, req, info, handler)
+			require.NoError(t, err)
 		})
 	})
 }
 
 func TestUnaryClientLoggingInterceptor(t *testing.T) {
+	t.Parallel()
+
 	t.Run("Log without password field", func(t *testing.T) {
+		t.Parallel()
+
 		var buf bytes.Buffer
-		slogLogger := slog.New(slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelDebug}))
+
+		slogLogger := slog.New(
+			slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelDebug}),
+		)
 
 		logger := logging.Logger(slogLogger)
 		clientLogger := interceptors.UnaryClientLoggingInterceptor(logger)
@@ -115,6 +136,8 @@ func TestUnaryClientLoggingInterceptor(t *testing.T) {
 	})
 
 	t.Run("Panic on invalid logger type", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		logger := mocklogging.NewMockLogger(ctrl)
 		clientLogger := interceptors.UnaryClientLoggingInterceptor(logger)
@@ -128,8 +151,13 @@ func TestUnaryClientLoggingInterceptor(t *testing.T) {
 	})
 
 	t.Run("Non-struct field", func(t *testing.T) {
+		t.Parallel()
+
 		var buf bytes.Buffer
-		slogLogger := slog.New(slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelDebug}))
+
+		slogLogger := slog.New(
+			slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelDebug}),
+		)
 
 		logger := logging.Logger(slogLogger)
 		clientLogger := interceptors.UnaryClientLoggingInterceptor(logger)

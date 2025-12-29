@@ -59,12 +59,22 @@ func New(opts ...Option) (*CommonProvider, error) {
 }
 
 // Set sets key.
-func (p *CommonProvider) Set(ctx context.Context, key string, value any, expiration time.Duration) error {
+func (p *CommonProvider) Set(
+	ctx context.Context,
+	key string,
+	value any,
+	expiration time.Duration,
+) error {
 	return p.client.Set(ctx, key, value, expiration).Err()
 }
 
 // SetNX sets key, if not already exists.
-func (p *CommonProvider) SetNX(ctx context.Context, key string, value any, expiration time.Duration) error {
+func (p *CommonProvider) SetNX(
+	ctx context.Context,
+	key string,
+	value any,
+	expiration time.Duration,
+) error {
 	return p.client.SetNX(ctx, key, value, expiration).Err()
 }
 
@@ -74,7 +84,11 @@ func (p *CommonProvider) Get(ctx context.Context, key string) (string, error) {
 }
 
 // GetEx gets key and expires it, if ttl is expired.
-func (p *CommonProvider) GetEx(ctx context.Context, key string, expiration time.Duration) (string, error) {
+func (p *CommonProvider) GetEx(
+	ctx context.Context,
+	key string,
+	expiration time.Duration,
+) (string, error) {
 	return p.client.GetEx(ctx, key, expiration).Result()
 }
 
@@ -110,8 +124,10 @@ func (p *CommonProvider) Del(ctx context.Context, keys ...string) error {
 
 // DelByPattern deletes all keys, which matches provided pattern.
 func (p *CommonProvider) DelByPattern(ctx context.Context, pattern string, batchSize *int64) error {
-	var cursor uint64
-	var err error
+	var (
+		cursor uint64
+		err    error
+	)
 
 	bs := defaultBatchSize
 	if batchSize != nil {
@@ -120,6 +136,7 @@ func (p *CommonProvider) DelByPattern(ctx context.Context, pattern string, batch
 
 	for {
 		var keys []string
+
 		keys, cursor, err = p.client.Scan(ctx, cursor, pattern, bs).Result()
 		if err != nil {
 			return fmt.Errorf("error scanning keys: %w", err)

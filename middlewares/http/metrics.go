@@ -1,12 +1,13 @@
 package http
 
 import (
-	"github.com/prometheus/client_golang/prometheus"
 	"net/http"
 	"runtime"
 	"runtime/metrics"
 	"strconv"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 const (
@@ -50,9 +51,9 @@ var (
 		},
 	)
 
-	goroutinesCount = prometheus.NewGauge(
+	goroutinesNumber = prometheus.NewGauge(
 		prometheus.GaugeOpts{
-			Name: "goroutines_count",
+			Name: "goroutines_number",
 			Help: "Number of goroutines that currently exist.",
 		},
 	)
@@ -65,20 +66,20 @@ var (
 	)
 
 	metricsToCollect = map[string]prometheus.Metric{
-		goroutinesCountMetricName: goroutinesCount,
-		memoryUsageMetricName:     memoryUsage,
+		goroutinesNumberMetricName: goroutinesNumber,
+		memoryUsageMetricName:      memoryUsage,
 	}
 )
 
 const (
-	goroutinesCountMetricName = "/sched/goroutines:goroutines"
-	memoryUsageMetricName     = "/memory/classes/heap/free:bytes"
+	goroutinesNumberMetricName = "/sched/goroutines:goroutines"
+	memoryUsageMetricName      = "/memory/classes/heap/free:bytes"
 )
 
 func init() {
 	prometheus.MustRegister(requestDuration)
 	prometheus.MustRegister(requestsTotal)
-	prometheus.MustRegister(goroutinesCount)
+	prometheus.MustRegister(goroutinesNumber)
 	prometheus.MustRegister(memoryUsage)
 }
 
@@ -96,7 +97,7 @@ func MetricsMiddleware(next http.Handler) http.Handler {
 		now := time.Now()
 
 		// Create new metricsResponseWriter for response intercepting purpose:
-		mrw := newMetricsResponseWriter(w)
+		mrw := newInterceptingResponseWriter(w)
 		next.ServeHTTP(mrw, r)
 
 		status := statusOK
@@ -136,35 +137,10 @@ func collectGoMetrics() {
 
 	for _, m := range metricsSample {
 		switch m.Name {
-		case goroutinesCountMetricName:
-			goroutinesCount.Set(float64(m.Value.Uint64()))
+		case goroutinesNumberMetricName:
+			goroutinesNumber.Set(float64(m.Value.Uint64()))
 		case memoryUsageMetricName:
 			memoryUsage.Set(float64(m.Value.Uint64()))
 		}
 	}
-}
-
-func newMetricsResponseWriter(w http.ResponseWriter) *metricsResponseWriter {
-	return &metricsResponseWriter{ResponseWriter: w, StatusCode: http.StatusOK}
-}
-
-// metricsResponseWriter intercepts response from handler for MetricsMiddleware usage.
-type metricsResponseWriter struct {
-	http.ResponseWriter
-	StatusCode int
-	Body       []byte
-}
-
-// WriteHeader intercepts response body for later usage in MetricsMiddleware.
-func (mrw *metricsResponseWriter) WriteHeader(statusCode int) {
-	mrw.StatusCode = statusCode
-
-	mrw.ResponseWriter.WriteHeader(statusCode)
-}
-
-// Write intercepts response body for later usage in MetricsMiddleware.
-func (mrw *metricsResponseWriter) Write(body []byte) (int, error) {
-	mrw.Body = body
-
-	return mrw.ResponseWriter.Write(body)
 }

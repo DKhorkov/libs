@@ -4,13 +4,14 @@ import (
 	"context"
 	"testing"
 
+	"github.com/DKhorkov/libs/tracing"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/otel/trace"
-
-	"github.com/DKhorkov/libs/tracing"
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
+
 	config := tracing.Config{
 		JaegerURL:      "http://localhost:14268/api/traces",
 		ServiceName:    "test-service",
@@ -23,6 +24,8 @@ func TestNew(t *testing.T) {
 }
 
 func TestShutdown(t *testing.T) {
+	t.Parallel()
+
 	config := tracing.Config{
 		JaegerURL:      "http://localhost:14268/api/traces",
 		ServiceName:    "test-service",
@@ -37,6 +40,8 @@ func TestShutdown(t *testing.T) {
 }
 
 func TestSpan(t *testing.T) {
+	t.Parallel()
+
 	config := tracing.Config{
 		JaegerURL:      "http://localhost:14268/api/traces",
 		ServiceName:    "test-service",
@@ -48,11 +53,13 @@ func TestSpan(t *testing.T) {
 
 	ctx, span := provider.Span(context.Background(), "test-span")
 	require.NotNil(t, span)
-	require.NotEqual(t, trace.SpanContextFromContext(ctx).TraceID(), trace.TraceID{})
+	require.NotEqual(t, trace.TraceID{}, trace.SpanContextFromContext(ctx).TraceID())
 	span.End()
 }
 
 func TestSpanFromTraceID(t *testing.T) {
+	t.Parallel()
+
 	config := tracing.Config{
 		JaegerURL:      "http://localhost:14268/api/traces",
 		ServiceName:    "test-service",
@@ -72,6 +79,8 @@ func TestSpanFromTraceID(t *testing.T) {
 }
 
 func TestTraceIDFromHexValid(t *testing.T) {
+	t.Parallel()
+
 	config := tracing.Config{
 		JaegerURL:      "http://localhost:14268/api/traces",
 		ServiceName:    "test-service",
@@ -87,6 +96,8 @@ func TestTraceIDFromHexValid(t *testing.T) {
 }
 
 func TestTraceIDFromHexInvalid(t *testing.T) {
+	t.Parallel()
+
 	config := tracing.Config{
 		JaegerURL:      "http://localhost:14268/api/traces",
 		ServiceName:    "test-service",

@@ -5,15 +5,18 @@ import (
 	"fmt"
 	"testing"
 
+	customgrpc "github.com/DKhorkov/libs/grpc"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	customgrpc "github.com/DKhorkov/libs/grpc"
 )
 
 func TestBaseError_Error(t *testing.T) {
+	t.Parallel()
+
 	t.Run("Message without base error", func(t *testing.T) {
+		t.Parallel()
+
 		err := customgrpc.BaseError{
 			Message: "something went wrong",
 			Status:  codes.InvalidArgument,
@@ -23,6 +26,8 @@ func TestBaseError_Error(t *testing.T) {
 	})
 
 	t.Run("Message with base error", func(t *testing.T) {
+		t.Parallel()
+
 		baseErr := errors.New("base error")
 		err := customgrpc.BaseError{
 			Message: "something went wrong",
@@ -34,6 +39,8 @@ func TestBaseError_Error(t *testing.T) {
 	})
 
 	t.Run("Empty message without base error", func(t *testing.T) {
+		t.Parallel()
+
 		err := customgrpc.BaseError{
 			Status: codes.InvalidArgument,
 		}
@@ -42,6 +49,8 @@ func TestBaseError_Error(t *testing.T) {
 	})
 
 	t.Run("Empty message with base error", func(t *testing.T) {
+		t.Parallel()
+
 		baseErr := errors.New("base error")
 		err := customgrpc.BaseError{
 			BaseErr: baseErr,
@@ -53,7 +62,11 @@ func TestBaseError_Error(t *testing.T) {
 }
 
 func TestBaseError_Unwrap(t *testing.T) {
+	t.Parallel()
+
 	t.Run("With base error", func(t *testing.T) {
+		t.Parallel()
+
 		baseErr := errors.New("base error")
 		err := customgrpc.BaseError{
 			Message: "something went wrong",
@@ -64,29 +77,40 @@ func TestBaseError_Unwrap(t *testing.T) {
 	})
 
 	t.Run("Without base error", func(t *testing.T) {
+		t.Parallel()
+
 		err := customgrpc.BaseError{
 			Message: "something went wrong",
 			Status:  codes.InvalidArgument,
 		}
-		require.Nil(t, err.Unwrap())
+		require.NoError(t, err.Unwrap())
 	})
 }
 
 func TestBaseError_GRPCStatus(t *testing.T) {
+	t.Parallel()
+
 	t.Run("With message and base error", func(t *testing.T) {
+		t.Parallel()
+
 		baseErr := errors.New("base error")
 		err := customgrpc.BaseError{
 			Message: "something went wrong",
 			BaseErr: baseErr,
 			Status:  codes.InvalidArgument,
 		}
-		expected := status.New(codes.InvalidArgument, fmt.Sprintf("something went wrong. Base error: %v", baseErr))
+		expected := status.New(
+			codes.InvalidArgument,
+			fmt.Sprintf("something went wrong. Base error: %v", baseErr),
+		)
 		result := err.GRPCStatus()
 		require.Equal(t, expected.Code(), result.Code())
 		require.Equal(t, expected.Message(), result.Message())
 	})
 
 	t.Run("With message only", func(t *testing.T) {
+		t.Parallel()
+
 		err := customgrpc.BaseError{
 			Message: "something went wrong",
 			Status:  codes.InvalidArgument,
@@ -98,6 +122,8 @@ func TestBaseError_GRPCStatus(t *testing.T) {
 	})
 
 	t.Run("Empty message without base error", func(t *testing.T) {
+		t.Parallel()
+
 		err := customgrpc.BaseError{
 			Status: codes.InvalidArgument,
 		}

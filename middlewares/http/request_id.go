@@ -3,10 +3,9 @@ package http
 import (
 	"net/http"
 
-	"google.golang.org/grpc/metadata"
-
 	"github.com/DKhorkov/libs/contextlib"
 	"github.com/DKhorkov/libs/requestid"
+	"google.golang.org/grpc/metadata"
 )
 
 // RequestIDMiddleware generates request ID and paste it to provided context for later usage.

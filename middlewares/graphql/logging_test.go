@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	graphql2 "github.com/DKhorkov/libs/middlewares/graphql"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	graphql2 "github.com/DKhorkov/libs/middlewares/graphql"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -16,7 +17,7 @@ import (
 	mocklogging "github.com/DKhorkov/libs/logging/mocks"
 )
 
-func TestGraphQLLoggingMiddleware(t *testing.T) {
+func TestLoggingMiddleware(t *testing.T) {
 	t.Run("Skips non-graphql path", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		logger := mocklogging.NewMockLogger(ctrl)
@@ -27,7 +28,7 @@ func TestGraphQLLoggingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := graphql2.GraphQLLoggingMiddleware(nextHandler, logger)
+		middleware := graphql2.LoggingMiddleware(nextHandler, logger)
 
 		req := httptest.NewRequest(http.MethodPost, "/not-query", nil)
 		rr := httptest.NewRecorder()
@@ -53,7 +54,7 @@ func TestGraphQLLoggingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := graphql2.GraphQLLoggingMiddleware(nextHandler, logger)
+		middleware := graphql2.LoggingMiddleware(nextHandler, logger)
 
 		// Создаём запрос с телом, которое нельзя прочитать
 		req := httptest.NewRequest(http.MethodPost, "/query", nil)
@@ -81,7 +82,7 @@ func TestGraphQLLoggingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := graphql2.GraphQLLoggingMiddleware(nextHandler, logger)
+		middleware := graphql2.LoggingMiddleware(nextHandler, logger)
 
 		body := []byte("invalid json")
 		req := httptest.NewRequest(http.MethodPost, "/query", bytes.NewReader(body))
@@ -93,13 +94,13 @@ func TestGraphQLLoggingMiddleware(t *testing.T) {
 		require.Equal(t, http.StatusOK, rr.Code)
 	})
 
-	t.Run("Handles GraphQL parse error", func(t *testing.T) {
+	t.Run("Handles  parse error", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		logger := mocklogging.NewMockLogger(ctrl)
 
 		logger.
 			EXPECT().
-			ErrorContext(gomock.Any(), gomock.Any(), gomock.Any()).
+			InfoContext(gomock.Any(), gomock.Any(), gomock.Any()).
 			Times(1)
 
 		query := `query Test { field }`
@@ -110,7 +111,7 @@ func TestGraphQLLoggingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := graphql2.GraphQLLoggingMiddleware(nextHandler, logger)
+		middleware := graphql2.LoggingMiddleware(nextHandler, logger)
 
 		body := map[string]any{"query": query}
 		bodyBytes, _ := json.Marshal(body)
@@ -123,7 +124,7 @@ func TestGraphQLLoggingMiddleware(t *testing.T) {
 		require.Equal(t, http.StatusOK, rr.Code)
 	})
 
-	t.Run("Logs valid GraphQL request", func(t *testing.T) {
+	t.Run("Logs valid  request", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		logger := mocklogging.NewMockLogger(ctrl)
 
@@ -153,7 +154,7 @@ func TestGraphQLLoggingMiddleware(t *testing.T) {
 
 		logger.
 			EXPECT().
-			ErrorContext(gomock.Any(), gomock.Any(), gomock.Any()).
+			InfoContext(gomock.Any(), gomock.Any(), gomock.Any()).
 			Times(1)
 
 		var handlerCalled bool
@@ -167,7 +168,7 @@ func TestGraphQLLoggingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := graphql2.GraphQLLoggingMiddleware(nextHandler, logger)
+		middleware := graphql2.LoggingMiddleware(nextHandler, logger)
 
 		body := map[string]any{
 			"query":     query,

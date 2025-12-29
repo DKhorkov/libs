@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"github.com/DKhorkov/libs/contextlib"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/DKhorkov/libs/contextlib"
 
 	"github.com/stretchr/testify/require"
 
@@ -108,13 +109,13 @@ func TestLogInfoContext(t *testing.T) {
 
 	// Создаём буфер для захвата логов
 	var buf bytes.Buffer
-	logger := slog.New(slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelError}))
+	logger := slog.New(slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelInfo}))
 
 	logging.LogInfoContext(ctx, logger, "test info message")
 
 	// Проверяем содержимое логов
 	logOutput := buf.String()
-	require.Contains(t, logOutput, `"level":"ERROR"`) // Используется ErrorContext
+	require.Contains(t, logOutput, `"level":"INFO"`)
 	require.Contains(t, logOutput, `"msg":"test info message"`)
 	require.Contains(t, logOutput, `"Request ID":"test-request-id"`)
 	require.Contains(t, logOutput, `"Traceback"`)
@@ -125,13 +126,13 @@ func TestLogInfoContextNoRequestID(t *testing.T) {
 
 	// Создаём буфер для захвата логов
 	var buf bytes.Buffer
-	logger := slog.New(slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelError}))
+	logger := slog.New(slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelInfo}))
 
 	logging.LogInfoContext(ctx, logger, "test info message")
 
 	// Проверяем содержимое логов
 	logOutput := buf.String()
-	require.Contains(t, logOutput, `"level":"ERROR"`) // Используется ErrorContext
+	require.Contains(t, logOutput, `"level":"INFO"`)
 	require.Contains(t, logOutput, `"msg":"test info message"`)
 	require.Contains(t, logOutput, `"Request ID":""`)
 	require.Contains(t, logOutput, `"Traceback"`)

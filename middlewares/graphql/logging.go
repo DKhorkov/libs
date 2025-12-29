@@ -18,8 +18,8 @@ const (
 	passwordFieldName = "password"
 )
 
-// GraphQLLoggingMiddleware logs GraphQL request info, such as query type, name, fields, variables and return fields.
-func GraphQLLoggingMiddleware(next http.Handler, logger logging.Logger) http.Handler {
+// LoggingMiddleware logs GraphQL request info, such as query type, name, fields, variables and return fields.
+func LoggingMiddleware(next http.Handler, logger logging.Logger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != graphqlURLPath {
 			next.ServeHTTP(w, r)

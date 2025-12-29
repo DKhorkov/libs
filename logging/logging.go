@@ -97,7 +97,7 @@ func LogInfoContext(ctx context.Context, logger Logger, msg string) {
 		requestID = ""
 	}
 
-	logger.ErrorContext(
+	logger.InfoContext(
 		ctx,
 		msg,
 		"Request ID",

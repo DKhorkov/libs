@@ -38,10 +38,10 @@ func LoggingMiddleware(
 			// Restoring request body for later usage due to the fact that io.Reader can be read only once:
 			r.Body = io.NopCloser(bytes.NewBuffer(body))
 
-			var payload map[string]any
+			var payloadInput map[string]any
 
 			if len(body) > 0 {
-				if err = json.Unmarshal(body, &payload); err != nil {
+				if err = json.Unmarshal(body, &payloadInput); err != nil {
 					logging.LogErrorContext(
 						ctx,
 						logger,
@@ -51,7 +51,7 @@ func LoggingMiddleware(
 				}
 
 				for _, field := range sensitiveFields {
-					delete(payload, field)
+					delete(payloadInput, field)
 				}
 			}
 
@@ -68,7 +68,7 @@ func LoggingMiddleware(
 					"Query", r.URL.Query(),
 					"Cookies", r.Cookies(),
 					"Form", r.PostForm,
-					"Payload", payload,
+					"Payload", payloadInput,
 				}...,
 			)
 
@@ -76,13 +76,13 @@ func LoggingMiddleware(
 			trw := newInterceptingResponseWriter(w)
 			next.ServeHTTP(trw, r)
 
-			// Обнуляем payload для логгирования ответа:
-			payload = map[string]any{}
+			// Делаем любого типа, чтобы обрабатывать и массивы, и словари:
+			var payloadOutput any
 
 			if len(trw.Body) > 0 {
 				switch {
 				case trw.StatusCode < http.StatusBadRequest:
-					if err = json.Unmarshal(trw.Body, &payload); err != nil {
+					if err = json.Unmarshal(trw.Body, &payloadOutput); err != nil {
 						logging.LogErrorContext(
 							ctx,
 							logger,
@@ -92,9 +92,7 @@ func LoggingMiddleware(
 					}
 				default:
 					// Ошибки пишутся как обычные строки в тело ответа:
-					payload["error"] = string(
-						trw.Body,
-					)
+					payloadOutput = map[string]any{"error": trw.Body}
 				}
 			}
 
@@ -109,7 +107,7 @@ func LoggingMiddleware(
 					"URL", r.URL,
 					"StatusCode", trw.StatusCode,
 					"Headers", trw.Header(),
-					"Payload", payload,
+					"Payload", payloadOutput,
 				}...,
 			)
 		})

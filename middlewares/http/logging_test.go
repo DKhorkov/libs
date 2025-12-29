@@ -46,7 +46,7 @@ func TestLoggingMiddleware(t *testing.T) {
 			},
 		},
 		{
-			name:            "restore request body for handler",
+			name:            "success with json answer",
 			path:            "/api/test",
 			method:          "POST",
 			requestBody:     `{"test": "data"}`,
@@ -97,6 +97,62 @@ func TestLoggingMiddleware(t *testing.T) {
 				}
 
 				if string(body) != `{"test": "data"}` {
+					t.Errorf("restored body mismatch: got %s", string(body))
+				}
+			},
+		},
+		{
+			name:            "success with array answer",
+			path:            "/api/test",
+			method:          "POST",
+			requestBody:     `{"test": "data"}`,
+			sensitiveFields: []string{},
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				// Handler should be able to read body
+				body, err := io.ReadAll(r.Body)
+				if err != nil {
+					t.Errorf("handler failed to read body: %v", err)
+					w.WriteHeader(http.StatusInternalServerError)
+
+					return
+				}
+
+				var data map[string]any
+				if err = json.Unmarshal(body, &data); err != nil {
+					t.Errorf("handler failed to unmarshal body: %v", err)
+					w.WriteHeader(http.StatusInternalServerError)
+
+					return
+				}
+
+				if data["test"] != "data" {
+					t.Errorf("handler got wrong data: %v", data)
+				}
+
+				w.WriteHeader(http.StatusOK)
+
+				if _, err = w.Write([]byte(`[{"test": "data"}]`)); err != nil {
+					t.Fatalf("handler failed to write body: %v", err)
+				}
+			},
+			setupMockLogger: func(logger *mocklogging.MockLogger) {
+				logger.EXPECT().
+					InfoContext(gomock.Any(), gomock.Any(), gomock.Any()).
+					Times(2)
+				// Request and response
+			},
+			expectations: func(t *testing.T, r *http.Request, rr *httptest.ResponseRecorder) {
+				if rr.Code != http.StatusOK {
+					t.Errorf("expected status OK, got %d", rr.Code)
+				}
+
+				// Verify body was restored and can be read again
+				body, err := io.ReadAll(rr.Body)
+				if err != nil {
+					t.Errorf("failed to read restored body: %v", err)
+				}
+
+				if string(body) != `[{"test": "data"}]` {
 					t.Errorf("restored body mismatch: got %s", string(body))
 				}
 			},

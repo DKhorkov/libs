@@ -69,7 +69,7 @@ func LoggingMiddleware(
 					"Cookies", r.Cookies(),
 					"Form", r.PostForm,
 					"Payload", payload,
-				},
+				}...,
 			)
 
 			// Create new newInterceptingResponseWriter for response intercepting purpose:
@@ -110,7 +110,7 @@ func LoggingMiddleware(
 					"StatusCode", trw.StatusCode,
 					"Headers", trw.Header(),
 					"Payload", payload,
-				},
+				}...,
 			)
 		})
 	}

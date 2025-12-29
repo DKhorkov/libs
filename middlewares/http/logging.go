@@ -92,7 +92,7 @@ func LoggingMiddleware(
 					}
 				default:
 					// Ошибки пишутся как обычные строки в тело ответа:
-					payloadOutput = map[string]any{"error": trw.Body}
+					payloadOutput = map[string]string{"error": string(trw.Body)}
 				}
 			}
 

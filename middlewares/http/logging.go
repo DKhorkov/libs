@@ -79,7 +79,7 @@ func LoggingMiddleware(
 
 			if len(trw.Body) > 0 {
 				switch {
-				case trw.StatusCode <= http.StatusBadRequest:
+				case trw.StatusCode < http.StatusBadRequest:
 					if err = json.Unmarshal(trw.Body, &payload); err != nil {
 						logging.LogErrorContext(
 							ctx,

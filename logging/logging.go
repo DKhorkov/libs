@@ -71,58 +71,74 @@ func GetLogTraceback(skipLevel int) string {
 
 // LogErrorContext uses provided logger to save error with message info and context.
 // Context is used to get request ID and connect it with error.
-func LogErrorContext(ctx context.Context, logger Logger, msg string, err error) {
+func LogErrorContext(ctx context.Context, logger Logger, msg string, err error, args ...any) {
 	requestID, contextErr := contextlib.ValueFromContext[string](ctx, requestid.Key)
 	if contextErr != nil {
 		requestID = ""
 	}
 
-	logger.ErrorContext(
-		ctx,
-		msg,
+	args = append(args, []any{
 		"Request ID",
 		requestID,
 		"Traceback",
 		GetLogTraceback(skipLevel),
 		"Error",
 		err,
+	}...)
+
+	logger.ErrorContext(
+		ctx,
+		msg,
+		args...,
 	)
 }
 
 // LogInfoContext uses provided logger to save message info and context.
 // Context is used to get request ID and connect it with error.
-func LogInfoContext(ctx context.Context, logger Logger, msg string) {
+func LogInfoContext(ctx context.Context, logger Logger, msg string, args ...any) {
 	requestID, err := contextlib.ValueFromContext[string](ctx, requestid.Key)
 	if err != nil {
 		requestID = ""
 	}
 
-	logger.InfoContext(
-		ctx,
-		msg,
+	args = append(args, []any{
 		"Request ID",
 		requestID,
 		"Traceback",
 		GetLogTraceback(skipLevel),
+	}...)
+
+	logger.InfoContext(
+		ctx,
+		msg,
+		args...,
 	)
 }
 
 // LogError logs error with message info, using provided logger.
-func LogError(logger Logger, msg string, err error) {
-	logger.Error(
-		msg,
+func LogError(logger Logger, msg string, err error, args ...any) {
+	args = append(args, []any{
 		"Traceback",
 		GetLogTraceback(skipLevel),
 		"Error",
 		err,
+	}...)
+
+	logger.Error(
+		msg,
+		args...,
 	)
 }
 
 // LogInfo logs message, using provided logger.
-func LogInfo(logger Logger, msg string) {
-	logger.Info(
-		msg,
+func LogInfo(logger Logger, msg string, args ...any) {
+	args = append(args, []any{
 		"Traceback",
 		GetLogTraceback(skipLevel),
+	}...)
+
+	logger.Info(
+		msg,
+		args...,
 	)
 }

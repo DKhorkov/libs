@@ -3,7 +3,6 @@ package http
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -60,14 +59,17 @@ func LoggingMiddleware(
 			logging.LogInfoContext(
 				ctx,
 				logger,
-				fmt.Sprintf(
-					"Received new request: Method=%s, URL=%v, Headers=%v, Cookies=%v, Payload=%v\n",
-					r.Method,
-					r.URL,
-					r.Header,
-					r.Cookies(),
-					payload,
-				),
+				"Received new request",
+				[]any{
+					"From", r.Host,
+					"Method", r.Method,
+					"URL", r.URL,
+					"Headers", r.Header,
+					"Query", r.URL.Query(),
+					"Cookies", r.Cookies(),
+					"Form", r.PostForm,
+					"Payload", payload,
+				},
 			)
 
 			// Create new newInterceptingResponseWriter for response intercepting purpose:
@@ -100,14 +102,15 @@ func LoggingMiddleware(
 			logging.LogInfoContext(
 				ctx,
 				logger,
-				fmt.Sprintf(
-					"Received response: Method=%s, URL=%v, StatusCode=%d, Headers=%v, Payload=%v\n",
-					r.Method,
-					r.URL,
-					trw.StatusCode,
-					trw.Header(),
-					payload,
-				),
+				"Received response",
+				[]any{
+					"For", r.Host,
+					"Method", r.Method,
+					"URL", r.URL,
+					"StatusCode", trw.StatusCode,
+					"Headers", trw.Header(),
+					"Payload", payload,
+				},
 			)
 		})
 	}

@@ -36,6 +36,13 @@ func AuthMiddleware(
 				return
 			}
 
+			// Не проверяем метрики на аутентификацию
+			if r.URL.Path == MetricsURLPath {
+				next.ServeHTTP(w, r)
+
+				return
+			}
+
 			// Если URL с вызванным методом должен игнорироваться - просто вызываем следующий хэндлер:
 			for _, ignoreURL := range ignoreURLs {
 				if ignoreURL.Path.MatchString(r.URL.Path) &&

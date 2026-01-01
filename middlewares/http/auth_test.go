@@ -232,6 +232,14 @@ func TestAuthMiddleware(t *testing.T) {
 			setupToken:     func() string { return "" },
 		},
 		{
+			name:           "Метрики игнорируется",
+			requestMethod:  "GET",
+			requestPath:    http2.MetricsURLPath,
+			cookiePresent:  false,
+			expectedStatus: http.StatusOK,
+			setupToken:     func() string { return "" },
+		},
+		{
 			name:           "Некорректное значение в JWT (не число)",
 			requestMethod:  "GET",
 			requestPath:    "/api/v1/protected",

@@ -40,11 +40,11 @@ func TracingMiddleware(
 			r = r.WithContext(ctx)
 
 			// Create new newInterceptingResponseWriter for response intercepting purpose:
-			trw := newInterceptingResponseWriter(w)
-			next.ServeHTTP(trw, r)
+			rw := newInterceptingResponseWriter(w)
+			next.ServeHTTP(rw, r)
 
-			if trw.StatusCode >= http.StatusBadRequest {
-				span.SetStatus(tracing.StatusError, string(trw.Body))
+			if rw.StatusCode >= http.StatusBadRequest {
+				span.SetStatus(tracing.StatusError, string(rw.Body))
 			}
 		})
 	}

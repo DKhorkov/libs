@@ -29,7 +29,7 @@ linters:
     - mnd # An analyzer to detect magic numbers. [fast]
     - nakedret # Checks that functions with naked returns are not longer than a maximum size (can be zero). [fast, auto-fix]
     - noctx # Detects function and method with missing usage of context.Context.
-#    - nolintlint # Reports ill-formed or insufficient nolint directives. [fast, auto-fix]
+    #    - nolintlint # Reports ill-formed or insufficient nolint directives. [fast, auto-fix]
     - revive # Fast, configurable, extensible, flexible, and beautiful linter for Go. Drop-in replacement of golint. [auto-fix]
     - staticcheck # It's the set of rules from staticcheck. [auto-fix]
     - testifylint # Checks usage of github.com/stretchr/testify. [auto-fix]
@@ -245,6 +245,7 @@ linters:
           - forbidigo
           - cyclop
           - maintidx
+          - gocritic
 
       - path: tracing/providers.go
         linters:

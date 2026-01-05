@@ -73,16 +73,16 @@ func LoggingMiddleware(
 			)
 
 			// Create new newInterceptingResponseWriter for response intercepting purpose:
-			trw := newInterceptingResponseWriter(w)
-			next.ServeHTTP(trw, r)
+			rw := newInterceptingResponseWriter(w)
+			next.ServeHTTP(rw, r)
 
 			// Делаем любого типа, чтобы обрабатывать и массивы, и словари:
 			var payloadOutput any
 
-			if len(trw.Body) > 0 {
+			if len(rw.Body) > 0 {
 				switch {
-				case trw.StatusCode < http.StatusBadRequest:
-					if err = json.Unmarshal(trw.Body, &payloadOutput); err != nil {
+				case rw.StatusCode < http.StatusBadRequest:
+					if err = json.Unmarshal(rw.Body, &payloadOutput); err != nil {
 						logging.LogErrorContext(
 							ctx,
 							logger,
@@ -92,7 +92,7 @@ func LoggingMiddleware(
 					}
 				default:
 					// Ошибки пишутся как обычные строки в тело ответа:
-					payloadOutput = map[string]string{"error": string(trw.Body)}
+					payloadOutput = map[string]string{"error": string(rw.Body)}
 				}
 			}
 
@@ -105,8 +105,8 @@ func LoggingMiddleware(
 					"For", r.Host,
 					"Method", r.Method,
 					"URL", r.URL,
-					"StatusCode", trw.StatusCode,
-					"Headers", trw.Header(),
+					"StatusCode", rw.StatusCode,
+					"Headers", rw.Header(),
 					"Payload", payloadOutput,
 				}...,
 			)

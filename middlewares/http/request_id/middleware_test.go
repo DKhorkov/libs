@@ -1,12 +1,13 @@
-package http_test
+package request_id_test
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/DKhorkov/libs/contextlib"
-	http2 "github.com/DKhorkov/libs/middlewares/http"
+	http2 "github.com/DKhorkov/libs/middlewares/http/request_id"
 	"github.com/DKhorkov/libs/requestid"
 	"github.com/stretchr/testify/require"
 )
@@ -34,7 +35,12 @@ func TestRequestIDMiddleware(t *testing.T) {
 		middleware := http2.RequestIDMiddleware(nextHandler)
 
 		// Создаём тестовый запрос
-		req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
+		req := httptest.NewRequestWithContext(
+			context.Background(),
+			http.MethodGet,
+			"/",
+			http.NoBody,
+		)
 		rr := httptest.NewRecorder()
 
 		// Выполняем запрос

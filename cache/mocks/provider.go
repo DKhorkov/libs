@@ -33,6 +33,7 @@ type MockProviderMockRecorder struct {
 func NewMockProvider(ctrl *gomock.Controller) *MockProvider {
 	mock := &MockProvider{ctrl: ctrl}
 	mock.recorder = &MockProviderMockRecorder{mock}
+
 	return mock
 }
 
@@ -46,13 +47,19 @@ func (m *MockProvider) Close() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Close")
 	ret0, _ := ret[0].(error)
+
 	return ret0
 }
 
 // Close indicates an expected call of Close.
 func (mr *MockProviderMockRecorder) Close() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockProvider)(nil).Close))
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Close",
+		reflect.TypeOf((*MockProvider)(nil).Close),
+	)
 }
 
 // Decr mocks base method.
@@ -61,13 +68,21 @@ func (m *MockProvider) Decr(ctx context.Context, key string) (int64, error) {
 	ret := m.ctrl.Call(m, "Decr", ctx, key)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // Decr indicates an expected call of Decr.
 func (mr *MockProviderMockRecorder) Decr(ctx, key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Decr", reflect.TypeOf((*MockProvider)(nil).Decr), ctx, key)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Decr",
+		reflect.TypeOf((*MockProvider)(nil).Decr),
+		ctx,
+		key,
+	)
 }
 
 // DecrBy mocks base method.
@@ -76,32 +91,50 @@ func (m *MockProvider) DecrBy(ctx context.Context, key string, decrement int64) 
 	ret := m.ctrl.Call(m, "DecrBy", ctx, key, decrement)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // DecrBy indicates an expected call of DecrBy.
 func (mr *MockProviderMockRecorder) DecrBy(ctx, key, decrement any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DecrBy", reflect.TypeOf((*MockProvider)(nil).DecrBy), ctx, key, decrement)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"DecrBy",
+		reflect.TypeOf((*MockProvider)(nil).DecrBy),
+		ctx,
+		key,
+		decrement,
+	)
 }
 
 // Del mocks base method.
 func (m *MockProvider) Del(ctx context.Context, keys ...string) error {
 	m.ctrl.T.Helper()
+
 	varargs := []any{ctx}
 	for _, a := range keys {
 		varargs = append(varargs, a)
 	}
+
 	ret := m.ctrl.Call(m, "Del", varargs...)
 	ret0, _ := ret[0].(error)
+
 	return ret0
 }
 
 // Del indicates an expected call of Del.
 func (mr *MockProviderMockRecorder) Del(ctx any, keys ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{ctx}, keys...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Del", reflect.TypeOf((*MockProvider)(nil).Del), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Del",
+		reflect.TypeOf((*MockProvider)(nil).Del),
+		varargs...)
 }
 
 // DelByPattern mocks base method.
@@ -109,13 +142,22 @@ func (m *MockProvider) DelByPattern(ctx context.Context, pattern string, batchSi
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DelByPattern", ctx, pattern, batchSize)
 	ret0, _ := ret[0].(error)
+
 	return ret0
 }
 
 // DelByPattern indicates an expected call of DelByPattern.
 func (mr *MockProviderMockRecorder) DelByPattern(ctx, pattern, batchSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DelByPattern", reflect.TypeOf((*MockProvider)(nil).DelByPattern), ctx, pattern, batchSize)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"DelByPattern",
+		reflect.TypeOf((*MockProvider)(nil).DelByPattern),
+		ctx,
+		pattern,
+		batchSize,
+	)
 }
 
 // Get mocks base method.
@@ -124,13 +166,21 @@ func (m *MockProvider) Get(ctx context.Context, key string) (string, error) {
 	ret := m.ctrl.Call(m, "Get", ctx, key)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
 func (mr *MockProviderMockRecorder) Get(ctx, key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockProvider)(nil).Get), ctx, key)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Get",
+		reflect.TypeOf((*MockProvider)(nil).Get),
+		ctx,
+		key,
+	)
 }
 
 // GetDel mocks base method.
@@ -139,28 +189,49 @@ func (m *MockProvider) GetDel(ctx context.Context, key string) (string, error) {
 	ret := m.ctrl.Call(m, "GetDel", ctx, key)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // GetDel indicates an expected call of GetDel.
 func (mr *MockProviderMockRecorder) GetDel(ctx, key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDel", reflect.TypeOf((*MockProvider)(nil).GetDel), ctx, key)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"GetDel",
+		reflect.TypeOf((*MockProvider)(nil).GetDel),
+		ctx,
+		key,
+	)
 }
 
 // GetEx mocks base method.
-func (m *MockProvider) GetEx(ctx context.Context, key string, expiration time.Duration) (string, error) {
+func (m *MockProvider) GetEx(
+	ctx context.Context,
+	key string,
+	expiration time.Duration,
+) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetEx", ctx, key, expiration)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // GetEx indicates an expected call of GetEx.
 func (mr *MockProviderMockRecorder) GetEx(ctx, key, expiration any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEx", reflect.TypeOf((*MockProvider)(nil).GetEx), ctx, key, expiration)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"GetEx",
+		reflect.TypeOf((*MockProvider)(nil).GetEx),
+		ctx,
+		key,
+		expiration,
+	)
 }
 
 // Incr mocks base method.
@@ -169,13 +240,21 @@ func (m *MockProvider) Incr(ctx context.Context, key string) (int64, error) {
 	ret := m.ctrl.Call(m, "Incr", ctx, key)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // Incr indicates an expected call of Incr.
 func (mr *MockProviderMockRecorder) Incr(ctx, key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Incr", reflect.TypeOf((*MockProvider)(nil).Incr), ctx, key)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Incr",
+		reflect.TypeOf((*MockProvider)(nil).Incr),
+		ctx,
+		key,
+	)
 }
 
 // IncrBy mocks base method.
@@ -184,13 +263,22 @@ func (m *MockProvider) IncrBy(ctx context.Context, key string, value int64) (int
 	ret := m.ctrl.Call(m, "IncrBy", ctx, key, value)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // IncrBy indicates an expected call of IncrBy.
 func (mr *MockProviderMockRecorder) IncrBy(ctx, key, value any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IncrBy", reflect.TypeOf((*MockProvider)(nil).IncrBy), ctx, key, value)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"IncrBy",
+		reflect.TypeOf((*MockProvider)(nil).IncrBy),
+		ctx,
+		key,
+		value,
+	)
 }
 
 // Ping mocks base method.
@@ -199,39 +287,76 @@ func (m *MockProvider) Ping(ctx context.Context) (string, error) {
 	ret := m.ctrl.Call(m, "Ping", ctx)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // Ping indicates an expected call of Ping.
 func (mr *MockProviderMockRecorder) Ping(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ping", reflect.TypeOf((*MockProvider)(nil).Ping), ctx)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Ping",
+		reflect.TypeOf((*MockProvider)(nil).Ping),
+		ctx,
+	)
 }
 
 // Set mocks base method.
-func (m *MockProvider) Set(ctx context.Context, key string, value any, expiration time.Duration) error {
+func (m *MockProvider) Set(
+	ctx context.Context,
+	key string,
+	value any,
+	expiration time.Duration,
+) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set", ctx, key, value, expiration)
 	ret0, _ := ret[0].(error)
+
 	return ret0
 }
 
 // Set indicates an expected call of Set.
 func (mr *MockProviderMockRecorder) Set(ctx, key, value, expiration any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockProvider)(nil).Set), ctx, key, value, expiration)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Set",
+		reflect.TypeOf((*MockProvider)(nil).Set),
+		ctx,
+		key,
+		value,
+		expiration,
+	)
 }
 
 // SetNX mocks base method.
-func (m *MockProvider) SetNX(ctx context.Context, key string, value any, expiration time.Duration) error {
+func (m *MockProvider) SetNX(
+	ctx context.Context,
+	key string,
+	value any,
+	expiration time.Duration,
+) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetNX", ctx, key, value, expiration)
 	ret0, _ := ret[0].(error)
+
 	return ret0
 }
 
 // SetNX indicates an expected call of SetNX.
 func (mr *MockProviderMockRecorder) SetNX(ctx, key, value, expiration any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetNX", reflect.TypeOf((*MockProvider)(nil).SetNX), ctx, key, value, expiration)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"SetNX",
+		reflect.TypeOf((*MockProvider)(nil).SetNX),
+		ctx,
+		key,
+		value,
+		expiration,
+	)
 }

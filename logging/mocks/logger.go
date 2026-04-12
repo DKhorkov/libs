@@ -32,6 +32,7 @@ type MockLoggerMockRecorder struct {
 func NewMockLogger(ctrl *gomock.Controller) *MockLogger {
 	mock := &MockLogger{ctrl: ctrl}
 	mock.recorder = &MockLoggerMockRecorder{mock}
+
 	return mock
 }
 
@@ -43,135 +44,199 @@ func (m *MockLogger) EXPECT() *MockLoggerMockRecorder {
 // Debug mocks base method.
 func (m *MockLogger) Debug(msg string, args ...any) {
 	m.ctrl.T.Helper()
+
 	varargs := []any{msg}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
+
 	m.ctrl.Call(m, "Debug", varargs...)
 }
 
 // Debug indicates an expected call of Debug.
 func (mr *MockLoggerMockRecorder) Debug(msg any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{msg}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Debug", reflect.TypeOf((*MockLogger)(nil).Debug), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Debug",
+		reflect.TypeOf((*MockLogger)(nil).Debug),
+		varargs...)
 }
 
 // DebugContext mocks base method.
 func (m *MockLogger) DebugContext(ctx context.Context, msg string, args ...any) {
 	m.ctrl.T.Helper()
+
 	varargs := []any{ctx, msg}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
+
 	m.ctrl.Call(m, "DebugContext", varargs...)
 }
 
 // DebugContext indicates an expected call of DebugContext.
 func (mr *MockLoggerMockRecorder) DebugContext(ctx, msg any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{ctx, msg}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DebugContext", reflect.TypeOf((*MockLogger)(nil).DebugContext), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"DebugContext",
+		reflect.TypeOf((*MockLogger)(nil).DebugContext),
+		varargs...)
 }
 
 // Error mocks base method.
 func (m *MockLogger) Error(msg string, args ...any) {
 	m.ctrl.T.Helper()
+
 	varargs := []any{msg}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
+
 	m.ctrl.Call(m, "Error", varargs...)
 }
 
 // Error indicates an expected call of Error.
 func (mr *MockLoggerMockRecorder) Error(msg any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{msg}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Error", reflect.TypeOf((*MockLogger)(nil).Error), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Error",
+		reflect.TypeOf((*MockLogger)(nil).Error),
+		varargs...)
 }
 
 // ErrorContext mocks base method.
 func (m *MockLogger) ErrorContext(ctx context.Context, msg string, args ...any) {
 	m.ctrl.T.Helper()
+
 	varargs := []any{ctx, msg}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
+
 	m.ctrl.Call(m, "ErrorContext", varargs...)
 }
 
 // ErrorContext indicates an expected call of ErrorContext.
 func (mr *MockLoggerMockRecorder) ErrorContext(ctx, msg any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{ctx, msg}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ErrorContext", reflect.TypeOf((*MockLogger)(nil).ErrorContext), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"ErrorContext",
+		reflect.TypeOf((*MockLogger)(nil).ErrorContext),
+		varargs...)
 }
 
 // Info mocks base method.
 func (m *MockLogger) Info(msg string, args ...any) {
 	m.ctrl.T.Helper()
+
 	varargs := []any{msg}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
+
 	m.ctrl.Call(m, "Info", varargs...)
 }
 
 // Info indicates an expected call of Info.
 func (mr *MockLoggerMockRecorder) Info(msg any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{msg}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Info", reflect.TypeOf((*MockLogger)(nil).Info), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Info",
+		reflect.TypeOf((*MockLogger)(nil).Info),
+		varargs...)
 }
 
 // InfoContext mocks base method.
 func (m *MockLogger) InfoContext(ctx context.Context, msg string, args ...any) {
 	m.ctrl.T.Helper()
+
 	varargs := []any{ctx, msg}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
+
 	m.ctrl.Call(m, "InfoContext", varargs...)
 }
 
 // InfoContext indicates an expected call of InfoContext.
 func (mr *MockLoggerMockRecorder) InfoContext(ctx, msg any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{ctx, msg}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InfoContext", reflect.TypeOf((*MockLogger)(nil).InfoContext), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"InfoContext",
+		reflect.TypeOf((*MockLogger)(nil).InfoContext),
+		varargs...)
 }
 
 // Warn mocks base method.
 func (m *MockLogger) Warn(msg string, args ...any) {
 	m.ctrl.T.Helper()
+
 	varargs := []any{msg}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
+
 	m.ctrl.Call(m, "Warn", varargs...)
 }
 
 // Warn indicates an expected call of Warn.
 func (mr *MockLoggerMockRecorder) Warn(msg any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{msg}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Warn", reflect.TypeOf((*MockLogger)(nil).Warn), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Warn",
+		reflect.TypeOf((*MockLogger)(nil).Warn),
+		varargs...)
 }
 
 // WarnContext mocks base method.
 func (m *MockLogger) WarnContext(ctx context.Context, msg string, args ...any) {
 	m.ctrl.T.Helper()
+
 	varargs := []any{ctx, msg}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
+
 	m.ctrl.Call(m, "WarnContext", varargs...)
 }
 
 // WarnContext indicates an expected call of WarnContext.
 func (mr *MockLoggerMockRecorder) WarnContext(ctx, msg any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{ctx, msg}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WarnContext", reflect.TypeOf((*MockLogger)(nil).WarnContext), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"WarnContext",
+		reflect.TypeOf((*MockLogger)(nil).WarnContext),
+		varargs...)
 }

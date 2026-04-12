@@ -31,6 +31,7 @@ type MockConsumerMockRecorder struct {
 func NewMockConsumer(ctrl *gomock.Controller) *MockConsumer {
 	mock := &MockConsumer{ctrl: ctrl}
 	mock.recorder = &MockConsumerMockRecorder{mock}
+
 	return mock
 }
 
@@ -44,13 +45,19 @@ func (m *MockConsumer) Run() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Run")
 	ret0, _ := ret[0].(error)
+
 	return ret0
 }
 
 // Run indicates an expected call of Run.
 func (mr *MockConsumerMockRecorder) Run() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockConsumer)(nil).Run))
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Run",
+		reflect.TypeOf((*MockConsumer)(nil).Run),
+	)
 }
 
 // Stop mocks base method.
@@ -58,11 +65,17 @@ func (m *MockConsumer) Stop() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Stop")
 	ret0, _ := ret[0].(error)
+
 	return ret0
 }
 
 // Stop indicates an expected call of Stop.
 func (mr *MockConsumerMockRecorder) Stop() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockConsumer)(nil).Stop))
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Stop",
+		reflect.TypeOf((*MockConsumer)(nil).Stop),
+	)
 }

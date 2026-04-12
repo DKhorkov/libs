@@ -1,11 +1,13 @@
-package http
+package metrics
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
 
+	"github.com/DKhorkov/libs/middlewares/http/intercepting_response_writer"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/testutil"
 	"github.com/stretchr/testify/assert"
@@ -115,7 +117,12 @@ func TestMetricsMiddleware_RegularRequests(t *testing.T) {
 			requestDuration.Reset()
 
 			mw := MetricsMiddleware(tc.handler)
-			req := httptest.NewRequest(tc.method, tc.path, http.NoBody)
+			req := httptest.NewRequestWithContext(
+				context.Background(),
+				tc.method,
+				tc.path,
+				http.NoBody,
+			)
 			rr := httptest.NewRecorder()
 
 			mw.ServeHTTP(rr, req)
@@ -164,7 +171,12 @@ func TestMetricsMiddleware_MethodLabel(t *testing.T) {
 			})
 
 			mw := MetricsMiddleware(handler)
-			req := httptest.NewRequest(tc.method, "/test", http.NoBody)
+			req := httptest.NewRequestWithContext(
+				context.Background(),
+				tc.method,
+				"/test",
+				http.NoBody,
+			)
 			rr := httptest.NewRecorder()
 
 			mw.ServeHTTP(rr, req)
@@ -247,7 +259,7 @@ func TestMetricsResponseWriter(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			// Создаем recorder и обертку
 			rr := httptest.NewRecorder()
-			mrw := newInterceptingResponseWriter(rr)
+			mrw := intercepting_response_writer.New(rr)
 
 			// Тестируем WriteHeader
 			mrw.WriteHeader(tc.statusCode)
@@ -315,7 +327,12 @@ func TestMetricsMiddleware_ErrorStatusCodeClassification(t *testing.T) {
 			})
 
 			mw := MetricsMiddleware(handler)
-			req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+			req := httptest.NewRequestWithContext(
+				context.Background(),
+				http.MethodGet,
+				"/test",
+				http.NoBody,
+			)
 			rr := httptest.NewRecorder()
 
 			mw.ServeHTTP(rr, req)
@@ -353,7 +370,12 @@ func TestMetricsMiddleware_ConcurrentAccess(t *testing.T) {
 	for i := range concurrentRequests {
 		go func(id int) {
 			path := "/api/test/" + strconv.Itoa(id)
-			req := httptest.NewRequest(http.MethodGet, path, http.NoBody)
+			req := httptest.NewRequestWithContext(
+				context.Background(),
+				http.MethodGet,
+				path,
+				http.NoBody,
+			)
 			rr := httptest.NewRecorder()
 			mw.ServeHTTP(rr, req)
 			assert.Equal(t, http.StatusOK, rr.Code)
@@ -407,7 +429,12 @@ func TestMetricsMiddleware_DurationMeasurement(t *testing.T) {
 	})
 
 	mw := MetricsMiddleware(slowHandler)
-	req := httptest.NewRequest(http.MethodGet, "/slow", http.NoBody)
+	req := httptest.NewRequestWithContext(
+		context.Background(),
+		http.MethodGet,
+		"/slow",
+		http.NoBody,
+	)
 	rr := httptest.NewRecorder()
 
 	mw.ServeHTTP(rr, req)
@@ -430,7 +457,12 @@ func TestMetricsMiddleware_EmptyResponse(t *testing.T) {
 	})
 
 	mw := MetricsMiddleware(handler)
-	req := httptest.NewRequest(http.MethodGet, "/empty", http.NoBody)
+	req := httptest.NewRequestWithContext(
+		context.Background(),
+		http.MethodGet,
+		"/empty",
+		http.NoBody,
+	)
 	rr := httptest.NewRecorder()
 
 	mw.ServeHTTP(rr, req)
@@ -452,7 +484,7 @@ func TestMetricsMiddleware_EmptyResponse(t *testing.T) {
 
 func TestNewMetricsResponseWriter_NilResponseWriter(t *testing.T) {
 	// Тестируем создание с nil ResponseWriter
-	mrw := newInterceptingResponseWriter(nil)
+	mrw := intercepting_response_writer.New(nil)
 	assert.NotNil(t, mrw)
 	assert.Nil(t, mrw.ResponseWriter)
 	assert.Equal(t, http.StatusOK, mrw.StatusCode)

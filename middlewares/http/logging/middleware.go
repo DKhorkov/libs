@@ -1,4 +1,4 @@
-package http
+package logging
 
 import (
 	"bytes"
@@ -7,6 +7,8 @@ import (
 	"net/http"
 
 	"github.com/DKhorkov/libs/logging"
+	"github.com/DKhorkov/libs/middlewares/http/intercepting_response_writer"
+	"github.com/DKhorkov/libs/middlewares/http/metrics"
 )
 
 func LoggingMiddleware(
@@ -16,7 +18,7 @@ func LoggingMiddleware(
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Не логгируем сбор метрик:
-			if r.URL.Path == MetricsURLPath {
+			if r.URL.Path == metrics.MetricsURLPath {
 				next.ServeHTTP(w, r)
 
 				return
@@ -72,8 +74,8 @@ func LoggingMiddleware(
 				}...,
 			)
 
-			// Create new newInterceptingResponseWriter for response intercepting purpose:
-			rw := newInterceptingResponseWriter(w)
+			// Create new New for response intercepting purpose:
+			rw := intercepting_response_writer.New(w)
 			next.ServeHTTP(rw, r)
 
 			// Делаем любого типа, чтобы обрабатывать и массивы, и словари:

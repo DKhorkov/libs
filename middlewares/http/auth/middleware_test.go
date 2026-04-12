@@ -1,6 +1,7 @@
-package http_test
+package auth_test
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -8,7 +9,8 @@ import (
 	"time"
 
 	"github.com/DKhorkov/libs/contextlib"
-	http2 "github.com/DKhorkov/libs/middlewares/http"
+	"github.com/DKhorkov/libs/middlewares/http/auth"
+	http2 "github.com/DKhorkov/libs/middlewares/http/metrics"
 	"github.com/DKhorkov/libs/security"
 	"github.com/stretchr/testify/require"
 )
@@ -53,7 +55,7 @@ func TestAuthMiddleware(t *testing.T) {
 		cookieValue    string
 		cookiePresent  bool
 		cookieName     string
-		ignoreURLs     []http2.IgnoreURL
+		ignoreURLs     []auth.IgnoreURL
 		expectedStatus int
 		expectUserID   uint64
 		setupToken     func() string // Функция для генерации токена
@@ -148,7 +150,7 @@ func TestAuthMiddleware(t *testing.T) {
 			requestPath:   "/api/v1/public/users",
 			cookieName:    "access_token",
 			cookiePresent: false,
-			ignoreURLs: []http2.IgnoreURL{
+			ignoreURLs: []auth.IgnoreURL{
 				{
 					Methods: []string{"GET", "POST"},
 					Path:    regexp.MustCompile(`^/api/v1/public/.*$`),
@@ -163,7 +165,7 @@ func TestAuthMiddleware(t *testing.T) {
 			requestPath:   "/api/v1/auth/login",
 			cookieName:    "access_token",
 			cookiePresent: false,
-			ignoreURLs: []http2.IgnoreURL{
+			ignoreURLs: []auth.IgnoreURL{
 				{
 					Methods: []string{"POST"},
 					Path:    regexp.MustCompile(`^/api/v1/auth/login$`),
@@ -178,7 +180,7 @@ func TestAuthMiddleware(t *testing.T) {
 			requestPath:   "/api/v1/public/users",
 			cookieName:    "access_token",
 			cookiePresent: false,
-			ignoreURLs: []http2.IgnoreURL{
+			ignoreURLs: []auth.IgnoreURL{
 				{
 					Methods: []string{"GET", "POST"},
 					Path:    regexp.MustCompile(`^/api/v1/public/.*$`),
@@ -193,7 +195,7 @@ func TestAuthMiddleware(t *testing.T) {
 			requestPath:    "/api/v1/protected",
 			cookieName:     "auth_token", // Другое имя куки
 			cookiePresent:  false,
-			ignoreURLs:     []http2.IgnoreURL{},
+			ignoreURLs:     []auth.IgnoreURL{},
 			expectedStatus: http.StatusUnauthorized,
 			setupToken:     func() string { return "" },
 		},
@@ -203,7 +205,7 @@ func TestAuthMiddleware(t *testing.T) {
 			requestPath:   "/health",
 			cookieName:    "access_token",
 			cookiePresent: false,
-			ignoreURLs: []http2.IgnoreURL{
+			ignoreURLs: []auth.IgnoreURL{
 				{
 					Methods: []string{"POST"},
 					Path:    regexp.MustCompile(`^/api/.*$`),
@@ -222,7 +224,7 @@ func TestAuthMiddleware(t *testing.T) {
 			requestPath:   "/api/v1/cors",
 			cookieName:    "access_token",
 			cookiePresent: false,
-			ignoreURLs: []http2.IgnoreURL{
+			ignoreURLs: []auth.IgnoreURL{
 				{
 					Methods: []string{"OPTIONS"},
 					Path:    regexp.MustCompile(`.*`),
@@ -267,7 +269,7 @@ func TestAuthMiddleware(t *testing.T) {
 			requestPath:    "/api/v1/protected",
 			cookieName:     "access_token",
 			cookiePresent:  false,
-			ignoreURLs:     []http2.IgnoreURL{},
+			ignoreURLs:     []auth.IgnoreURL{},
 			expectedStatus: http.StatusUnauthorized,
 			setupToken:     func() string { return "" },
 		},
@@ -287,7 +289,7 @@ func TestAuthMiddleware(t *testing.T) {
 			requestPath:    "/api/v1/protected",
 			cookieName:     "access_token",
 			cookiePresent:  true,
-			ignoreURLs:     []http2.IgnoreURL{},
+			ignoreURLs:     []auth.IgnoreURL{},
 			expectedStatus: http.StatusUnauthorized,
 			setupToken: func() string {
 				// Генерируем токен с нулевым TTL
@@ -322,7 +324,7 @@ func TestAuthMiddleware(t *testing.T) {
 			}
 
 			// Создаем middleware с тестовыми параметрами
-			middleware := http2.AuthMiddleware(
+			middleware := auth.AuthMiddleware(
 				tt.cookieName,
 				securityConfig,
 				tt.ignoreURLs...,
@@ -335,7 +337,7 @@ func TestAuthMiddleware(t *testing.T) {
 				// Проверяем, что userID установлен в контексте
 				capturedUserID, _ = contextlib.ValueFromContext[uint64](
 					r.Context(),
-					http2.UserIDContextKey,
+					auth.UserIDContextKey,
 				)
 
 				w.WriteHeader(http.StatusOK)
@@ -345,7 +347,12 @@ func TestAuthMiddleware(t *testing.T) {
 			})
 
 			// Создаем запрос
-			req := httptest.NewRequest(tt.requestMethod, tt.requestPath, http.NoBody)
+			req := httptest.NewRequestWithContext(
+				context.Background(),
+				tt.requestMethod,
+				tt.requestPath,
+				http.NoBody,
+			)
 
 			// Добавляем куки если требуется
 			if tt.cookiePresent && token != "" {
@@ -391,13 +398,13 @@ func TestAuthMiddlewareContext(t *testing.T) {
 		t.Fatalf("Не удалось сгенерировать токен: %v", err)
 	}
 
-	middleware := http2.AuthMiddleware("access_token", securityConfig)
+	middleware := auth.AuthMiddleware("access_token", securityConfig)
 
 	// Хендлер для проверки контекста
 	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Проверяем что контекст содержит userID
 		ctx := r.Context()
-		userID, err := contextlib.ValueFromContext[uint64](ctx, http2.UserIDContextKey)
+		userID, err := contextlib.ValueFromContext[uint64](ctx, auth.UserIDContextKey)
 		require.NoError(t, err)
 
 		if userID != 12345 {
@@ -413,7 +420,12 @@ func TestAuthMiddlewareContext(t *testing.T) {
 	})
 
 	// Создаем запрос с куки
-	req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+	req := httptest.NewRequestWithContext(
+		context.Background(),
+		http.MethodGet,
+		"/test",
+		http.NoBody,
+	)
 	req.AddCookie(&http.Cookie{
 		Name:  "access_token",
 		Value: token,
@@ -441,12 +453,12 @@ func TestAuthMiddlewareIgnoreURLMultipleMethods(t *testing.T) {
 		},
 	}
 
-	ignoreURL := http2.IgnoreURL{
+	ignoreURL := auth.IgnoreURL{
 		Methods: []string{"GET", "POST", "PUT", "DELETE"},
 		Path:    regexp.MustCompile(`^/api/v1/public/.*$`),
 	}
 
-	middleware := http2.AuthMiddleware(
+	middleware := auth.AuthMiddleware(
 		"access_token",
 		securityConfig,
 		ignoreURL,
@@ -478,7 +490,12 @@ func TestAuthMiddlewareIgnoreURLMultipleMethods(t *testing.T) {
 				w.WriteHeader(http.StatusOK)
 			})
 
-			req := httptest.NewRequest(tt.method, tt.path, http.NoBody)
+			req := httptest.NewRequestWithContext(
+				context.Background(),
+				tt.method,
+				tt.path,
+				http.NoBody,
+			)
 			rr := httptest.NewRecorder()
 
 			middleware(testHandler).ServeHTTP(rr, req)

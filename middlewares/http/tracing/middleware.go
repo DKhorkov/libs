@@ -1,8 +1,10 @@
-package http
+package tracing
 
 import (
 	"net/http"
 
+	"github.com/DKhorkov/libs/middlewares/http/intercepting_response_writer"
+	"github.com/DKhorkov/libs/middlewares/http/metrics"
 	"github.com/DKhorkov/libs/tracing"
 	"google.golang.org/grpc/metadata"
 )
@@ -14,7 +16,7 @@ func TracingMiddleware(
 ) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path == MetricsURLPath {
+			if r.URL.Path == metrics.MetricsURLPath {
 				next.ServeHTTP(w, r)
 
 				return
@@ -22,7 +24,7 @@ func TracingMiddleware(
 
 			ctx, span := tp.Span(
 				r.Context(),
-				spanConfig.Name,
+				r.URL.Path,
 				spanConfig.Opts...,
 			)
 
@@ -40,7 +42,7 @@ func TracingMiddleware(
 			r = r.WithContext(ctx)
 
 			// Create new newInterceptingResponseWriter for response intercepting purpose:
-			rw := newInterceptingResponseWriter(w)
+			rw := intercepting_response_writer.New(w)
 			next.ServeHTTP(rw, r)
 
 			if rw.StatusCode >= http.StatusBadRequest {

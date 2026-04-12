@@ -33,6 +33,7 @@ type MockProviderMockRecorder struct {
 func NewMockProvider(ctrl *gomock.Controller) *MockProvider {
 	mock := &MockProvider{ctrl: ctrl}
 	mock.recorder = &MockProviderMockRecorder{mock}
+
 	return mock
 }
 
@@ -46,53 +47,90 @@ func (m *MockProvider) Shutdown(ctx context.Context) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Shutdown", ctx)
 	ret0, _ := ret[0].(error)
+
 	return ret0
 }
 
 // Shutdown indicates an expected call of Shutdown.
 func (mr *MockProviderMockRecorder) Shutdown(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Shutdown", reflect.TypeOf((*MockProvider)(nil).Shutdown), ctx)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Shutdown",
+		reflect.TypeOf((*MockProvider)(nil).Shutdown),
+		ctx,
+	)
 }
 
 // Span mocks base method.
-func (m *MockProvider) Span(ctx context.Context, name string, opts ...trace.SpanStartOption) (context.Context, trace.Span) {
+func (m *MockProvider) Span(
+	ctx context.Context,
+	name string,
+	opts ...trace.SpanStartOption,
+) (context.Context, trace.Span) {
 	m.ctrl.T.Helper()
+
 	varargs := []any{ctx, name}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
+
 	ret := m.ctrl.Call(m, "Span", varargs...)
 	ret0, _ := ret[0].(context.Context)
 	ret1, _ := ret[1].(trace.Span)
+
 	return ret0, ret1
 }
 
 // Span indicates an expected call of Span.
 func (mr *MockProviderMockRecorder) Span(ctx, name any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{ctx, name}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Span", reflect.TypeOf((*MockProvider)(nil).Span), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Span",
+		reflect.TypeOf((*MockProvider)(nil).Span),
+		varargs...)
 }
 
 // SpanFromTraceID mocks base method.
-func (m *MockProvider) SpanFromTraceID(ctx context.Context, traceID trace.TraceID, name string, opts ...trace.SpanStartOption) (context.Context, trace.Span) {
+func (m *MockProvider) SpanFromTraceID(
+	ctx context.Context,
+	traceID trace.TraceID,
+	name string,
+	opts ...trace.SpanStartOption,
+) (context.Context, trace.Span) {
 	m.ctrl.T.Helper()
+
 	varargs := []any{ctx, traceID, name}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
+
 	ret := m.ctrl.Call(m, "SpanFromTraceID", varargs...)
 	ret0, _ := ret[0].(context.Context)
 	ret1, _ := ret[1].(trace.Span)
+
 	return ret0, ret1
 }
 
 // SpanFromTraceID indicates an expected call of SpanFromTraceID.
-func (mr *MockProviderMockRecorder) SpanFromTraceID(ctx, traceID, name any, opts ...any) *gomock.Call {
+func (mr *MockProviderMockRecorder) SpanFromTraceID(
+	ctx, traceID, name any,
+	opts ...any,
+) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{ctx, traceID, name}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpanFromTraceID", reflect.TypeOf((*MockProvider)(nil).SpanFromTraceID), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"SpanFromTraceID",
+		reflect.TypeOf((*MockProvider)(nil).SpanFromTraceID),
+		varargs...)
 }
 
 // TraceIDFromHex mocks base method.
@@ -101,11 +139,18 @@ func (m *MockProvider) TraceIDFromHex(traceHex string) (trace.TraceID, error) {
 	ret := m.ctrl.Call(m, "TraceIDFromHex", traceHex)
 	ret0, _ := ret[0].(trace.TraceID)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // TraceIDFromHex indicates an expected call of TraceIDFromHex.
 func (mr *MockProviderMockRecorder) TraceIDFromHex(traceHex any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TraceIDFromHex", reflect.TypeOf((*MockProvider)(nil).TraceIDFromHex), traceHex)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"TraceIDFromHex",
+		reflect.TypeOf((*MockProvider)(nil).TraceIDFromHex),
+		traceHex,
+	)
 }

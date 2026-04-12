@@ -51,7 +51,11 @@ func TestHash(t *testing.T) {
 				assert.NotEmpty(
 					t,
 					hashedValue,
-					"\n%s - actual: '%v', expected: '%v'", tc.message, hashedValue, "SomeHashedValue")
+					"\n%s - actual: '%v', expected: '%v'",
+					tc.message,
+					hashedValue,
+					"SomeHashedValue",
+				)
 			}
 		})
 	}

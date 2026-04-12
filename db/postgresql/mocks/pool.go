@@ -35,6 +35,7 @@ type MockPoolMockRecorder struct {
 func NewMockPool(ctrl *gomock.Controller) *MockPool {
 	mock := &MockPool{ctrl: ctrl}
 	mock.recorder = &MockPoolMockRecorder{mock}
+
 	return mock
 }
 
@@ -49,13 +50,19 @@ func (m *MockPool) Begin() (*sql.Tx, error) {
 	ret := m.ctrl.Call(m, "Begin")
 	ret0, _ := ret[0].(*sql.Tx)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // Begin indicates an expected call of Begin.
 func (mr *MockPoolMockRecorder) Begin() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Begin", reflect.TypeOf((*MockPool)(nil).Begin))
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Begin",
+		reflect.TypeOf((*MockPool)(nil).Begin),
+	)
 }
 
 // BeginTx mocks base method.
@@ -64,13 +71,21 @@ func (m *MockPool) BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, e
 	ret := m.ctrl.Call(m, "BeginTx", ctx, opts)
 	ret0, _ := ret[0].(*sql.Tx)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // BeginTx indicates an expected call of BeginTx.
 func (mr *MockPoolMockRecorder) BeginTx(ctx, opts any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BeginTx", reflect.TypeOf((*MockPool)(nil).BeginTx), ctx, opts)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"BeginTx",
+		reflect.TypeOf((*MockPool)(nil).BeginTx),
+		ctx,
+		opts,
+	)
 }
 
 // Close mocks base method.
@@ -78,13 +93,19 @@ func (m *MockPool) Close() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Close")
 	ret0, _ := ret[0].(error)
+
 	return ret0
 }
 
 // Close indicates an expected call of Close.
 func (mr *MockPoolMockRecorder) Close() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockPool)(nil).Close))
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Close",
+		reflect.TypeOf((*MockPool)(nil).Close),
+	)
 }
 
 // Conn mocks base method.
@@ -93,13 +114,20 @@ func (m *MockPool) Conn(ctx context.Context) (*sql.Conn, error) {
 	ret := m.ctrl.Call(m, "Conn", ctx)
 	ret0, _ := ret[0].(*sql.Conn)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // Conn indicates an expected call of Conn.
 func (mr *MockPoolMockRecorder) Conn(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Conn", reflect.TypeOf((*MockPool)(nil).Conn), ctx)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Conn",
+		reflect.TypeOf((*MockPool)(nil).Conn),
+		ctx,
+	)
 }
 
 // Driver mocks base method.
@@ -107,53 +135,77 @@ func (m *MockPool) Driver() driver.Driver {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Driver")
 	ret0, _ := ret[0].(driver.Driver)
+
 	return ret0
 }
 
 // Driver indicates an expected call of Driver.
 func (mr *MockPoolMockRecorder) Driver() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Driver", reflect.TypeOf((*MockPool)(nil).Driver))
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Driver",
+		reflect.TypeOf((*MockPool)(nil).Driver),
+	)
 }
 
 // Exec mocks base method.
 func (m *MockPool) Exec(query string, args ...any) (sql.Result, error) {
 	m.ctrl.T.Helper()
+
 	varargs := []any{query}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
+
 	ret := m.ctrl.Call(m, "Exec", varargs...)
 	ret0, _ := ret[0].(sql.Result)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // Exec indicates an expected call of Exec.
 func (mr *MockPoolMockRecorder) Exec(query any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{query}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Exec", reflect.TypeOf((*MockPool)(nil).Exec), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Exec",
+		reflect.TypeOf((*MockPool)(nil).Exec),
+		varargs...)
 }
 
 // ExecContext mocks base method.
 func (m *MockPool) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
 	m.ctrl.T.Helper()
+
 	varargs := []any{ctx, query}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
+
 	ret := m.ctrl.Call(m, "ExecContext", varargs...)
 	ret0, _ := ret[0].(sql.Result)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // ExecContext indicates an expected call of ExecContext.
 func (mr *MockPoolMockRecorder) ExecContext(ctx, query any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{ctx, query}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecContext", reflect.TypeOf((*MockPool)(nil).ExecContext), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"ExecContext",
+		reflect.TypeOf((*MockPool)(nil).ExecContext),
+		varargs...)
 }
 
 // Ping mocks base method.
@@ -161,13 +213,19 @@ func (m *MockPool) Ping() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Ping")
 	ret0, _ := ret[0].(error)
+
 	return ret0
 }
 
 // Ping indicates an expected call of Ping.
 func (mr *MockPoolMockRecorder) Ping() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ping", reflect.TypeOf((*MockPool)(nil).Ping))
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Ping",
+		reflect.TypeOf((*MockPool)(nil).Ping),
+	)
 }
 
 // PingContext mocks base method.
@@ -175,13 +233,20 @@ func (m *MockPool) PingContext(ctx context.Context) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PingContext", ctx)
 	ret0, _ := ret[0].(error)
+
 	return ret0
 }
 
 // PingContext indicates an expected call of PingContext.
 func (mr *MockPoolMockRecorder) PingContext(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PingContext", reflect.TypeOf((*MockPool)(nil).PingContext), ctx)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"PingContext",
+		reflect.TypeOf((*MockPool)(nil).PingContext),
+		ctx,
+	)
 }
 
 // Prepare mocks base method.
@@ -190,13 +255,20 @@ func (m *MockPool) Prepare(query string) (*sql.Stmt, error) {
 	ret := m.ctrl.Call(m, "Prepare", query)
 	ret0, _ := ret[0].(*sql.Stmt)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // Prepare indicates an expected call of Prepare.
 func (mr *MockPoolMockRecorder) Prepare(query any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Prepare", reflect.TypeOf((*MockPool)(nil).Prepare), query)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Prepare",
+		reflect.TypeOf((*MockPool)(nil).Prepare),
+		query,
+	)
 }
 
 // PrepareContext mocks base method.
@@ -205,91 +277,135 @@ func (m *MockPool) PrepareContext(ctx context.Context, query string) (*sql.Stmt,
 	ret := m.ctrl.Call(m, "PrepareContext", ctx, query)
 	ret0, _ := ret[0].(*sql.Stmt)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // PrepareContext indicates an expected call of PrepareContext.
 func (mr *MockPoolMockRecorder) PrepareContext(ctx, query any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrepareContext", reflect.TypeOf((*MockPool)(nil).PrepareContext), ctx, query)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"PrepareContext",
+		reflect.TypeOf((*MockPool)(nil).PrepareContext),
+		ctx,
+		query,
+	)
 }
 
 // Query mocks base method.
 func (m *MockPool) Query(query string, args ...any) (*sql.Rows, error) {
 	m.ctrl.T.Helper()
+
 	varargs := []any{query}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
+
 	ret := m.ctrl.Call(m, "Query", varargs...)
 	ret0, _ := ret[0].(*sql.Rows)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // Query indicates an expected call of Query.
 func (mr *MockPoolMockRecorder) Query(query any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{query}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Query", reflect.TypeOf((*MockPool)(nil).Query), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Query",
+		reflect.TypeOf((*MockPool)(nil).Query),
+		varargs...)
 }
 
 // QueryContext mocks base method.
 func (m *MockPool) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
 	m.ctrl.T.Helper()
+
 	varargs := []any{ctx, query}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
+
 	ret := m.ctrl.Call(m, "QueryContext", varargs...)
 	ret0, _ := ret[0].(*sql.Rows)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // QueryContext indicates an expected call of QueryContext.
 func (mr *MockPoolMockRecorder) QueryContext(ctx, query any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{ctx, query}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryContext", reflect.TypeOf((*MockPool)(nil).QueryContext), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"QueryContext",
+		reflect.TypeOf((*MockPool)(nil).QueryContext),
+		varargs...)
 }
 
 // QueryRow mocks base method.
 func (m *MockPool) QueryRow(query string, args ...any) *sql.Row {
 	m.ctrl.T.Helper()
+
 	varargs := []any{query}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
+
 	ret := m.ctrl.Call(m, "QueryRow", varargs...)
 	ret0, _ := ret[0].(*sql.Row)
+
 	return ret0
 }
 
 // QueryRow indicates an expected call of QueryRow.
 func (mr *MockPoolMockRecorder) QueryRow(query any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{query}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryRow", reflect.TypeOf((*MockPool)(nil).QueryRow), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"QueryRow",
+		reflect.TypeOf((*MockPool)(nil).QueryRow),
+		varargs...)
 }
 
 // QueryRowContext mocks base method.
 func (m *MockPool) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
 	m.ctrl.T.Helper()
+
 	varargs := []any{ctx, query}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
+
 	ret := m.ctrl.Call(m, "QueryRowContext", varargs...)
 	ret0, _ := ret[0].(*sql.Row)
+
 	return ret0
 }
 
 // QueryRowContext indicates an expected call of QueryRowContext.
 func (mr *MockPoolMockRecorder) QueryRowContext(ctx, query any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{ctx, query}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryRowContext", reflect.TypeOf((*MockPool)(nil).QueryRowContext), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"QueryRowContext",
+		reflect.TypeOf((*MockPool)(nil).QueryRowContext),
+		varargs...)
 }
 
 // SetConnMaxIdleTime mocks base method.
@@ -301,7 +417,13 @@ func (m *MockPool) SetConnMaxIdleTime(d time.Duration) {
 // SetConnMaxIdleTime indicates an expected call of SetConnMaxIdleTime.
 func (mr *MockPoolMockRecorder) SetConnMaxIdleTime(d any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetConnMaxIdleTime", reflect.TypeOf((*MockPool)(nil).SetConnMaxIdleTime), d)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"SetConnMaxIdleTime",
+		reflect.TypeOf((*MockPool)(nil).SetConnMaxIdleTime),
+		d,
+	)
 }
 
 // SetConnMaxLifetime mocks base method.
@@ -313,7 +435,13 @@ func (m *MockPool) SetConnMaxLifetime(d time.Duration) {
 // SetConnMaxLifetime indicates an expected call of SetConnMaxLifetime.
 func (mr *MockPoolMockRecorder) SetConnMaxLifetime(d any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetConnMaxLifetime", reflect.TypeOf((*MockPool)(nil).SetConnMaxLifetime), d)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"SetConnMaxLifetime",
+		reflect.TypeOf((*MockPool)(nil).SetConnMaxLifetime),
+		d,
+	)
 }
 
 // SetMaxIdleConns mocks base method.
@@ -325,7 +453,13 @@ func (m *MockPool) SetMaxIdleConns(n int) {
 // SetMaxIdleConns indicates an expected call of SetMaxIdleConns.
 func (mr *MockPoolMockRecorder) SetMaxIdleConns(n any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMaxIdleConns", reflect.TypeOf((*MockPool)(nil).SetMaxIdleConns), n)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"SetMaxIdleConns",
+		reflect.TypeOf((*MockPool)(nil).SetMaxIdleConns),
+		n,
+	)
 }
 
 // SetMaxOpenConns mocks base method.
@@ -337,7 +471,13 @@ func (m *MockPool) SetMaxOpenConns(n int) {
 // SetMaxOpenConns indicates an expected call of SetMaxOpenConns.
 func (mr *MockPoolMockRecorder) SetMaxOpenConns(n any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMaxOpenConns", reflect.TypeOf((*MockPool)(nil).SetMaxOpenConns), n)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"SetMaxOpenConns",
+		reflect.TypeOf((*MockPool)(nil).SetMaxOpenConns),
+		n,
+	)
 }
 
 // Stats mocks base method.
@@ -345,11 +485,17 @@ func (m *MockPool) Stats() sql.DBStats {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Stats")
 	ret0, _ := ret[0].(sql.DBStats)
+
 	return ret0
 }
 
 // Stats indicates an expected call of Stats.
 func (mr *MockPoolMockRecorder) Stats() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stats", reflect.TypeOf((*MockPool)(nil).Stats))
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Stats",
+		reflect.TypeOf((*MockPool)(nil).Stats),
+	)
 }

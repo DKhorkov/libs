@@ -1,4 +1,4 @@
-package http
+package tracing
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/DKhorkov/libs/middlewares/http/metrics"
 	"github.com/DKhorkov/libs/tracing"
 	mocktracing "github.com/DKhorkov/libs/tracing/mocks"
 	"github.com/stretchr/testify/require"
@@ -37,7 +38,7 @@ func TestTracingMiddleware(t *testing.T) {
 
 		provider.
 			EXPECT().
-			Span(ctx, spanConfig.Name, gomock.Any()).
+			Span(ctx, "/", gomock.Any()).
 			Return(ctx, span).
 			Times(1)
 
@@ -52,7 +53,12 @@ func TestTracingMiddleware(t *testing.T) {
 
 		middleware := TracingMiddleware(provider, spanConfig)(nextHandler)
 
-		req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
+		req := httptest.NewRequestWithContext(
+			context.Background(),
+			http.MethodGet,
+			"/",
+			http.NoBody,
+		)
 		rr := httptest.NewRecorder()
 
 		middleware.ServeHTTP(rr, req)
@@ -73,7 +79,12 @@ func TestTracingMiddleware(t *testing.T) {
 
 		middleware := TracingMiddleware(provider, spanConfig)(nextHandler)
 
-		req := httptest.NewRequest(http.MethodGet, MetricsURLPath, http.NoBody)
+		req := httptest.NewRequestWithContext(
+			context.Background(),
+			http.MethodGet,
+			metrics.MetricsURLPath,
+			http.NoBody,
+		)
 		rr := httptest.NewRecorder()
 
 		middleware.ServeHTTP(rr, req)
@@ -99,7 +110,7 @@ func TestTracingMiddleware(t *testing.T) {
 
 		provider.
 			EXPECT().
-			Span(ctx, spanConfig.Name, gomock.Any()).
+			Span(ctx, "/", gomock.Any()).
 			Return(ctx, span).
 			Times(1)
 
@@ -119,7 +130,12 @@ func TestTracingMiddleware(t *testing.T) {
 
 		middleware := TracingMiddleware(provider, spanConfig)(nextHandler)
 
-		req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
+		req := httptest.NewRequestWithContext(
+			context.Background(),
+			http.MethodGet,
+			"/",
+			http.NoBody,
+		)
 		rr := httptest.NewRecorder()
 
 		middleware.ServeHTTP(rr, req)
@@ -146,7 +162,7 @@ func TestTracingMiddleware(t *testing.T) {
 
 		provider.
 			EXPECT().
-			Span(ctx, spanConfig.Name, gomock.Any()).
+			Span(ctx, "/", gomock.Any()).
 			Return(ctx, span).
 			Times(1)
 
@@ -158,7 +174,12 @@ func TestTracingMiddleware(t *testing.T) {
 
 		middleware := TracingMiddleware(provider, spanConfig)(nextHandler)
 
-		req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
+		req := httptest.NewRequestWithContext(
+			context.Background(),
+			http.MethodGet,
+			"/",
+			http.NoBody,
+		)
 		rr := httptest.NewRecorder()
 
 		middleware.ServeHTTP(rr, req)
@@ -184,7 +205,7 @@ func TestTracingMiddleware(t *testing.T) {
 
 		provider.
 			EXPECT().
-			Span(ctx, spanConfig.Name, gomock.Any()).
+			Span(ctx, "/", gomock.Any()).
 			Return(ctx, span).
 			Times(1)
 
@@ -201,7 +222,12 @@ func TestTracingMiddleware(t *testing.T) {
 
 		middleware := TracingMiddleware(provider, spanConfig)(nextHandler)
 
-		req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
+		req := httptest.NewRequestWithContext(
+			context.Background(),
+			http.MethodGet,
+			"/",
+			http.NoBody,
+		)
 		rr := httptest.NewRecorder()
 
 		middleware.ServeHTTP(rr, req)

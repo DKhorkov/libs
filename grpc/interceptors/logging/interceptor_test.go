@@ -1,4 +1,4 @@
-package interceptors_test
+package logging
 
 import (
 	"bytes"
@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/DKhorkov/libs/grpc/interceptors"
 	"github.com/DKhorkov/libs/logging"
 	mocklogging "github.com/DKhorkov/libs/logging/mocks"
 	"github.com/DKhorkov/libs/requestid"
@@ -42,7 +41,7 @@ func TestUnaryServerLoggingInterceptor(t *testing.T) {
 			InfoContext(gomock.Any(), gomock.Any(), gomock.Any()).
 			Times(1)
 
-		interceptor := interceptors.UnaryServerLoggingInterceptor(logger)
+		interceptor := UnaryServerLoggingInterceptor(logger)
 
 		handler := func(ctx context.Context, req any) (any, error) {
 			return "response", nil
@@ -72,7 +71,7 @@ func TestUnaryServerLoggingInterceptor(t *testing.T) {
 			InfoContext(gomock.Any(), gomock.Any(), gomock.Any()).
 			Times(1)
 
-		interceptor := interceptors.UnaryServerLoggingInterceptor(logger)
+		interceptor := UnaryServerLoggingInterceptor(logger)
 
 		handler := func(ctx context.Context, req any) (any, error) {
 			return nil, errors.New("handler error")
@@ -97,7 +96,7 @@ func TestUnaryServerLoggingInterceptor(t *testing.T) {
 			metadata.Pairs(strings.ToLower(requestid.Key), requestID),
 		)
 
-		interceptor := interceptors.UnaryServerLoggingInterceptor(logger)
+		interceptor := UnaryServerLoggingInterceptor(logger)
 
 		handler := func(ctx context.Context, req any) (any, error) {
 			return "response", nil
@@ -123,7 +122,7 @@ func TestUnaryClientLoggingInterceptor(t *testing.T) {
 		)
 
 		logger := logging.Logger(slogLogger)
-		clientLogger := interceptors.UnaryClientLoggingInterceptor(logger)
+		clientLogger := UnaryClientLoggingInterceptor(logger)
 
 		ctx := context.Background()
 		req := struct{ Username string }{Username: "user"}
@@ -140,7 +139,7 @@ func TestUnaryClientLoggingInterceptor(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		logger := mocklogging.NewMockLogger(ctrl)
-		clientLogger := interceptors.UnaryClientLoggingInterceptor(logger)
+		clientLogger := UnaryClientLoggingInterceptor(logger)
 
 		ctx := context.Background()
 		req := testRequest{Username: "user", Password: "secret"}
@@ -160,7 +159,7 @@ func TestUnaryClientLoggingInterceptor(t *testing.T) {
 		)
 
 		logger := logging.Logger(slogLogger)
-		clientLogger := interceptors.UnaryClientLoggingInterceptor(logger)
+		clientLogger := UnaryClientLoggingInterceptor(logger)
 
 		ctx := context.Background()
 		req := "non-struct-field"

@@ -31,6 +31,7 @@ type MockPublisherMockRecorder struct {
 func NewMockPublisher(ctrl *gomock.Controller) *MockPublisher {
 	mock := &MockPublisher{ctrl: ctrl}
 	mock.recorder = &MockPublisherMockRecorder{mock}
+
 	return mock
 }
 
@@ -44,13 +45,19 @@ func (m *MockPublisher) Close() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Close")
 	ret0, _ := ret[0].(error)
+
 	return ret0
 }
 
 // Close indicates an expected call of Close.
 func (mr *MockPublisherMockRecorder) Close() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockPublisher)(nil).Close))
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Close",
+		reflect.TypeOf((*MockPublisher)(nil).Close),
+	)
 }
 
 // Publish mocks base method.
@@ -58,11 +65,19 @@ func (m *MockPublisher) Publish(subject string, content []byte) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Publish", subject, content)
 	ret0, _ := ret[0].(error)
+
 	return ret0
 }
 
 // Publish indicates an expected call of Publish.
 func (mr *MockPublisherMockRecorder) Publish(subject, content any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Publish", reflect.TypeOf((*MockPublisher)(nil).Publish), subject, content)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Publish",
+		reflect.TypeOf((*MockPublisher)(nil).Publish),
+		subject,
+		content,
+	)
 }

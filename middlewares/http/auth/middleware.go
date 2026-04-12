@@ -1,4 +1,4 @@
-package http
+package auth
 
 import (
 	"errors"
@@ -8,6 +8,7 @@ import (
 	"slices"
 
 	"github.com/DKhorkov/libs/contextlib"
+	http2 "github.com/DKhorkov/libs/middlewares/http/metrics"
 	"github.com/DKhorkov/libs/security"
 )
 
@@ -37,7 +38,7 @@ func AuthMiddleware(
 			}
 
 			// Не проверяем метрики на аутентификацию
-			if r.URL.Path == MetricsURLPath {
+			if r.URL.Path == http2.MetricsURLPath {
 				next.ServeHTTP(w, r)
 
 				return

@@ -1,7 +1,8 @@
-package graphql_test
+package logging_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -10,7 +11,7 @@ import (
 
 	"github.com/DKhorkov/libs/graphql"
 	mocklogging "github.com/DKhorkov/libs/logging/mocks"
-	graphql2 "github.com/DKhorkov/libs/middlewares/graphql"
+	"github.com/DKhorkov/libs/middlewares/graphql/logging"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -32,9 +33,14 @@ func TestLoggingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := graphql2.LoggingMiddleware(nextHandler, logger)
+		middleware := logging.LoggingMiddleware(nextHandler, logger)
 
-		req := httptest.NewRequest(http.MethodPost, "/not-query", http.NoBody)
+		req := httptest.NewRequestWithContext(
+			context.Background(),
+			http.MethodPost,
+			"/not-query",
+			http.NoBody,
+		)
 		rr := httptest.NewRecorder()
 
 		middleware.ServeHTTP(rr, req)
@@ -62,10 +68,15 @@ func TestLoggingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := graphql2.LoggingMiddleware(nextHandler, logger)
+		middleware := logging.LoggingMiddleware(nextHandler, logger)
 
 		// Создаём запрос с телом, которое нельзя прочитать
-		req := httptest.NewRequest(http.MethodPost, "/query", http.NoBody)
+		req := httptest.NewRequestWithContext(
+			context.Background(),
+			http.MethodPost,
+			"/query",
+			http.NoBody,
+		)
 		req.Body = &errorReader{err: errors.New("read error")}
 
 		rr := httptest.NewRecorder()
@@ -94,10 +105,15 @@ func TestLoggingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := graphql2.LoggingMiddleware(nextHandler, logger)
+		middleware := logging.LoggingMiddleware(nextHandler, logger)
 
 		body := []byte("invalid json")
-		req := httptest.NewRequest(http.MethodPost, "/query", bytes.NewReader(body))
+		req := httptest.NewRequestWithContext(
+			context.Background(),
+			http.MethodPost,
+			"/query",
+			bytes.NewReader(body),
+		)
 		rr := httptest.NewRecorder()
 
 		middleware.ServeHTTP(rr, req)
@@ -127,11 +143,16 @@ func TestLoggingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := graphql2.LoggingMiddleware(nextHandler, logger)
+		middleware := logging.LoggingMiddleware(nextHandler, logger)
 
 		body := map[string]any{"query": query}
 		bodyBytes, _ := json.Marshal(body)
-		req := httptest.NewRequest(http.MethodPost, "/query", bytes.NewReader(bodyBytes))
+		req := httptest.NewRequestWithContext(
+			context.Background(),
+			http.MethodPost,
+			"/query",
+			bytes.NewReader(bodyBytes),
+		)
 		rr := httptest.NewRecorder()
 
 		middleware.ServeHTTP(rr, req)
@@ -189,14 +210,19 @@ func TestLoggingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := graphql2.LoggingMiddleware(nextHandler, logger)
+		middleware := logging.LoggingMiddleware(nextHandler, logger)
 
 		body := map[string]any{
 			"query":     query,
 			"variables": info.Variables,
 		}
 		bodyBytes, _ := json.Marshal(body)
-		req := httptest.NewRequest(http.MethodPost, "/query", bytes.NewReader(bodyBytes))
+		req := httptest.NewRequestWithContext(
+			context.Background(),
+			http.MethodPost,
+			"/query",
+			bytes.NewReader(bodyBytes),
+		)
 		rr := httptest.NewRecorder()
 
 		middleware.ServeHTTP(rr, req)

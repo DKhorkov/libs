@@ -33,6 +33,7 @@ type MockConnectionMockRecorder struct {
 func NewMockConnection(ctrl *gomock.Controller) *MockConnection {
 	mock := &MockConnection{ctrl: ctrl}
 	mock.recorder = &MockConnectionMockRecorder{mock}
+
 	return mock
 }
 
@@ -47,13 +48,21 @@ func (m *MockConnection) BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql
 	ret := m.ctrl.Call(m, "BeginTx", ctx, opts)
 	ret0, _ := ret[0].(*sql.Tx)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // BeginTx indicates an expected call of BeginTx.
 func (mr *MockConnectionMockRecorder) BeginTx(ctx, opts any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BeginTx", reflect.TypeOf((*MockConnection)(nil).BeginTx), ctx, opts)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"BeginTx",
+		reflect.TypeOf((*MockConnection)(nil).BeginTx),
+		ctx,
+		opts,
+	)
 }
 
 // Close mocks base method.
@@ -61,33 +70,52 @@ func (m *MockConnection) Close() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Close")
 	ret0, _ := ret[0].(error)
+
 	return ret0
 }
 
 // Close indicates an expected call of Close.
 func (mr *MockConnectionMockRecorder) Close() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockConnection)(nil).Close))
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Close",
+		reflect.TypeOf((*MockConnection)(nil).Close),
+	)
 }
 
 // ExecContext mocks base method.
-func (m *MockConnection) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
+func (m *MockConnection) ExecContext(
+	ctx context.Context,
+	query string,
+	args ...any,
+) (sql.Result, error) {
 	m.ctrl.T.Helper()
+
 	varargs := []any{ctx, query}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
+
 	ret := m.ctrl.Call(m, "ExecContext", varargs...)
 	ret0, _ := ret[0].(sql.Result)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // ExecContext indicates an expected call of ExecContext.
 func (mr *MockConnectionMockRecorder) ExecContext(ctx, query any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{ctx, query}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecContext", reflect.TypeOf((*MockConnection)(nil).ExecContext), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"ExecContext",
+		reflect.TypeOf((*MockConnection)(nil).ExecContext),
+		varargs...)
 }
 
 // PingContext mocks base method.
@@ -95,13 +123,20 @@ func (m *MockConnection) PingContext(ctx context.Context) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PingContext", ctx)
 	ret0, _ := ret[0].(error)
+
 	return ret0
 }
 
 // PingContext indicates an expected call of PingContext.
 func (mr *MockConnectionMockRecorder) PingContext(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PingContext", reflect.TypeOf((*MockConnection)(nil).PingContext), ctx)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"PingContext",
+		reflect.TypeOf((*MockConnection)(nil).PingContext),
+		ctx,
+	)
 }
 
 // PrepareContext mocks base method.
@@ -110,52 +145,82 @@ func (m *MockConnection) PrepareContext(ctx context.Context, query string) (*sql
 	ret := m.ctrl.Call(m, "PrepareContext", ctx, query)
 	ret0, _ := ret[0].(*sql.Stmt)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // PrepareContext indicates an expected call of PrepareContext.
 func (mr *MockConnectionMockRecorder) PrepareContext(ctx, query any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrepareContext", reflect.TypeOf((*MockConnection)(nil).PrepareContext), ctx, query)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"PrepareContext",
+		reflect.TypeOf((*MockConnection)(nil).PrepareContext),
+		ctx,
+		query,
+	)
 }
 
 // QueryContext mocks base method.
-func (m *MockConnection) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
+func (m *MockConnection) QueryContext(
+	ctx context.Context,
+	query string,
+	args ...any,
+) (*sql.Rows, error) {
 	m.ctrl.T.Helper()
+
 	varargs := []any{ctx, query}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
+
 	ret := m.ctrl.Call(m, "QueryContext", varargs...)
 	ret0, _ := ret[0].(*sql.Rows)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // QueryContext indicates an expected call of QueryContext.
 func (mr *MockConnectionMockRecorder) QueryContext(ctx, query any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{ctx, query}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryContext", reflect.TypeOf((*MockConnection)(nil).QueryContext), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"QueryContext",
+		reflect.TypeOf((*MockConnection)(nil).QueryContext),
+		varargs...)
 }
 
 // QueryRowContext mocks base method.
 func (m *MockConnection) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
 	m.ctrl.T.Helper()
+
 	varargs := []any{ctx, query}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
+
 	ret := m.ctrl.Call(m, "QueryRowContext", varargs...)
 	ret0, _ := ret[0].(*sql.Row)
+
 	return ret0
 }
 
 // QueryRowContext indicates an expected call of QueryRowContext.
 func (mr *MockConnectionMockRecorder) QueryRowContext(ctx, query any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{ctx, query}, args...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryRowContext", reflect.TypeOf((*MockConnection)(nil).QueryRowContext), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"QueryRowContext",
+		reflect.TypeOf((*MockConnection)(nil).QueryRowContext),
+		varargs...)
 }
 
 // Raw mocks base method.
@@ -163,11 +228,18 @@ func (m *MockConnection) Raw(f func(any) error) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Raw", f)
 	ret0, _ := ret[0].(error)
+
 	return ret0
 }
 
 // Raw indicates an expected call of Raw.
 func (mr *MockConnectionMockRecorder) Raw(f any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Raw", reflect.TypeOf((*MockConnection)(nil).Raw), f)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Raw",
+		reflect.TypeOf((*MockConnection)(nil).Raw),
+		f,
+	)
 }

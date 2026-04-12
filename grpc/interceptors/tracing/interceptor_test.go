@@ -1,4 +1,4 @@
-package interceptors_test
+package tracing_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/DKhorkov/libs/grpc/interceptors"
+	tracing2 "github.com/DKhorkov/libs/grpc/interceptors/tracing"
 	"github.com/DKhorkov/libs/tracing"
 	mocktracing "github.com/DKhorkov/libs/tracing/mocks"
 	"github.com/stretchr/testify/require"
@@ -54,7 +54,7 @@ func TestUnaryServerTracingInterceptor(t *testing.T) {
 			Return(ctx, span).
 			Times(1)
 
-		interceptor := interceptors.UnaryServerTracingInterceptor(provider, spanConfig)
+		interceptor := tracing2.UnaryServerTracingInterceptor(provider, spanConfig)
 
 		// Моделируем handler
 		handler := func(ctx context.Context, req any) (any, error) {
@@ -89,7 +89,7 @@ func TestUnaryServerTracingInterceptor(t *testing.T) {
 			Return(trace.TraceID{}, errors.New("invalid trace ID")).
 			Times(1)
 
-		interceptor := interceptors.UnaryServerTracingInterceptor(provider, spanConfig)
+		interceptor := tracing2.UnaryServerTracingInterceptor(provider, spanConfig)
 
 		handler := func(ctx context.Context, req any) (any, error) {
 			return "response", nil
@@ -115,7 +115,7 @@ func TestUnaryServerTracingInterceptor(t *testing.T) {
 			},
 		}
 
-		interceptor := interceptors.UnaryServerTracingInterceptor(provider, spanConfig)
+		interceptor := tracing2.UnaryServerTracingInterceptor(provider, spanConfig)
 
 		handler := func(ctx context.Context, req any) (any, error) {
 			return "response", nil
@@ -161,7 +161,7 @@ func TestUnaryServerTracingInterceptor(t *testing.T) {
 			Return(ctx, span).
 			Times(1)
 
-		interceptor := interceptors.UnaryServerTracingInterceptor(provider, spanConfig)
+		interceptor := tracing2.UnaryServerTracingInterceptor(provider, spanConfig)
 
 		handler := func(ctx context.Context, req any) (any, error) {
 			return nil, errors.New("handler error")
@@ -200,7 +200,7 @@ func TestUnaryClientTracingInterceptor(t *testing.T) {
 			Return(ctx, span).
 			Times(1)
 
-		interceptor := interceptors.UnaryClientTracingInterceptor(provider, spanConfig)
+		interceptor := tracing2.UnaryClientTracingInterceptor(provider, spanConfig)
 
 		invoker := func(ctx context.Context, method string, req, reply any, cc *grpc.ClientConn, opts ...grpc.CallOption) error {
 			// Присваиваем значение через указатель
@@ -238,7 +238,7 @@ func TestUnaryClientTracingInterceptor(t *testing.T) {
 			Return(ctx, span).
 			Times(1)
 
-		interceptor := interceptors.UnaryClientTracingInterceptor(provider, spanConfig)
+		interceptor := tracing2.UnaryClientTracingInterceptor(provider, spanConfig)
 
 		invoker := func(ctx context.Context, method string, req, reply any, cc *grpc.ClientConn, opts ...grpc.CallOption) error {
 			return errors.New("invoker error")

@@ -1,7 +1,8 @@
-package http
+package logging
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"testing"
 
 	mocklogging "github.com/DKhorkov/libs/logging/mocks"
+	http2 "github.com/DKhorkov/libs/middlewares/http/metrics"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -31,7 +33,7 @@ func TestLoggingMiddleware(t *testing.T) {
 	}{
 		{
 			name:    "skip metrics endpoint",
-			path:    MetricsURLPath,
+			path:    http2.MetricsURLPath,
 			method:  "GET",
 			handler: func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) },
 			setupMockLogger: func(logger *mocklogging.MockLogger) {
@@ -380,7 +382,7 @@ func TestLoggingMiddleware(t *testing.T) {
 				body = bytes.NewBufferString(tt.requestBody)
 			}
 
-			req := httptest.NewRequest(tt.method, tt.path, body)
+			req := httptest.NewRequestWithContext(context.Background(), tt.method, tt.path, body)
 
 			// Create response recorder
 			rr := httptest.NewRecorder()
@@ -442,7 +444,7 @@ func TestLoggingMiddleware_MultipleSensitiveFields(t *testing.T) {
 				w.WriteHeader(http.StatusOK)
 			}))
 
-			req := httptest.NewRequest(
+			req := httptest.NewRequestWithContext(context.Background(),
 				http.MethodPost,
 				"/api/test",
 				bytes.NewBufferString(tt.requestBody),
@@ -509,7 +511,12 @@ func TestLoggingMiddleware_HandlerError(t *testing.T) {
 			middleware := LoggingMiddleware(logger)
 			handler := middleware(tt.handler)
 
-			req := httptest.NewRequest(http.MethodGet, "/api/test", http.NoBody)
+			req := httptest.NewRequestWithContext(
+				context.Background(),
+				http.MethodGet,
+				"/api/test",
+				http.NoBody,
+			)
 			rr := httptest.NewRecorder()
 
 			// For panic test, ensure we recover

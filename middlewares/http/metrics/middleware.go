@@ -1,4 +1,4 @@
-package http
+package metrics
 
 import (
 	"net/http"
@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/DKhorkov/libs/middlewares/http/intercepting_response_writer"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -97,7 +98,7 @@ func MetricsMiddleware(next http.Handler) http.Handler {
 		now := time.Now()
 
 		// Create new metricsResponseWriter for response intercepting purpose:
-		mrw := newInterceptingResponseWriter(w)
+		mrw := intercepting_response_writer.New(w)
 		next.ServeHTTP(mrw, r)
 
 		status := statusOK

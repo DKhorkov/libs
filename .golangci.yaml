@@ -257,6 +257,8 @@ linters:
         linters:
           - revive
           - ireturn
+          - prealloc
+          - lll
 
       - path: ".*/interceptors/.*"
         linters:
@@ -284,9 +286,17 @@ linters:
         linters:
           - ireturn
 
-      - path: middlewares/graphql/logging.go
+      - path: middlewares/graphql/logging/middleware.go
         linters:
           - forcetypeassert
+
+      - path: middlewares/http/metrics/middleware_test.go
+        linters:
+          - paralleltest
+
+      - path: middlewares/graphql/metrics/middleware_test.go
+        linters:
+          - paralleltest
 
       - path: nats/consumer_options.go
         linters:

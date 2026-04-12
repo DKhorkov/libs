@@ -1,7 +1,8 @@
-package graphql
+package metrics
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -72,7 +73,8 @@ func TestMetricsMiddleware_RegularRequests(t *testing.T) {
 			requestDuration.Reset()
 
 			mw := MetricsMiddleware(tc.handler, logger)
-			req := httptest.NewRequest(http.MethodGet, tc.path, http.NoBody)
+			req := httptest.NewRequestWithContext(
+				context.Background(), http.MethodGet, tc.path, http.NoBody)
 			rr := httptest.NewRecorder()
 
 			mw.ServeHTTP(rr, req)
@@ -163,7 +165,8 @@ func TestMetricsMiddleware_GraphQLRequests(t *testing.T) {
 			})
 
 			mw := MetricsMiddleware(handler, logger)
-			req := httptest.NewRequest(
+			req := httptest.NewRequestWithContext(
+				context.Background(),
 				http.MethodPost,
 				graphqlURLPath,
 				bytes.NewBufferString(tc.body),
@@ -199,7 +202,8 @@ func TestMetricsMiddleware_RequestBodyError(t *testing.T) {
 		Times(1)
 
 	// Create a request with a body that will fail to read
-	req := httptest.NewRequest(http.MethodPost, graphqlURLPath, &errorReader{})
+	req := httptest.NewRequestWithContext(
+		context.Background(), http.MethodPost, graphqlURLPath, &errorReader{})
 	rr := httptest.NewRecorder()
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

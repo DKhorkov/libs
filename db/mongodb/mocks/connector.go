@@ -36,6 +36,7 @@ type MockConnectorMockRecorder struct {
 func NewMockConnector(ctrl *gomock.Controller) *MockConnector {
 	mock := &MockConnector{ctrl: ctrl}
 	mock.recorder = &MockConnectorMockRecorder{mock}
+
 	return mock
 }
 
@@ -49,33 +50,53 @@ func (m *MockConnector) Close(ctx context.Context) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Close", ctx)
 	ret0, _ := ret[0].(error)
+
 	return ret0
 }
 
 // Close indicates an expected call of Close.
 func (mr *MockConnectorMockRecorder) Close(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockConnector)(nil).Close), ctx)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Close",
+		reflect.TypeOf((*MockConnector)(nil).Close),
+		ctx,
+	)
 }
 
 // Collection mocks base method.
-func (m *MockConnector) Collection(database *mongo.Database, name string, opts ...*options.CollectionOptions) (*mongo.Collection, error) {
+func (m *MockConnector) Collection(
+	database *mongo.Database,
+	name string,
+	opts ...*options.CollectionOptions,
+) (*mongo.Collection, error) {
 	m.ctrl.T.Helper()
+
 	varargs := []any{database, name}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
+
 	ret := m.ctrl.Call(m, "Collection", varargs...)
 	ret0, _ := ret[0].(*mongo.Collection)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // Collection indicates an expected call of Collection.
 func (mr *MockConnectorMockRecorder) Collection(database, name any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{database, name}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Collection", reflect.TypeOf((*MockConnector)(nil).Collection), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Collection",
+		reflect.TypeOf((*MockConnector)(nil).Collection),
+		varargs...)
 }
 
 // Database mocks base method.
@@ -84,53 +105,86 @@ func (m *MockConnector) Database(name string) (*mongo.Database, error) {
 	ret := m.ctrl.Call(m, "Database", name)
 	ret0, _ := ret[0].(*mongo.Database)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // Database indicates an expected call of Database.
 func (mr *MockConnectorMockRecorder) Database(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Database", reflect.TypeOf((*MockConnector)(nil).Database), name)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Database",
+		reflect.TypeOf((*MockConnector)(nil).Database),
+		name,
+	)
 }
 
 // ListDatabaseNames mocks base method.
-func (m *MockConnector) ListDatabaseNames(ctx context.Context, filter bson.D, opts ...*options.ListDatabasesOptions) ([]string, error) {
+func (m *MockConnector) ListDatabaseNames(
+	ctx context.Context,
+	filter bson.D,
+	opts ...*options.ListDatabasesOptions,
+) ([]string, error) {
 	m.ctrl.T.Helper()
+
 	varargs := []any{ctx, filter}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
+
 	ret := m.ctrl.Call(m, "ListDatabaseNames", varargs...)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // ListDatabaseNames indicates an expected call of ListDatabaseNames.
 func (mr *MockConnectorMockRecorder) ListDatabaseNames(ctx, filter any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{ctx, filter}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDatabaseNames", reflect.TypeOf((*MockConnector)(nil).ListDatabaseNames), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"ListDatabaseNames",
+		reflect.TypeOf((*MockConnector)(nil).ListDatabaseNames),
+		varargs...)
 }
 
 // ListDatabases mocks base method.
-func (m *MockConnector) ListDatabases(ctx context.Context, filter bson.D, opts ...*options.ListDatabasesOptions) (*mongo.ListDatabasesResult, error) {
+func (m *MockConnector) ListDatabases(
+	ctx context.Context,
+	filter bson.D,
+	opts ...*options.ListDatabasesOptions,
+) (*mongo.ListDatabasesResult, error) {
 	m.ctrl.T.Helper()
+
 	varargs := []any{ctx, filter}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
+
 	ret := m.ctrl.Call(m, "ListDatabases", varargs...)
 	ret0, _ := ret[0].(*mongo.ListDatabasesResult)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // ListDatabases indicates an expected call of ListDatabases.
 func (mr *MockConnectorMockRecorder) ListDatabases(ctx, filter any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{ctx, filter}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDatabases", reflect.TypeOf((*MockConnector)(nil).ListDatabases), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"ListDatabases",
+		reflect.TypeOf((*MockConnector)(nil).ListDatabases),
+		varargs...)
 }
 
 // Ping mocks base method.
@@ -138,11 +192,19 @@ func (m *MockConnector) Ping(ctx context.Context, rp *readpref.ReadPref) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Ping", ctx, rp)
 	ret0, _ := ret[0].(error)
+
 	return ret0
 }
 
 // Ping indicates an expected call of Ping.
 func (mr *MockConnectorMockRecorder) Ping(ctx, rp any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ping", reflect.TypeOf((*MockConnector)(nil).Ping), ctx, rp)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Ping",
+		reflect.TypeOf((*MockConnector)(nil).Ping),
+		ctx,
+		rp,
+	)
 }

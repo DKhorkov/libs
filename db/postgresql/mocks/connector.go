@@ -33,6 +33,7 @@ type MockConnectorMockRecorder struct {
 func NewMockConnector(ctrl *gomock.Controller) *MockConnector {
 	mock := &MockConnector{ctrl: ctrl}
 	mock.recorder = &MockConnectorMockRecorder{mock}
+
 	return mock
 }
 
@@ -46,13 +47,19 @@ func (m *MockConnector) Close() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Close")
 	ret0, _ := ret[0].(error)
+
 	return ret0
 }
 
 // Close indicates an expected call of Close.
 func (mr *MockConnectorMockRecorder) Close() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockConnector)(nil).Close))
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Close",
+		reflect.TypeOf((*MockConnector)(nil).Close),
+	)
 }
 
 // Connection mocks base method.
@@ -61,13 +68,20 @@ func (m *MockConnector) Connection(ctx context.Context) (postgresql.Connection, 
 	ret := m.ctrl.Call(m, "Connection", ctx)
 	ret0, _ := ret[0].(postgresql.Connection)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // Connection indicates an expected call of Connection.
 func (mr *MockConnectorMockRecorder) Connection(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connection", reflect.TypeOf((*MockConnector)(nil).Connection), ctx)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Connection",
+		reflect.TypeOf((*MockConnector)(nil).Connection),
+		ctx,
+	)
 }
 
 // Pool mocks base method.
@@ -75,31 +89,49 @@ func (m *MockConnector) Pool() postgresql.Pool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Pool")
 	ret0, _ := ret[0].(postgresql.Pool)
+
 	return ret0
 }
 
 // Pool indicates an expected call of Pool.
 func (mr *MockConnectorMockRecorder) Pool() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Pool", reflect.TypeOf((*MockConnector)(nil).Pool))
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Pool",
+		reflect.TypeOf((*MockConnector)(nil).Pool),
+	)
 }
 
 // Transaction mocks base method.
-func (m *MockConnector) Transaction(ctx context.Context, opts ...postgresql.TransactionOption) (postgresql.Transaction, error) {
+func (m *MockConnector) Transaction(
+	ctx context.Context,
+	opts ...postgresql.TransactionOption,
+) (postgresql.Transaction, error) {
 	m.ctrl.T.Helper()
+
 	varargs := []any{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
+
 	ret := m.ctrl.Call(m, "Transaction", varargs...)
 	ret0, _ := ret[0].(postgresql.Transaction)
 	ret1, _ := ret[1].(error)
+
 	return ret0, ret1
 }
 
 // Transaction indicates an expected call of Transaction.
 func (mr *MockConnectorMockRecorder) Transaction(ctx any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+
 	varargs := append([]any{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Transaction", reflect.TypeOf((*MockConnector)(nil).Transaction), varargs...)
+
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"Transaction",
+		reflect.TypeOf((*MockConnector)(nil).Transaction),
+		varargs...)
 }

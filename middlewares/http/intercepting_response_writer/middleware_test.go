@@ -1,4 +1,4 @@
-package http
+package intercepting_response_writer
 
 import (
 	"bufio"
@@ -19,7 +19,7 @@ func TestInterceptingResponseWriter(t *testing.T) {
 		t.Parallel()
 
 		rr := httptest.NewRecorder()
-		rw := &interceptingResponseWriter{ResponseWriter: rr}
+		rw := &InterceptingResponseWriter{ResponseWriter: rr}
 
 		rw.WriteHeader(http.StatusCreated)
 		require.Equal(t, http.StatusCreated, rw.StatusCode)
@@ -30,7 +30,7 @@ func TestInterceptingResponseWriter(t *testing.T) {
 		t.Parallel()
 
 		rr := httptest.NewRecorder()
-		rw := &interceptingResponseWriter{ResponseWriter: rr}
+		rw := &InterceptingResponseWriter{ResponseWriter: rr}
 
 		body := []byte(`{"data":"test"}`)
 		n, err := rw.Write(body)
@@ -100,8 +100,8 @@ func TestHijack_TableDriven(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			// Создаём экземпляр interceptingResponseWriter
-			irw := &interceptingResponseWriter{
+			// Создаём экземпляр InterceptingResponseWriter
+			irw := &InterceptingResponseWriter{
 				ResponseWriter: tt.responseWriter,
 			}
 

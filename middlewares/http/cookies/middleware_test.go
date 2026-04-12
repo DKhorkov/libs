@@ -1,4 +1,4 @@
-package http_test
+package cookies_test
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/DKhorkov/libs/contextlib"
-	http2 "github.com/DKhorkov/libs/middlewares/http"
+	http2 "github.com/DKhorkov/libs/middlewares/http/cookies"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,7 +18,12 @@ func TestCookiesMiddleware(t *testing.T) {
 		t.Parallel()
 
 		cookieNames := []string{"session_id", "user_token"}
-		req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
+		req := httptest.NewRequestWithContext(
+			context.Background(),
+			http.MethodGet,
+			"/",
+			http.NoBody,
+		)
 		req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc123"})
 		req.AddCookie(&http.Cookie{Name: "user_token", Value: "xyz789"})
 
@@ -52,7 +57,12 @@ func TestCookiesMiddleware(t *testing.T) {
 		t.Parallel()
 
 		cookieNames := []string{"session_id", "user_token"}
-		req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
+		req := httptest.NewRequestWithContext(
+			context.Background(),
+			http.MethodGet,
+			"/",
+			http.NoBody,
+		)
 		// Добавляем только одну cookie
 		req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc123"})
 
@@ -86,7 +96,12 @@ func TestCookiesMiddleware(t *testing.T) {
 		t.Parallel()
 
 		cookieNames := []string{"session_id"}
-		req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
+		req := httptest.NewRequestWithContext(
+			context.Background(),
+			http.MethodGet,
+			"/",
+			http.NoBody,
+		)
 		req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc123"})
 
 		var capturedWriter http.ResponseWriter
@@ -118,7 +133,12 @@ func TestCookiesMiddleware(t *testing.T) {
 		t.Parallel()
 
 		cookieNames := []string{}
-		req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
+		req := httptest.NewRequestWithContext(
+			context.Background(),
+			http.MethodGet,
+			"/",
+			http.NoBody,
+		)
 
 		var handlerCalled bool
 
@@ -148,7 +168,12 @@ func TestCookiesMiddleware(t *testing.T) {
 
 		cookieNames := []string{"session_id"}
 		ctx := contextlib.WithValue(context.Background(), "custom-key", "custom-value")
-		req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
+		req := httptest.NewRequestWithContext(
+			context.Background(),
+			http.MethodGet,
+			"/",
+			http.NoBody,
+		)
 		req = req.WithContext(ctx)
 		req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc123"})
 

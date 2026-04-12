@@ -1,4 +1,4 @@
-package graphql
+package metrics
 
 import (
 	"bytes"
@@ -13,6 +13,7 @@ import (
 )
 
 const (
+	graphqlURLPath = "/query"
 	MetricsURLPath = "/metrics"
 
 	urlLabel        = "url"

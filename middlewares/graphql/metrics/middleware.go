@@ -55,8 +55,8 @@ func init() {
 	prometheus.MustRegister(requestsTotal)
 }
 
-// MetricsMiddleware collect metrics.
-func MetricsMiddleware(
+// Middleware collect metrics.
+func Middleware(
 	next http.Handler,
 	logger logging.Logger,
 ) http.Handler {
@@ -159,7 +159,7 @@ func newMetricsResponseWriter(w http.ResponseWriter) *metricsResponseWriter {
 	return &metricsResponseWriter{ResponseWriter: w, StatusCode: http.StatusOK}
 }
 
-// metricsResponseWriter intercepts response from GraphQL for MetricsMiddleware usage.
+// metricsResponseWriter intercepts response from GraphQL for Middleware usage.
 type metricsResponseWriter struct {
 	http.ResponseWriter
 
@@ -167,13 +167,13 @@ type metricsResponseWriter struct {
 	Body       []byte
 }
 
-// WriteHeader intercepts response body for later usage in MetricsMiddleware.
+// WriteHeader intercepts response body for later usage in Middleware.
 func (mrw *metricsResponseWriter) WriteHeader(statusCode int) {
 	mrw.StatusCode = statusCode
 	mrw.ResponseWriter.WriteHeader(statusCode)
 }
 
-// Write intercepts response body for later usage in MetricsMiddleware.
+// Write intercepts response body for later usage in Middleware.
 func (mrw *metricsResponseWriter) Write(body []byte) (int, error) {
 	mrw.Body = body
 

@@ -8,8 +8,8 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-// RequestIDMiddleware generates request ID and paste it to provided context for later usage.
-func RequestIDMiddleware(next http.Handler) http.Handler {
+// Middleware generates request ID and paste it to provided context for later usage.
+func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		requestID := requestid.New()

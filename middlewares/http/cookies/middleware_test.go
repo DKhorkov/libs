@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCookiesMiddleware(t *testing.T) {
+func TestMiddleware(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Adds cookies to context", func(t *testing.T) {
@@ -42,7 +42,7 @@ func TestCookiesMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := http2.CookiesMiddleware(nextHandler, cookieNames)
+		middleware := http2.Middleware(nextHandler, cookieNames)
 
 		rr := httptest.NewRecorder()
 		middleware.ServeHTTP(rr, req)
@@ -81,7 +81,7 @@ func TestCookiesMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := http2.CookiesMiddleware(nextHandler, cookieNames)
+		middleware := http2.Middleware(nextHandler, cookieNames)
 
 		rr := httptest.NewRecorder()
 		middleware.ServeHTTP(rr, req)
@@ -118,7 +118,7 @@ func TestCookiesMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusCreated)
 		})
 
-		middleware := http2.CookiesMiddleware(nextHandler, cookieNames)
+		middleware := http2.Middleware(nextHandler, cookieNames)
 
 		rr := httptest.NewRecorder()
 		middleware.ServeHTTP(rr, req)
@@ -154,7 +154,7 @@ func TestCookiesMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := http2.CookiesMiddleware(nextHandler, cookieNames)
+		middleware := http2.Middleware(nextHandler, cookieNames)
 
 		rr := httptest.NewRecorder()
 		middleware.ServeHTTP(rr, req)
@@ -196,7 +196,7 @@ func TestCookiesMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := http2.CookiesMiddleware(nextHandler, cookieNames)
+		middleware := http2.Middleware(nextHandler, cookieNames)
 
 		rr := httptest.NewRecorder()
 		middleware.ServeHTTP(rr, req)

@@ -16,7 +16,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestLoggingMiddleware(t *testing.T) {
+func TestMiddleware(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Skips non-graphql path", func(t *testing.T) {
@@ -33,7 +33,7 @@ func TestLoggingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := logging.LoggingMiddleware(nextHandler, logger)
+		middleware := logging.Middleware(nextHandler, logger)
 
 		req := httptest.NewRequestWithContext(
 			context.Background(),
@@ -68,7 +68,7 @@ func TestLoggingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := logging.LoggingMiddleware(nextHandler, logger)
+		middleware := logging.Middleware(nextHandler, logger)
 
 		// Создаём запрос с телом, которое нельзя прочитать
 		req := httptest.NewRequestWithContext(
@@ -105,7 +105,7 @@ func TestLoggingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := logging.LoggingMiddleware(nextHandler, logger)
+		middleware := logging.Middleware(nextHandler, logger)
 
 		body := []byte("invalid json")
 		req := httptest.NewRequestWithContext(
@@ -143,7 +143,7 @@ func TestLoggingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := logging.LoggingMiddleware(nextHandler, logger)
+		middleware := logging.Middleware(nextHandler, logger)
 
 		body := map[string]any{"query": query}
 		bodyBytes, _ := json.Marshal(body)
@@ -210,7 +210,7 @@ func TestLoggingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := logging.LoggingMiddleware(nextHandler, logger)
+		middleware := logging.Middleware(nextHandler, logger)
 
 		body := map[string]any{
 			"query":     query,

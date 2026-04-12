@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMetricsMiddleware_RegularRequests(t *testing.T) {
+func TestMiddleware_RegularRequests(t *testing.T) {
 	// Тестовые обработчики
 	successHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -116,7 +116,7 @@ func TestMetricsMiddleware_RegularRequests(t *testing.T) {
 			requestsTotal.Reset()
 			requestDuration.Reset()
 
-			mw := MetricsMiddleware(tc.handler)
+			mw := Middleware(tc.handler)
 			req := httptest.NewRequestWithContext(
 				context.Background(),
 				tc.method,
@@ -148,7 +148,7 @@ func TestMetricsMiddleware_RegularRequests(t *testing.T) {
 	}
 }
 
-func TestMetricsMiddleware_MethodLabel(t *testing.T) {
+func TestMiddleware_MethodLabel(t *testing.T) {
 	tests := []struct {
 		name     string
 		method   string
@@ -170,7 +170,7 @@ func TestMetricsMiddleware_MethodLabel(t *testing.T) {
 				w.WriteHeader(http.StatusOK)
 			})
 
-			mw := MetricsMiddleware(handler)
+			mw := Middleware(handler)
 			req := httptest.NewRequestWithContext(
 				context.Background(),
 				tc.method,
@@ -279,7 +279,7 @@ func TestMetricsResponseWriter(t *testing.T) {
 	}
 }
 
-func TestMetricsMiddleware_ErrorStatusCodeClassification(t *testing.T) {
+func TestMiddleware_ErrorStatusCodeClassification(t *testing.T) {
 	tests := []struct {
 		name           string
 		statusCode     int
@@ -326,7 +326,7 @@ func TestMetricsMiddleware_ErrorStatusCodeClassification(t *testing.T) {
 				w.WriteHeader(tc.statusCode)
 			})
 
-			mw := MetricsMiddleware(handler)
+			mw := Middleware(handler)
 			req := httptest.NewRequestWithContext(
 				context.Background(),
 				http.MethodGet,
@@ -352,7 +352,7 @@ func TestMetricsMiddleware_ErrorStatusCodeClassification(t *testing.T) {
 	}
 }
 
-func TestMetricsMiddleware_ConcurrentAccess(t *testing.T) {
+func TestMiddleware_ConcurrentAccess(t *testing.T) {
 	requestsTotal.Reset()
 	requestDuration.Reset()
 
@@ -362,7 +362,7 @@ func TestMetricsMiddleware_ConcurrentAccess(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	mw := MetricsMiddleware(handler)
+	mw := Middleware(handler)
 
 	done := make(chan bool)
 	concurrentRequests := 10
@@ -416,7 +416,7 @@ func TestMetricsRegistration(t *testing.T) {
 	assert.Error(t, err, "повторная регистрация должна вызывать ошибку")
 }
 
-func TestMetricsMiddleware_DurationMeasurement(t *testing.T) {
+func TestMiddleware_DurationMeasurement(t *testing.T) {
 	requestsTotal.Reset()
 	requestDuration.Reset()
 
@@ -428,7 +428,7 @@ func TestMetricsMiddleware_DurationMeasurement(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	mw := MetricsMiddleware(slowHandler)
+	mw := Middleware(slowHandler)
 	req := httptest.NewRequestWithContext(
 		context.Background(),
 		http.MethodGet,
@@ -447,7 +447,7 @@ func TestMetricsMiddleware_DurationMeasurement(t *testing.T) {
 	assert.Positive(t, metricCount, "request_duration_seconds должен иметь наблюдения")
 }
 
-func TestMetricsMiddleware_EmptyResponse(t *testing.T) {
+func TestMiddleware_EmptyResponse(t *testing.T) {
 	requestsTotal.Reset()
 	requestDuration.Reset()
 
@@ -456,7 +456,7 @@ func TestMetricsMiddleware_EmptyResponse(t *testing.T) {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
-	mw := MetricsMiddleware(handler)
+	mw := Middleware(handler)
 	req := httptest.NewRequestWithContext(
 		context.Background(),
 		http.MethodGet,

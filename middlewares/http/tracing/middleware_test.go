@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func TestTracingMiddleware(t *testing.T) {
+func TestMiddleware(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Creates span and adds traceID to metadata", func(t *testing.T) {
@@ -51,7 +51,7 @@ func TestTracingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := TracingMiddleware(provider, spanConfig)(nextHandler)
+		middleware := Middleware(provider, spanConfig)(nextHandler)
 
 		req := httptest.NewRequestWithContext(
 			context.Background(),
@@ -77,7 +77,7 @@ func TestTracingMiddleware(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		middleware := TracingMiddleware(provider, spanConfig)(nextHandler)
+		middleware := Middleware(provider, spanConfig)(nextHandler)
 
 		req := httptest.NewRequestWithContext(
 			context.Background(),
@@ -128,7 +128,7 @@ func TestTracingMiddleware(t *testing.T) {
 			require.NoError(t, err)
 		})
 
-		middleware := TracingMiddleware(provider, spanConfig)(nextHandler)
+		middleware := Middleware(provider, spanConfig)(nextHandler)
 
 		req := httptest.NewRequestWithContext(
 			context.Background(),
@@ -172,7 +172,7 @@ func TestTracingMiddleware(t *testing.T) {
 			require.NoError(t, err)
 		})
 
-		middleware := TracingMiddleware(provider, spanConfig)(nextHandler)
+		middleware := Middleware(provider, spanConfig)(nextHandler)
 
 		req := httptest.NewRequestWithContext(
 			context.Background(),
@@ -220,7 +220,7 @@ func TestTracingMiddleware(t *testing.T) {
 			require.NoError(t, err)
 		})
 
-		middleware := TracingMiddleware(provider, spanConfig)(nextHandler)
+		middleware := Middleware(provider, spanConfig)(nextHandler)
 
 		req := httptest.NewRequestWithContext(
 			context.Background(),

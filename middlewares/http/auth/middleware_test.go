@@ -15,8 +15,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestAuthMiddleware табличные тесты с реальным JWT.
-func TestAuthMiddleware(t *testing.T) {
+// TestMiddleware табличные тесты с реальным JWT.
+func TestMiddleware(t *testing.T) {
 	t.Parallel()
 
 	// Создаем реальный JWT конфиг для тестов
@@ -324,7 +324,7 @@ func TestAuthMiddleware(t *testing.T) {
 			}
 
 			// Создаем middleware с тестовыми параметрами
-			middleware := auth.AuthMiddleware(
+			middleware := auth.Middleware(
 				tt.cookieName,
 				securityConfig,
 				tt.ignoreURLs...,
@@ -374,8 +374,8 @@ func TestAuthMiddleware(t *testing.T) {
 	}
 }
 
-// TestAuthMiddlewareContext проверяет корректность установки контекста.
-func TestAuthMiddlewareContext(t *testing.T) {
+// TestMiddlewareContext проверяет корректность установки контекста.
+func TestMiddlewareContext(t *testing.T) {
 	t.Parallel()
 
 	securityConfig := security.Config{
@@ -398,7 +398,7 @@ func TestAuthMiddlewareContext(t *testing.T) {
 		t.Fatalf("Не удалось сгенерировать токен: %v", err)
 	}
 
-	middleware := auth.AuthMiddleware("access_token", securityConfig)
+	middleware := auth.Middleware("access_token", securityConfig)
 
 	// Хендлер для проверки контекста
 	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -440,8 +440,8 @@ func TestAuthMiddlewareContext(t *testing.T) {
 	}
 }
 
-// TestAuthMiddlewareIgnoreURLMultipleMethods проверяет несколько методов в ignoreURL.
-func TestAuthMiddlewareIgnoreURLMultipleMethods(t *testing.T) {
+// TestMiddlewareIgnoreURLMultipleMethods проверяет несколько методов в ignoreURL.
+func TestMiddlewareIgnoreURLMultipleMethods(t *testing.T) {
 	t.Parallel()
 
 	securityConfig := security.Config{
@@ -458,7 +458,7 @@ func TestAuthMiddlewareIgnoreURLMultipleMethods(t *testing.T) {
 		Path:    regexp.MustCompile(`^/api/v1/public/.*$`),
 	}
 
-	middleware := auth.AuthMiddleware(
+	middleware := auth.Middleware(
 		"access_token",
 		securityConfig,
 		ignoreURL,

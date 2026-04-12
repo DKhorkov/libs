@@ -84,8 +84,8 @@ func init() {
 	prometheus.MustRegister(memoryUsage)
 }
 
-// MetricsMiddleware collect metrics.
-func MetricsMiddleware(next http.Handler) http.Handler {
+// Middleware collect metrics.
+func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == MetricsURLPath {
 			next.ServeHTTP(w, r)

@@ -15,8 +15,8 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-// TestLoggingMiddleware тестирует middleware логирования в table-driven стиле.
-func TestLoggingMiddleware(t *testing.T) {
+// TestMiddleware тестирует middleware логирования в table-driven стиле.
+func TestMiddleware(t *testing.T) {
 	t.Parallel()
 
 	ctrl := gomock.NewController(t)
@@ -371,7 +371,7 @@ func TestLoggingMiddleware(t *testing.T) {
 			tt.setupMockLogger(logger)
 
 			// Create middleware
-			middleware := LoggingMiddleware(logger, tt.sensitiveFields...)
+			middleware := Middleware(logger, tt.sensitiveFields...)
 
 			// Create handler with middleware
 			handler := middleware(tt.handler)
@@ -398,8 +398,8 @@ func TestLoggingMiddleware(t *testing.T) {
 	}
 }
 
-// TestLoggingMiddleware_MultipleSensitiveFields тестирует множественные чувствительные поля.
-func TestLoggingMiddleware_MultipleSensitiveFields(t *testing.T) {
+// TestMiddleware_MultipleSensitiveFields тестирует множественные чувствительные поля.
+func TestMiddleware_MultipleSensitiveFields(t *testing.T) {
 	t.Parallel()
 
 	ctrl := gomock.NewController(t)
@@ -438,7 +438,7 @@ func TestLoggingMiddleware_MultipleSensitiveFields(t *testing.T) {
 
 			logger.EXPECT().InfoContext(gomock.Any(), gomock.Any(), gomock.Any()).Times(2)
 
-			middleware := LoggingMiddleware(logger, tt.sensitiveFields...)
+			middleware := Middleware(logger, tt.sensitiveFields...)
 
 			handler := middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
@@ -466,8 +466,8 @@ func TestLoggingMiddleware_MultipleSensitiveFields(t *testing.T) {
 	}
 }
 
-// TestLoggingMiddleware_HandlerError тестирует обработку ошибок в хендлере.
-func TestLoggingMiddleware_HandlerError(t *testing.T) {
+// TestMiddleware_HandlerError тестирует обработку ошибок в хендлере.
+func TestMiddleware_HandlerError(t *testing.T) {
 	t.Parallel()
 
 	ctrl := gomock.NewController(t)
@@ -508,7 +508,7 @@ func TestLoggingMiddleware_HandlerError(t *testing.T) {
 			logger := mocklogging.NewMockLogger(ctrl)
 			tt.setupMock(logger)
 
-			middleware := LoggingMiddleware(logger)
+			middleware := Middleware(logger)
 			handler := middleware(tt.handler)
 
 			req := httptest.NewRequestWithContext(

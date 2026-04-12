@@ -23,7 +23,7 @@ type IgnoreURL struct {
 	Path    *regexp.Regexp `json:"path"`
 }
 
-func AuthMiddleware(
+func Middleware(
 	accessTokenCookieName string,
 	securityConfig security.Config,
 	ignoreURLs ...IgnoreURL,

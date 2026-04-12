@@ -11,7 +11,7 @@ import (
 	"github.com/DKhorkov/libs/middlewares/http/metrics"
 )
 
-func LoggingMiddleware(
+func Middleware(
 	logger logging.Logger,
 	sensitiveFields ...string,
 ) func(next http.Handler) http.Handler {

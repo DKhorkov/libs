@@ -10,8 +10,8 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-// UnaryServerTracingInterceptor creates span on base of existing span and logs its Start and End events.
-func UnaryServerTracingInterceptor(
+// UnaryServerInterceptor creates span on base of existing span and logs its Start and End events.
+func UnaryServerInterceptor(
 	tp tracing.Provider,
 	spanConfig tracing.SpanConfig,
 ) grpc.UnaryServerInterceptor {
@@ -50,8 +50,8 @@ func UnaryServerTracingInterceptor(
 	}
 }
 
-// UnaryClientTracingInterceptor creates span on base of existing span and logs its Start and End events.
-func UnaryClientTracingInterceptor(
+// UnaryClientInterceptor creates span on base of existing span and logs its Start and End events.
+func UnaryClientInterceptor(
 	tp tracing.Provider,
 	spanConfig tracing.SpanConfig,
 ) grpc.UnaryClientInterceptor {

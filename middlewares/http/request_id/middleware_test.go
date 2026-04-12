@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRequestIDMiddleware(t *testing.T) {
+func TestMiddleware(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Generates and adds requestID to context", func(t *testing.T) {
@@ -32,7 +32,7 @@ func TestRequestIDMiddleware(t *testing.T) {
 		})
 
 		// Создаём middleware
-		middleware := http2.RequestIDMiddleware(nextHandler)
+		middleware := http2.Middleware(nextHandler)
 
 		// Создаём тестовый запрос
 		req := httptest.NewRequestWithContext(

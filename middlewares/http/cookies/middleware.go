@@ -8,9 +8,9 @@ import (
 
 var CookiesWriterName = "cookiesWriterName"
 
-// CookiesMiddleware reads provided cookies from request and paste them into context for graphql purposes.
+// Middleware reads provided cookies from request and paste them into context for graphql purposes.
 // After all operations - calls next handler.
-func CookiesMiddleware(next http.Handler, cookieNames []string) http.Handler {
+func Middleware(next http.Handler, cookieNames []string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 

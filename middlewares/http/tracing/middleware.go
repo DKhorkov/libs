@@ -9,8 +9,8 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-// TracingMiddleware creates root span of request and logs its Start and End events.
-func TracingMiddleware(
+// Middleware creates root span of request and logs its Start and End events.
+func Middleware(
 	tp tracing.Provider,
 	spanConfig tracing.SpanConfig,
 ) func(next http.Handler) http.Handler {

@@ -16,7 +16,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestMetricsMiddleware_RegularRequests(t *testing.T) {
+func TestMiddleware_RegularRequests(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	logger := mocklogging.NewMockLogger(ctrl)
 
@@ -72,7 +72,7 @@ func TestMetricsMiddleware_RegularRequests(t *testing.T) {
 			requestsTotal.Reset()
 			requestDuration.Reset()
 
-			mw := MetricsMiddleware(tc.handler, logger)
+			mw := Middleware(tc.handler, logger)
 			req := httptest.NewRequestWithContext(
 				context.Background(), http.MethodGet, tc.path, http.NoBody)
 			rr := httptest.NewRecorder()
@@ -93,7 +93,7 @@ func TestMetricsMiddleware_RegularRequests(t *testing.T) {
 	}
 }
 
-func TestMetricsMiddleware_GraphQLRequests(t *testing.T) {
+func TestMiddleware_GraphQLRequests(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	logger := mocklogging.NewMockLogger(ctrl)
 
@@ -164,7 +164,7 @@ func TestMetricsMiddleware_GraphQLRequests(t *testing.T) {
 				w.WriteHeader(tc.mockStatus)
 			})
 
-			mw := MetricsMiddleware(handler, logger)
+			mw := Middleware(handler, logger)
 			req := httptest.NewRequestWithContext(
 				context.Background(),
 				http.MethodPost,
@@ -189,7 +189,7 @@ func TestMetricsMiddleware_GraphQLRequests(t *testing.T) {
 	}
 }
 
-func TestMetricsMiddleware_RequestBodyError(t *testing.T) {
+func TestMiddleware_RequestBodyError(t *testing.T) {
 	// Setup
 	requestsTotal.Reset()
 	requestDuration.Reset()
@@ -210,7 +210,7 @@ func TestMetricsMiddleware_RequestBodyError(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	mw := MetricsMiddleware(handler, logger)
+	mw := Middleware(handler, logger)
 	mw.ServeHTTP(rr, req)
 
 	// Should fall back to original path

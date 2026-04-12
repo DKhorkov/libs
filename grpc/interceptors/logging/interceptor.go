@@ -18,8 +18,8 @@ const (
 	passwordFieldName = "Password"
 )
 
-// UnaryServerLoggingInterceptor intercepts gRPC handler, logs request with provided request ID and calls handler.
-func UnaryServerLoggingInterceptor(logger logging.Logger) grpc.UnaryServerInterceptor {
+// UnaryServerInterceptor intercepts gRPC handler, logs request with provided request ID and calls handler.
+func UnaryServerInterceptor(logger logging.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		var requestID string
 
@@ -74,8 +74,8 @@ func UnaryServerLoggingInterceptor(logger logging.Logger) grpc.UnaryServerInterc
 	}
 }
 
-// UnaryClientLoggingInterceptor adapts logging.logger to interceptor logger.
-func UnaryClientLoggingInterceptor(logger logging.Logger) grpclogging.Logger {
+// UnaryClientInterceptor adapts logging.logger to interceptor logger.
+func UnaryClientInterceptor(logger logging.Logger) grpclogging.Logger {
 	return grpclogging.LoggerFunc(
 		func(
 			ctx context.Context,

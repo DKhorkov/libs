@@ -78,7 +78,7 @@ type Pool interface {
 
 // UnitOfWork provide option to make all operation or rollback due to error of one of them.
 //
-//go:generate mockgen -source=interfaces.go -destination=mocks/pool.go -package=mocks -exclude_interfaces=Connector,Transaction,Connection,Pool
+//go:generate mockgen -source=interfaces.go -destination=mocks/uow.go -package=mocks -exclude_interfaces=Connector,Transaction,Connection,Pool
 type UnitOfWork interface {
 	Do(ctx context.Context, fn func(ctx context.Context, tx Transaction) error) error
 }

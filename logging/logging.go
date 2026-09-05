@@ -16,6 +16,10 @@ import (
 const (
 	skipLevel  = 2
 	permission = 0o777
+
+	tracebackField = "Traceback"
+	errorField     = "Error"
+	requestIDField = "Request ID"
 )
 
 var (
@@ -78,11 +82,11 @@ func LogErrorContext(ctx context.Context, logger Logger, msg string, err error, 
 	}
 
 	args = append(args, []any{
-		"Request ID",
+		requestIDField,
 		requestID,
-		"Traceback",
+		tracebackField,
 		GetLogTraceback(skipLevel),
-		"Error",
+		errorField,
 		err,
 	}...)
 
@@ -102,9 +106,9 @@ func LogInfoContext(ctx context.Context, logger Logger, msg string, args ...any)
 	}
 
 	args = append(args, []any{
-		"Request ID",
+		requestIDField,
 		requestID,
-		"Traceback",
+		tracebackField,
 		GetLogTraceback(skipLevel),
 	}...)
 
@@ -118,9 +122,9 @@ func LogInfoContext(ctx context.Context, logger Logger, msg string, args ...any)
 // LogError logs error with message info, using provided logger.
 func LogError(logger Logger, msg string, err error, args ...any) {
 	args = append(args, []any{
-		"Traceback",
+		tracebackField,
 		GetLogTraceback(skipLevel),
-		"Error",
+		errorField,
 		err,
 	}...)
 
@@ -133,7 +137,7 @@ func LogError(logger Logger, msg string, err error, args ...any) {
 // LogInfo logs message, using provided logger.
 func LogInfo(logger Logger, msg string, args ...any) {
 	args = append(args, []any{
-		"Traceback",
+		tracebackField,
 		GetLogTraceback(skipLevel),
 	}...)
 

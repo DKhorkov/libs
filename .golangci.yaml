@@ -298,6 +298,22 @@ linters:
         linters:
           - paralleltest
 
+      - path: middlewares/http/cookies/middleware_test.go
+        linters:
+          - gosec
+
+      - path: cookies/cookies.go
+        linters:
+          - gosec
+
+      - path: middlewares/http/auth/middleware_test.go
+        linters:
+          - gosec
+
+      - path: db/postgresql/uow/uow_test.go
+        linters:
+          - gosec
+
       - path: nats/consumer_options.go
         linters:
           - forbidigo

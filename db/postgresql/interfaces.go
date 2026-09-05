@@ -9,7 +9,7 @@ import (
 
 // Connector represents abstraction to work with Database according dependency inversion principal relying on methods.
 //
-//go:generate mockgen -source=interfaces.go -destination=mocks/connector.go -package=mocks -exclude_interfaces=Transaction,Pool,Connection
+//go:generate mockgen -source=interfaces.go -destination=mocks/connector.go -package=mocks -exclude_interfaces=Transaction,Pool,Connection,UnitOfWork
 type Connector interface {
 	Close() error
 	Transaction(ctx context.Context, opts ...TransactionOption) (Transaction, error)
@@ -20,7 +20,7 @@ type Connector interface {
 // Transaction represents abstraction of Database to comply Atomicity principle
 // according dependency inversion principal relying on methods.
 //
-//go:generate mockgen -source=interfaces.go -destination=mocks/transaction.go -package=mocks -exclude_interfaces=Connector,Pool,Connection
+//go:generate mockgen -source=interfaces.go -destination=mocks/transaction.go -package=mocks -exclude_interfaces=Connector,Pool,Connection,UnitOfWork
 type Transaction interface {
 	Commit() error
 	Rollback() error
@@ -38,7 +38,7 @@ type Transaction interface {
 
 // Connection represents abstraction of Database to execute any operation with Database
 //
-//go:generate mockgen -source=interfaces.go -destination=mocks/connection.go -package=mocks -exclude_interfaces=Connector,Transaction,Pool
+//go:generate mockgen -source=interfaces.go -destination=mocks/connection.go -package=mocks -exclude_interfaces=Connector,Transaction,Pool,UnitOfWork
 type Connection interface {
 	PingContext(ctx context.Context) error
 	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
@@ -52,7 +52,7 @@ type Connection interface {
 
 // Pool represents abstraction of Database to work with connections and transactions
 //
-//go:generate mockgen -source=interfaces.go -destination=mocks/pool.go -package=mocks -exclude_interfaces=Connector,Transaction,Connection
+//go:generate mockgen -source=interfaces.go -destination=mocks/pool.go -package=mocks -exclude_interfaces=Connector,Transaction,Connection,UnitOfWork
 type Pool interface {
 	PingContext(ctx context.Context) error
 	Ping() error
@@ -74,4 +74,11 @@ type Pool interface {
 	Begin() (*sql.Tx, error)
 	Driver() driver.Driver
 	Conn(ctx context.Context) (*sql.Conn, error)
+}
+
+// UnitOfWork provide option to make all operation or rollback due to error of one of them.
+//
+//go:generate mockgen -source=interfaces.go -destination=mocks/pool.go -package=mocks -exclude_interfaces=Connector,Transaction,Connection,Pool
+type UnitOfWork interface {
+	Do(ctx context.Context, fn func(ctx context.Context, tx Transaction) error) error
 }

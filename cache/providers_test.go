@@ -5,6 +5,7 @@ package cache_test
 import (
 	"context"
 	"fmt"
+	"github.com/DKhorkov/libs/loadenv"
 	"github.com/DKhorkov/libs/pointers"
 	"testing"
 	"time"
@@ -16,9 +17,14 @@ import (
 	"github.com/DKhorkov/libs/cache"
 )
 
-const (
-	password = "hmtm_sso"
-	port     = 8072
+// Connection params of Redis, which integration tests are run against.
+//
+// Defaults point to hmtm's local Redis, but both are overridable via env: the
+// same tests are run against any project's local infrastructure without editing
+// this file.
+var (
+	password = loadenv.GetEnv("CACHE_PASSWORD", "hmtm_sso")
+	port     = loadenv.GetEnvAsInt("CACHE_PORT", 8072)
 )
 
 func TestNew(t *testing.T) {
@@ -85,7 +91,7 @@ func TestCommonProvider_CRUD(t *testing.T) {
 	defer func(provider *cache.CommonProvider) {
 		err = provider.Close()
 		if err != nil {
-			t.Fatalf(err.Error())
+			t.Fatal(err)
 		}
 	}(provider)
 
@@ -166,7 +172,7 @@ func TestCommonProvider_IncrDecr(t *testing.T) {
 	defer func(provider *cache.CommonProvider) {
 		err = provider.Close()
 		if err != nil {
-			t.Fatalf(err.Error())
+			t.Fatal(err)
 		}
 	}(provider)
 
@@ -303,7 +309,7 @@ func TestCommonProvider_GetEx(t *testing.T) {
 	defer func(provider *cache.CommonProvider) {
 		err = provider.Close()
 		if err != nil {
-			t.Fatalf(err.Error())
+			t.Fatal(err)
 		}
 	}(provider)
 
@@ -388,7 +394,7 @@ func TestCommonProvider_GetDel(t *testing.T) {
 	defer func(provider *cache.CommonProvider) {
 		err = provider.Close()
 		if err != nil {
-			t.Fatalf(err.Error())
+			t.Fatal(err)
 		}
 	}(provider)
 
@@ -472,7 +478,7 @@ func TestCommonProvider_DelByPattern(t *testing.T) {
 	defer func(provider *cache.CommonProvider) {
 		err = provider.Close()
 		if err != nil {
-			t.Fatalf(err.Error())
+			t.Fatal(err)
 		}
 	}(provider)
 
@@ -607,4 +613,465 @@ func TestCommonProvider_DelByPattern(t *testing.T) {
 			}
 		})
 	}
+}
+
+// newProvider builds provider for a single test and closes it at the end.
+func newProvider(t *testing.T) *cache.CommonProvider {
+	t.Helper()
+
+	provider, err := cache.New(cache.WithPassword(password), cache.WithPort(port))
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		require.NoError(t, provider.Close())
+	})
+
+	return provider
+}
+
+// TestErrNotFound checks, that missing key is reported via package sentinel and
+// not only via redis.Nil: consumers should not import redis driver just to tell
+// "no such key" from a real failure.
+func TestErrNotFound(t *testing.T) {
+	ctx := context.Background()
+	provider := newProvider(t)
+
+	require.NoError(t, provider.Del(ctx, "errnotfound-key"))
+
+	_, err := provider.Get(ctx, "errnotfound-key")
+	require.Error(t, err)
+	assert.ErrorIs(t, err, cache.ErrNotFound)
+	assert.ErrorIs(t, err, redis.Nil)
+}
+
+func TestCommonProvider_TrySet(t *testing.T) {
+	ctx := context.Background()
+	provider := newProvider(t)
+
+	tests := []struct {
+		name        string
+		key         string
+		value       string
+		expiration  time.Duration
+		setup       func(t *testing.T, key string)
+		want        bool
+		wantValue   string
+		wantErr     bool
+		expectedErr error
+	}{
+		{
+			name:       "sets absent key",
+			key:        "tryset-absent",
+			value:      "value1",
+			expiration: time.Minute,
+			want:       true,
+			wantValue:  "value1",
+		},
+		{
+			name:       "does not overwrite existing key",
+			key:        "tryset-existing",
+			value:      "value2",
+			expiration: time.Minute,
+			setup: func(t *testing.T, key string) {
+				t.Helper()
+				require.NoError(t, provider.Set(ctx, key, "first", time.Minute))
+			},
+			want:      false,
+			wantValue: "first",
+		},
+		{
+			name:       "sets key, expired since previous attempt",
+			key:        "tryset-expired",
+			value:      "value3",
+			expiration: time.Minute,
+			setup: func(t *testing.T, key string) {
+				t.Helper()
+				require.NoError(t, provider.Set(ctx, key, "first", time.Millisecond*10))
+				time.Sleep(time.Millisecond * 20)
+			},
+			want:      true,
+			wantValue: "value3",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.NoError(t, provider.Del(ctx, tt.key))
+
+			if tt.setup != nil {
+				tt.setup(t, tt.key)
+			}
+
+			got, err := provider.TrySet(ctx, tt.key, tt.value, tt.expiration)
+			if tt.wantErr {
+				require.Error(t, err)
+				assert.ErrorIs(t, err, tt.expectedErr)
+
+				return
+			}
+
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+
+			stored, err := provider.Get(ctx, tt.key)
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantValue, stored)
+		})
+	}
+}
+
+// TestCommonProvider_TrySetIsExclusive checks the whole point of the method:
+// out of many attempts to take the same key exactly one wins. Without it the
+// method could not be used as a lock.
+func TestCommonProvider_TrySetIsExclusive(t *testing.T) {
+	ctx := context.Background()
+	provider := newProvider(t)
+
+	const attempts = 10
+
+	require.NoError(t, provider.Del(ctx, "tryset-exclusive"))
+
+	won := 0
+
+	for range attempts {
+		ok, err := provider.TrySet(ctx, "tryset-exclusive", "owner", time.Minute)
+		require.NoError(t, err)
+
+		if ok {
+			won++
+		}
+	}
+
+	assert.Equal(t, 1, won)
+}
+
+func TestCommonProvider_MGet(t *testing.T) {
+	ctx := context.Background()
+	provider := newProvider(t)
+
+	require.NoError(t, provider.Del(ctx, "mget-1", "mget-2", "mget-3"))
+	require.NoError(t, provider.Set(ctx, "mget-1", "value1", time.Minute))
+	require.NoError(t, provider.Set(ctx, "mget-3", "value3", time.Minute))
+
+	tests := []struct {
+		name string
+		keys []string
+		want []*string
+	}{
+		{
+			name: "all keys exist",
+			keys: []string{"mget-1", "mget-3"},
+			want: []*string{pointers.New("value1"), pointers.New("value3")},
+		},
+		{
+			name: "missing key is nil at its position",
+			keys: []string{"mget-1", "mget-2", "mget-3"},
+			want: []*string{pointers.New("value1"), nil, pointers.New("value3")},
+		},
+		{
+			name: "order follows requested keys",
+			keys: []string{"mget-3", "mget-1"},
+			want: []*string{pointers.New("value3"), pointers.New("value1")},
+		},
+		{
+			name: "no keys requested",
+			keys: []string{},
+			want: []*string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := provider.MGet(ctx, tt.keys...)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestCommonProvider_TTL(t *testing.T) {
+	ctx := context.Background()
+	provider := newProvider(t)
+
+	require.NoError(t, provider.Del(ctx, "ttl-with", "ttl-without", "ttl-missing"))
+	require.NoError(t, provider.Set(ctx, "ttl-with", "value", time.Minute))
+	require.NoError(t, provider.Set(ctx, "ttl-without", "value", 0))
+
+	tests := []struct {
+		name   string
+		key    string
+		assert func(t *testing.T, ttl time.Duration)
+	}{
+		{
+			name: "key with expiration",
+			key:  "ttl-with",
+			assert: func(t *testing.T, ttl time.Duration) {
+				t.Helper()
+				assert.Positive(t, ttl)
+				assert.LessOrEqual(t, ttl, time.Minute)
+			},
+		},
+		{
+			name: "key without expiration",
+			key:  "ttl-without",
+			assert: func(t *testing.T, ttl time.Duration) {
+				t.Helper()
+				assert.Equal(t, time.Duration(-1), ttl)
+			},
+		},
+		{
+			name: "missing key",
+			key:  "ttl-missing",
+			assert: func(t *testing.T, ttl time.Duration) {
+				t.Helper()
+				assert.Equal(t, time.Duration(-2), ttl)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ttl, err := provider.TTL(ctx, tt.key)
+			require.NoError(t, err)
+			tt.assert(t, ttl)
+		})
+	}
+}
+
+// TestCommonProvider_ExpireAt checks, that key, created without expiration, can
+// be given one afterwards: counters are created by Incr, which never sets TTL,
+// and without this method they would stay in cache forever.
+func TestCommonProvider_ExpireAt(t *testing.T) {
+	ctx := context.Background()
+	provider := newProvider(t)
+
+	t.Run("gives expiration to key without one", func(t *testing.T) {
+		require.NoError(t, provider.Del(ctx, "expireat-counter"))
+
+		_, err := provider.Incr(ctx, "expireat-counter")
+		require.NoError(t, err)
+
+		ttl, err := provider.TTL(ctx, "expireat-counter")
+		require.NoError(t, err)
+		assert.Equal(t, time.Duration(-1), ttl)
+
+		require.NoError(t, provider.ExpireAt(ctx, "expireat-counter", time.Now().Add(time.Hour)))
+
+		ttl, err = provider.TTL(ctx, "expireat-counter")
+		require.NoError(t, err)
+		assert.Positive(t, ttl)
+		assert.LessOrEqual(t, ttl, time.Hour)
+	})
+
+	t.Run("moment in the past deletes key", func(t *testing.T) {
+		require.NoError(t, provider.Set(ctx, "expireat-past", "value", time.Minute))
+		require.NoError(t, provider.ExpireAt(ctx, "expireat-past", time.Now().Add(-time.Hour)))
+
+		_, err := provider.Get(ctx, "expireat-past")
+		require.Error(t, err)
+		assert.ErrorIs(t, err, cache.ErrNotFound)
+	})
+
+	t.Run("missing key is not an error", func(t *testing.T) {
+		require.NoError(t, provider.Del(ctx, "expireat-missing"))
+		require.NoError(t, provider.ExpireAt(ctx, "expireat-missing", time.Now().Add(time.Hour)))
+	})
+}
+
+func TestCommonProvider_ZAddAndZScore(t *testing.T) {
+	ctx := context.Background()
+	provider := newProvider(t)
+
+	t.Run("member round trips through its score", func(t *testing.T) {
+		require.NoError(t, provider.Del(ctx, "zset-roundtrip"))
+		require.NoError(t, provider.ZAdd(ctx, "zset-roundtrip", cache.Z{Score: 42, Member: "first"}))
+
+		score, err := provider.ZScore(ctx, "zset-roundtrip", "first")
+		require.NoError(t, err)
+		assert.InDelta(t, 42.0, score, 0)
+	})
+
+	t.Run("repeated add updates score instead of doubling member", func(t *testing.T) {
+		require.NoError(t, provider.Del(ctx, "zset-update"))
+		require.NoError(t, provider.ZAdd(ctx, "zset-update", cache.Z{Score: 1, Member: "only"}))
+		require.NoError(t, provider.ZAdd(ctx, "zset-update", cache.Z{Score: 2, Member: "only"}))
+
+		score, err := provider.ZScore(ctx, "zset-update", "only")
+		require.NoError(t, err)
+		assert.InDelta(t, 2.0, score, 0)
+
+		members, err := provider.ZRangeByScore(
+			ctx,
+			"zset-update",
+			cache.ZRangeBy{Min: "-inf", Max: "+inf"},
+		)
+		require.NoError(t, err)
+		assert.Equal(t, []string{"only"}, members)
+	})
+
+	t.Run("several members at once", func(t *testing.T) {
+		require.NoError(t, provider.Del(ctx, "zset-batch"))
+		require.NoError(
+			t,
+			provider.ZAdd(
+				ctx,
+				"zset-batch",
+				cache.Z{Score: 2, Member: "second"},
+				cache.Z{Score: 1, Member: "first"},
+			),
+		)
+
+		members, err := provider.ZRangeByScore(
+			ctx,
+			"zset-batch",
+			cache.ZRangeBy{Min: "-inf", Max: "+inf"},
+		)
+		require.NoError(t, err)
+		assert.Equal(t, []string{"first", "second"}, members)
+	})
+
+	t.Run("missing member", func(t *testing.T) {
+		require.NoError(t, provider.Del(ctx, "zset-missing"))
+		require.NoError(t, provider.ZAdd(ctx, "zset-missing", cache.Z{Score: 1, Member: "present"}))
+
+		_, err := provider.ZScore(ctx, "zset-missing", "absent")
+		require.Error(t, err)
+		assert.ErrorIs(t, err, cache.ErrNotFound)
+	})
+
+	t.Run("missing key", func(t *testing.T) {
+		require.NoError(t, provider.Del(ctx, "zset-absent"))
+
+		_, err := provider.ZScore(ctx, "zset-absent", "whatever")
+		require.Error(t, err)
+		assert.ErrorIs(t, err, cache.ErrNotFound)
+	})
+}
+
+func TestCommonProvider_ZRangeByScore(t *testing.T) {
+	ctx := context.Background()
+	provider := newProvider(t)
+
+	require.NoError(t, provider.Del(ctx, "zset-range"))
+	require.NoError(
+		t,
+		provider.ZAdd(
+			ctx,
+			"zset-range",
+			cache.Z{Score: 10, Member: "a"},
+			cache.Z{Score: 20, Member: "b"},
+			cache.Z{Score: 30, Member: "c"},
+			cache.Z{Score: 40, Member: "d"},
+		),
+	)
+
+	tests := []struct {
+		name string
+		by   cache.ZRangeBy
+		want []string
+	}{
+		{
+			name: "everything in score order",
+			by:   cache.ZRangeBy{Min: "-inf", Max: "+inf"},
+			want: []string{"a", "b", "c", "d"},
+		},
+		{
+			name: "everything, that is already due",
+			by:   cache.ZRangeBy{Min: "-inf", Max: "25"},
+			want: []string{"a", "b"},
+		},
+		{
+			name: "bounds are inclusive",
+			by:   cache.ZRangeBy{Min: "20", Max: "30"},
+			want: []string{"b", "c"},
+		},
+		{
+			name: "exclusive bound",
+			by:   cache.ZRangeBy{Min: "(20", Max: "30"},
+			want: []string{"c"},
+		},
+		{
+			name: "count limits batch",
+			by:   cache.ZRangeBy{Min: "-inf", Max: "+inf", Count: 2},
+			want: []string{"a", "b"},
+		},
+		{
+			name: "offset skips head of batch",
+			by:   cache.ZRangeBy{Min: "-inf", Max: "+inf", Offset: 1, Count: 2},
+			want: []string{"b", "c"},
+		},
+		{
+			name: "nothing matches range",
+			by:   cache.ZRangeBy{Min: "100", Max: "200"},
+			want: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := provider.ZRangeByScore(ctx, "zset-range", tt.by)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+// TestCommonProvider_ZRem checks the number of removed members, and not only
+// the fact of removal: it is the one who got 1 that owns the member, and a
+// method reporting error alone could not be used to hand a queue entry to
+// exactly one of two competing readers.
+func TestCommonProvider_ZRem(t *testing.T) {
+	ctx := context.Background()
+	provider := newProvider(t)
+
+	t.Run("removes member and reports it", func(t *testing.T) {
+		require.NoError(t, provider.Del(ctx, "zset-rem"))
+		require.NoError(t, provider.ZAdd(ctx, "zset-rem", cache.Z{Score: 1, Member: "taken"}))
+
+		removed, err := provider.ZRem(ctx, "zset-rem", "taken")
+		require.NoError(t, err)
+		assert.Equal(t, int64(1), removed)
+
+		_, err = provider.ZScore(ctx, "zset-rem", "taken")
+		require.Error(t, err)
+		assert.ErrorIs(t, err, cache.ErrNotFound)
+	})
+
+	t.Run("second remove of the same member reports zero", func(t *testing.T) {
+		require.NoError(t, provider.Del(ctx, "zset-rem-twice"))
+		require.NoError(t, provider.ZAdd(ctx, "zset-rem-twice", cache.Z{Score: 1, Member: "taken"}))
+
+		first, err := provider.ZRem(ctx, "zset-rem-twice", "taken")
+		require.NoError(t, err)
+		assert.Equal(t, int64(1), first)
+
+		second, err := provider.ZRem(ctx, "zset-rem-twice", "taken")
+		require.NoError(t, err)
+		assert.Equal(t, int64(0), second)
+	})
+
+	t.Run("several members at once", func(t *testing.T) {
+		require.NoError(t, provider.Del(ctx, "zset-rem-batch"))
+		require.NoError(
+			t,
+			provider.ZAdd(
+				ctx,
+				"zset-rem-batch",
+				cache.Z{Score: 1, Member: "first"},
+				cache.Z{Score: 2, Member: "second"},
+			),
+		)
+
+		removed, err := provider.ZRem(ctx, "zset-rem-batch", "first", "second", "absent")
+		require.NoError(t, err)
+		assert.Equal(t, int64(2), removed)
+	})
+
+	t.Run("missing key is not an error", func(t *testing.T) {
+		require.NoError(t, provider.Del(ctx, "zset-rem-absent"))
+
+		removed, err := provider.ZRem(ctx, "zset-rem-absent", "whatever")
+		require.NoError(t, err)
+		assert.Equal(t, int64(0), removed)
+	})
 }

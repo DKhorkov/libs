@@ -48,3 +48,27 @@ func (e ConsumerAlreadyStoppedError) Error() string {
 func (e ConsumerAlreadyStoppedError) Unwrap() error {
 	return e.BaseErr
 }
+
+// StreamNotConfiguredError is an error, which represents, that JetStream entity
+// was created without a stream configuration.
+type StreamNotConfiguredError struct {
+	Message string
+	BaseErr error
+}
+
+func (e StreamNotConfiguredError) Error() string {
+	template := "jetstream stream is not configured"
+	if e.Message != "" {
+		template = e.Message
+	}
+
+	if e.BaseErr != nil {
+		return fmt.Sprintf(template+". Base error: %v", e.BaseErr)
+	}
+
+	return template
+}
+
+func (e StreamNotConfiguredError) Unwrap() error {
+	return e.BaseErr
+}

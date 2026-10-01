@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
@@ -16,11 +16,21 @@ const (
 )
 
 // New create new *CommonProvider for creating spans for traces.
+//
+// The exporter dials lazily: a collector, which is not up yet, must not fail
+// the application start. Spans created meanwhile are buffered by the batcher
+// and dropped on overflow — which is the right trade: a lost trace costs less
+// than a server, which refuses to start because tracing is down.
 func New(config Config, opts ...trace.TracerOption) (*CommonProvider, error) {
-	// Setting jaeger endpoint for viewing traces:
-	exporter, err := jaeger.New(jaeger.WithCollectorEndpoint(
-		jaeger.WithEndpoint(config.JaegerURL),
-	))
+	exporterOptions := []otlptracegrpc.Option{
+		otlptracegrpc.WithEndpoint(config.CollectorURL),
+	}
+
+	if config.Insecure {
+		exporterOptions = append(exporterOptions, otlptracegrpc.WithInsecure())
+	}
+
+	exporter, err := otlptracegrpc.New(context.Background(), exporterOptions...)
 	if err != nil {
 		return nil, err
 	}

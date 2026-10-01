@@ -9,16 +9,42 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+// testConfig is a config of a collector, which is not running.
+//
+// It is intentional: see TestNewDoesNotDialCollector.
+func testConfig() tracing.Config {
+	return tracing.Config{
+		CollectorURL:   "127.0.0.1:4317",
+		ServiceName:    "test-service",
+		ServiceVersion: "1.0.0",
+		Insecure:       true,
+	}
+}
+
+// TestNewDoesNotDialCollector pins the laziness of the exporter.
+//
+// The collector starts slower than the application, and on a developer machine
+// it may not start at all. An exporter, which dials on creation, would fail the
+// whole server for a missing trace collector — that is, would make observability
+// a reason to be unobservable.
+//
+// otlptracegrpc dials lazily by default. The test pins that property, so that
+// adding WithDialOption(grpc.WithBlock()) becomes a red test instead of a
+// production incident.
+func TestNewDoesNotDialCollector(t *testing.T) {
+	t.Parallel()
+
+	provider, err := tracing.New(testConfig())
+	require.NoError(t, err)
+	require.NotNil(t, provider)
+
+	require.NoError(t, provider.Shutdown(context.Background()))
+}
+
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	config := tracing.Config{
-		JaegerURL:      "http://localhost:14268/api/traces",
-		ServiceName:    "test-service",
-		ServiceVersion: "1.0.0",
-	}
-
-	provider, err := tracing.New(config)
+	provider, err := tracing.New(testConfig())
 	require.NoError(t, err)
 	require.NotNil(t, provider)
 }
@@ -26,29 +52,16 @@ func TestNew(t *testing.T) {
 func TestShutdown(t *testing.T) {
 	t.Parallel()
 
-	config := tracing.Config{
-		JaegerURL:      "http://localhost:14268/api/traces",
-		ServiceName:    "test-service",
-		ServiceVersion: "1.0.0",
-	}
-
-	provider, err := tracing.New(config)
+	provider, err := tracing.New(testConfig())
 	require.NoError(t, err)
 
-	err = provider.Shutdown(context.Background())
-	require.NoError(t, err)
+	require.NoError(t, provider.Shutdown(context.Background()))
 }
 
 func TestSpan(t *testing.T) {
 	t.Parallel()
 
-	config := tracing.Config{
-		JaegerURL:      "http://localhost:14268/api/traces",
-		ServiceName:    "test-service",
-		ServiceVersion: "1.0.0",
-	}
-
-	provider, err := tracing.New(config)
+	provider, err := tracing.New(testConfig())
 	require.NoError(t, err)
 
 	ctx, span := provider.Span(context.Background(), "test-span")
@@ -60,13 +73,7 @@ func TestSpan(t *testing.T) {
 func TestSpanFromTraceID(t *testing.T) {
 	t.Parallel()
 
-	config := tracing.Config{
-		JaegerURL:      "http://localhost:14268/api/traces",
-		ServiceName:    "test-service",
-		ServiceVersion: "1.0.0",
-	}
-
-	provider, err := tracing.New(config)
+	provider, err := tracing.New(testConfig())
 	require.NoError(t, err)
 
 	traceID, err := provider.TraceIDFromHex("1234567890abcdef1234567890abcdef")
@@ -81,13 +88,7 @@ func TestSpanFromTraceID(t *testing.T) {
 func TestTraceIDFromHexValid(t *testing.T) {
 	t.Parallel()
 
-	config := tracing.Config{
-		JaegerURL:      "http://localhost:14268/api/traces",
-		ServiceName:    "test-service",
-		ServiceVersion: "1.0.0",
-	}
-
-	provider, err := tracing.New(config)
+	provider, err := tracing.New(testConfig())
 	require.NoError(t, err)
 
 	traceID, err := provider.TraceIDFromHex("1234567890abcdef1234567890abcdef")
@@ -98,13 +99,7 @@ func TestTraceIDFromHexValid(t *testing.T) {
 func TestTraceIDFromHexInvalid(t *testing.T) {
 	t.Parallel()
 
-	config := tracing.Config{
-		JaegerURL:      "http://localhost:14268/api/traces",
-		ServiceName:    "test-service",
-		ServiceVersion: "1.0.0",
-	}
-
-	provider, err := tracing.New(config)
+	provider, err := tracing.New(testConfig())
 	require.NoError(t, err)
 
 	_, err = provider.TraceIDFromHex("invalid-hex")

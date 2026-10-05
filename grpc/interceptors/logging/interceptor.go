@@ -42,7 +42,7 @@ func UnaryServerInterceptor(logger logging.Logger) grpc.UnaryServerInterceptor {
 		var passwordCopy string
 
 		if reflectValue := reflect.ValueOf(req); reflectValue.IsValid() && !reflectValue.IsZero() {
-			if reflectValue.Kind() == reflect.Ptr {
+			if reflectValue.Kind() == reflect.Pointer {
 				passwordField = reflectValue.Elem().FieldByName(passwordFieldName)
 			} else {
 				passwordField = reflectValue.FieldByName(passwordFieldName)
@@ -91,7 +91,7 @@ func UnaryClientInterceptor(logger logging.Logger) grpclogging.Logger {
 			for _, field := range fields {
 				if reflectValue := reflect.ValueOf(field); reflectValue.IsValid() &&
 					!reflectValue.IsZero() {
-					if reflectValue.Kind() == reflect.Ptr {
+					if reflectValue.Kind() == reflect.Pointer {
 						reflectValue = reflectValue.Elem()
 					}
 

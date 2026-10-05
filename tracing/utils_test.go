@@ -1,10 +1,15 @@
 package tracing_test
 
 import (
+	"context"
+	"errors"
 	"testing"
 
 	"github.com/DKhorkov/libs/tracing"
 	"github.com/stretchr/testify/require"
+	"go.opentelemetry.io/otel/codes"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 )
 
 func TestCallerName(t *testing.T) {
@@ -53,4 +58,55 @@ func TestCallerName(t *testing.T) {
 // Вспомогательная функция для создания дополнительного уровня стека.
 func helperCallerName(skipLevel int) string {
 	return tracing.CallerName(skipLevel)
+}
+
+func TestRecordError(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name            string
+		err             error
+		wantStatus      codes.Code
+		wantDescription string
+		wantEvents      []string
+	}{
+		{
+			name:            "error marks span and keeps exception event",
+			err:             errors.New("invalid login or password"),
+			wantStatus:      codes.Error,
+			wantDescription: "invalid login or password",
+			wantEvents:      []string{"exception"},
+		},
+		{
+			name:       "nil error leaves span untouched",
+			err:        nil,
+			wantStatus: codes.Unset,
+			wantEvents: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			recorder := tracetest.NewSpanRecorder()
+			provider := sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(recorder))
+
+			_, span := provider.Tracer("test").Start(context.Background(), "decorated")
+			tracing.RecordError(span, tt.err)
+			span.End()
+
+			ended := recorder.Ended()
+			require.Len(t, ended, 1)
+			require.Equal(t, tt.wantStatus, ended[0].Status().Code)
+			require.Equal(t, tt.wantDescription, ended[0].Status().Description)
+
+			events := make([]string, 0, len(ended[0].Events()))
+			for _, event := range ended[0].Events() {
+				events = append(events, event.Name)
+			}
+
+			require.Equal(t, tt.wantEvents, events)
+		})
+	}
 }

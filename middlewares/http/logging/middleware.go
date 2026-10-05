@@ -11,6 +11,10 @@ import (
 	"github.com/DKhorkov/libs/middlewares/http/metrics"
 )
 
+// truncatedPayload — что пишется в лог вместо тела ответа, не уместившегося в
+// перехват.
+const truncatedPayload = "<body truncated>"
+
 func Middleware(
 	logger logging.Logger,
 	sensitiveFields ...string,
@@ -83,6 +87,10 @@ func Middleware(
 
 			if len(rw.Body) > 0 {
 				switch {
+				case rw.BodyTruncated:
+					// Перехват держит только начало длинного тела, и разбор
+					// обрезанного JSON дал бы в логе ошибку, которой не было:
+					payloadOutput = truncatedPayload
 				case rw.StatusCode < http.StatusBadRequest:
 					if err = json.Unmarshal(rw.Body, &payloadOutput); err != nil {
 						logging.LogErrorContext(

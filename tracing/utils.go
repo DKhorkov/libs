@@ -3,6 +3,8 @@ package tracing
 import (
 	"fmt"
 	"runtime"
+
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -23,4 +25,20 @@ func CallerName(skipLevel int) string {
 	}
 
 	return fn.Name()
+}
+
+// RecordError отмечает ошибку на спане: событие exception с текстом и статус
+// Error. Пустая ошибка спан не трогает, поэтому декоратор зовёт хелпер на любом
+// исходе, не проверяя его сам.
+//
+// Без этого спан слоя оставался зелёным при любом исходе: ошибка проходила
+// сквозь декоратор наверх, и по трассе не было видно, на каком слое случился
+// сбой.
+func RecordError(span trace.Span, err error) {
+	if err == nil {
+		return
+	}
+
+	span.RecordError(err)
+	span.SetStatus(StatusError, err.Error())
 }

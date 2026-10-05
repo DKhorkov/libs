@@ -39,6 +39,61 @@ func TestInterceptingResponseWriter(t *testing.T) {
 		require.Equal(t, body, rw.Body)
 		require.Equal(t, string(body), rr.Body.String())
 	})
+
+	// Вызывающий вправе переиспользовать буфер сразу после Write: так делает
+	// fmt.Fprintln внутри http.Error, возвращая буфер в пул. Захват по ссылке
+	// отдавал бы трассировке то, что в буфер написали следующим.
+	t.Run("Write copies body instead of aliasing caller buffer", func(t *testing.T) {
+		t.Parallel()
+
+		rw := New(httptest.NewRecorder())
+
+		buffer := []byte("invalid login or password\n")
+		_, err := rw.Write(buffer)
+		require.NoError(t, err)
+
+		copy(buffer, "/Users/someone/go/pkg/mod/")
+		require.Equal(t, "invalid login or password\n", string(rw.Body))
+	})
+
+	t.Run("Write accumulates body written in several chunks", func(t *testing.T) {
+		t.Parallel()
+
+		rr := httptest.NewRecorder()
+		rw := New(rr)
+
+		for _, chunk := range []string{`{"data":`, `"test"`, `}`} {
+			_, err := rw.Write([]byte(chunk))
+			require.NoError(t, err)
+		}
+
+		require.Equal(t, `{"data":"test"}`, string(rw.Body))
+		require.False(t, rw.BodyTruncated)
+		require.Equal(t, `{"data":"test"}`, rr.Body.String())
+	})
+
+	// Перехват нужен логам и трассировке, а не отдаче: ответ клиенту уходит
+	// целиком, копия держится не длиннее MaxCapturedBodySize.
+	t.Run("Write caps captured body but passes response through", func(t *testing.T) {
+		t.Parallel()
+
+		rr := httptest.NewRecorder()
+		rw := New(rr)
+
+		first := strings.Repeat("a", MaxCapturedBodySize-1)
+		_, err := rw.Write([]byte(first))
+		require.NoError(t, err)
+		require.False(t, rw.BodyTruncated)
+
+		n, err := rw.Write([]byte("bcd"))
+		require.NoError(t, err)
+		require.Equal(t, 3, n)
+
+		require.Len(t, rw.Body, MaxCapturedBodySize)
+		require.Equal(t, first+"b", string(rw.Body))
+		require.True(t, rw.BodyTruncated)
+		require.Equal(t, MaxCapturedBodySize+2, rr.Body.Len())
+	})
 }
 
 // MockHijacker — мок для http.ResponseWriter, реализующий http.Hijacker.

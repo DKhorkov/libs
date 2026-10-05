@@ -7,9 +7,11 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	mocklogging "github.com/DKhorkov/libs/logging/mocks"
+	"github.com/DKhorkov/libs/middlewares/http/intercepting_response_writer"
 	http2 "github.com/DKhorkov/libs/middlewares/http/metrics"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -358,6 +360,31 @@ func TestMiddleware(t *testing.T) {
 				if rr.Code != http.StatusNotFound {
 					t.Errorf("expected status 404, got %d", rr.Code)
 				}
+			},
+		},
+		{
+			// Перехват держит только начало длинного тела: разбирать обрезанный
+			// JSON — значит писать в лог ошибку, которой не было.
+			name:            "truncated json answer is not parsed",
+			path:            "/api/large",
+			method:          "GET",
+			requestBody:     "",
+			sensitiveFields: []string{},
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				body := `["` + strings.Repeat(
+					"a",
+					intercepting_response_writer.MaxCapturedBodySize,
+				) + `"]`
+				if _, err := w.Write([]byte(body)); err != nil {
+					t.Fatalf("handler failed to write body: %v", err)
+				}
+			},
+			setupMockLogger: func(logger *mocklogging.MockLogger) {
+				logger.EXPECT().InfoContext(gomock.Any(), gomock.Any(), gomock.Any()).Times(2)
+				logger.EXPECT().ErrorContext(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			},
+			expectations: func(t *testing.T, r *http.Request, rr *httptest.ResponseRecorder) {
+				require.Equal(t, intercepting_response_writer.MaxCapturedBodySize+4, rr.Body.Len())
 			},
 		},
 	}

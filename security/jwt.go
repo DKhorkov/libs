@@ -1,10 +1,16 @@
 package security
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
+
+// jwtIDBytes — длина случайного идентификатора токена (`jti`), байт: 128 бит,
+// совпадение двух токенов исключено практически.
+const jwtIDBytes = 16
 
 /*
 GenerateJWT creates a new Json Web Token, based on provided data.
@@ -31,8 +37,18 @@ func GenerateJWT(
 		return "", &JWTClaimsError{}
 	}
 
+	// jti делает токен уникальным: без него два токена с одним значением,
+	// выданные в одну секунду, совпадали побайтно — `exp` считается в
+	// секундах, — и хранилище с уникальным индексом по значению отвергало
+	// второй (двойной вход одного пользователя).
+	id := make([]byte, jwtIDBytes)
+	if _, err := rand.Read(id); err != nil {
+		return "", err
+	}
+
 	claims["value"] = value
 	claims["exp"] = time.Now().UTC().Add(ttl).Unix()
+	claims["jti"] = hex.EncodeToString(id)
 
 	return token.SignedString([]byte(secretKey))
 }

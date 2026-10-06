@@ -55,6 +55,26 @@ func TestGenerateJWT(t *testing.T) {
 	}
 }
 
+// TestGenerateJWTIsUnique: два токена с одним значением, выданные в одну
+// секунду, различаются. Без этого refresh-токен второго входа совпадал с
+// первым, и хранилище с уникальным индексом по значению отвергало вставку —
+// двойной клик по «Войти» отвечал 500.
+func TestGenerateJWTIsUnique(t *testing.T) {
+	t.Parallel()
+
+	first, err := security.GenerateJWT(1, "testSecret", time.Hour, "HS256")
+	require.NoError(t, err)
+
+	second, err := security.GenerateJWT(1, "testSecret", time.Hour, "HS256")
+	require.NoError(t, err)
+
+	assert.NotEqual(t, first, second)
+
+	value, err := security.ParseJWT(second, "testSecret")
+	require.NoError(t, err)
+	assert.InDelta(t, 1, value, 0, "значение читается как прежде")
+}
+
 func TestParseJWT(t *testing.T) {
 	t.Parallel()
 

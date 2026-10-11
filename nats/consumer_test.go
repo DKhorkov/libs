@@ -228,3 +228,38 @@ func TestConsumer_Stop(t *testing.T) {
 		require.NoError(t, err)
 	})
 }
+
+// TestConsumer_DroppedCountsEveryMessage — счётчик считает каждое выброшенное
+// сообщение, а не эпизод slow consumer.
+func TestConsumer_DroppedCountsEveryMessage(t *testing.T) {
+	const dropSubject = "test.dropped"
+
+	consumer, err := NewConsumer(
+		url,
+		dropSubject,
+		WithMessageChannelBufferSize(1),
+		WithGoroutinesPoolSize(1),
+		WithMessageHandler(func(*natsbroker.Msg) {}),
+	)
+	require.NoError(t, err)
+
+	t.Cleanup(func() { _ = consumer.Stop() })
+
+	connection, err := natsbroker.Connect(url)
+	require.NoError(t, err)
+	t.Cleanup(connection.Close)
+
+	// Run не вызван: канал в одно сообщение никто не читает, и всё сверх
+	// первого выбрасывается.
+	for range 5 {
+		require.NoError(t, connection.Publish(dropSubject, []byte("x")))
+	}
+
+	require.NoError(t, connection.Flush())
+
+	require.Eventually(t, func() bool {
+		dropped, droppedErr := consumer.Dropped()
+
+		return droppedErr == nil && dropped == 4
+	}, 2*time.Second, 20*time.Millisecond)
+}

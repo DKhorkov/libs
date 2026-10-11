@@ -364,3 +364,13 @@ func (c *JetStreamConsumer) Stop() error {
 
 	return nil
 }
+
+// Dropped — сколько сообщений подписка выбросила из-за полного канала.
+//
+// Асинхронный обработчик ошибок узнаёт о slow consumer один раз на эпизод:
+// nats.go снимает флаг на следующем доставленном сообщении. Масштаб потери
+// виден только этим счётчиком. После Stop подписка закрыта, и счётчик
+// отвечает ошибкой.
+func (c *JetStreamConsumer) Dropped() (int, error) {
+	return c.subscription.Dropped()
+}

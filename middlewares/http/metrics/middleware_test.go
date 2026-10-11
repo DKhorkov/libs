@@ -1,492 +1,315 @@
 package metrics
 
 import (
+	"bufio"
 	"context"
+	"net"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
+	"strings"
 	"testing"
 
-	"github.com/DKhorkov/libs/middlewares/http/intercepting_response_writer"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestMiddleware_RegularRequests(t *testing.T) {
-	// Тестовые обработчики
-	successHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte("OK"))
-		require.NoError(t, err)
-	})
+func newInstrumenter(t *testing.T, opts ...Option) *Instrumenter {
+	t.Helper()
 
-	errorHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNotFound)
-		_, err := w.Write([]byte("Not Found"))
-		require.NoError(t, err)
-	})
+	instrumenter, err := New(prometheus.NewRegistry(), opts...)
+	require.NoError(t, err)
 
-	serverErrorHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusInternalServerError)
-		_, err := w.Write([]byte("Internal Server Error"))
-		require.NoError(t, err)
-	})
-
-	tests := []struct {
-		name           string
-		method         string
-		handler        http.Handler
-		path           string
-		expectedStatus int
-		expectedLabels prometheus.Labels
-		shouldRecord   bool
-	}{
-		{
-			name:           "successful GET request",
-			method:         "GET",
-			handler:        successHandler,
-			path:           "/api/users",
-			expectedStatus: http.StatusOK,
-			expectedLabels: prometheus.Labels{
-				urlLabel:        "/api/users",
-				methodLabel:     "GET",
-				statusLabel:     statusOK,
-				statusCodeLabel: "200",
-			},
-			shouldRecord: true,
-		},
-		{
-			name:           "successful POST request",
-			method:         "POST",
-			handler:        successHandler,
-			path:           "/api/users",
-			expectedStatus: http.StatusOK,
-			expectedLabels: prometheus.Labels{
-				urlLabel:        "/api/users",
-				methodLabel:     "POST",
-				statusLabel:     statusOK,
-				statusCodeLabel: "200",
-			},
-			shouldRecord: true,
-		},
-		{
-			name:           "client error request",
-			method:         "GET",
-			handler:        errorHandler,
-			path:           "/api/users",
-			expectedStatus: http.StatusNotFound,
-			expectedLabels: prometheus.Labels{
-				urlLabel:        "/api/users",
-				methodLabel:     "GET",
-				statusLabel:     statusError,
-				statusCodeLabel: "404",
-			},
-			shouldRecord: true,
-		},
-		{
-			name:           "server error request",
-			method:         "GET",
-			handler:        serverErrorHandler,
-			path:           "/api/users",
-			expectedStatus: http.StatusInternalServerError,
-			expectedLabels: prometheus.Labels{
-				urlLabel:        "/api/users",
-				methodLabel:     "GET",
-				statusLabel:     statusError,
-				statusCodeLabel: "500",
-			},
-			shouldRecord: true,
-		},
-		{
-			name:           "metrics endpoint skipped",
-			method:         "GET",
-			handler:        successHandler,
-			path:           MetricsURLPath,
-			expectedStatus: http.StatusOK,
-			expectedLabels: nil,
-			shouldRecord:   false,
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			// Сброс метрик перед каждым тестом
-			requestsTotal.Reset()
-			requestDuration.Reset()
-
-			mw := Middleware(tc.handler)
-			req := httptest.NewRequestWithContext(
-				context.Background(),
-				tc.method,
-				tc.path,
-				http.NoBody,
-			)
-			rr := httptest.NewRecorder()
-
-			mw.ServeHTTP(rr, req)
-
-			require.Equal(t, tc.expectedStatus, rr.Code)
-			assert.NotEmpty(t, rr.Body.String())
-
-			if tc.shouldRecord {
-				// Проверяем, что метрика requestsTotal была увеличена
-				count := testutil.ToFloat64(requestsTotal.With(tc.expectedLabels))
-				assert.Equal(t, 1.0, count, "requests_total должен быть увеличен на 1")
-
-				// Проверяем, что метрика requestDuration была обновлена
-				// Используем CollectAndCount для проверки наличия наблюдений
-				metricCount := testutil.CollectAndCount(requestDuration)
-				assert.Positive(t, metricCount, "request_duration_seconds должен иметь наблюдения")
-			} else {
-				// Проверяем, что метрики не были записаны для /metrics
-				count := testutil.CollectAndCount(requestsTotal)
-				assert.Equal(t, 0, count, "метрики не должны записываться для эндпоинта /metrics")
-			}
-		})
-	}
+	return instrumenter
 }
 
-func TestMiddleware_MethodLabel(t *testing.T) {
-	tests := []struct {
-		name     string
-		method   string
-		expected string
-	}{
-		{"GET method", "GET", "GET"},
-		{"POST method", "POST", "POST"},
-		{"PUT method", "PUT", "PUT"},
-		{"DELETE method", "DELETE", "DELETE"},
-		{"PATCH method", "PATCH", "PATCH"},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			requestsTotal.Reset()
-			requestDuration.Reset()
-
-			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-			})
-
-			mw := Middleware(handler)
-			req := httptest.NewRequestWithContext(
-				context.Background(),
-				tc.method,
-				"/test",
-				http.NoBody,
-			)
-			rr := httptest.NewRecorder()
-
-			mw.ServeHTTP(rr, req)
-
-			expectedLabels := prometheus.Labels{
-				urlLabel:        "/test",
-				methodLabel:     tc.expected,
-				statusLabel:     statusOK,
-				statusCodeLabel: "200",
-			}
-
-			count := testutil.ToFloat64(requestsTotal.With(expectedLabels))
-			assert.Equal(t, 1.0, count, "метод должен быть правильно записан в метриках")
-		})
-	}
-}
-
-func TestCollectGoMetrics(t *testing.T) {
-	// Сброс метрик
-	goroutinesNumber.Set(0)
-	memoryUsage.Set(0)
-
-	// Вызов функции сбора метрик Go
-	collectGoMetrics()
-
-	// Проверяем, что метрики были установлены (значения могут быть любые, но не 0)
-	goroutinesValue := testutil.ToFloat64(goroutinesNumber)
-	memoryValue := testutil.ToFloat64(memoryUsage)
-
-	// Мы не можем точно знать значения, но можем проверить, что они не остались 0
-	// после вызова runtime.GC() и metrics.Read()
-	assert.GreaterOrEqual(
-		t,
-		goroutinesValue,
-		float64(0),
-		"goroutinesNumber должен быть неотрицательным",
+func serve(handler http.Handler, method, path string) {
+	handler.ServeHTTP(
+		httptest.NewRecorder(),
+		httptest.NewRequestWithContext(context.Background(), method, path, http.NoBody),
 	)
-	assert.GreaterOrEqual(t, memoryValue, float64(0), "memoryUsage должен быть неотрицательным")
 }
 
-func TestMetricsResponseWriter(t *testing.T) {
-	tests := []struct {
-		name               string
-		statusCode         int
-		body               string
-		expectedStatusCode int
-		expectedBody       string
-	}{
-		{
-			name:               "OK response",
-			statusCode:         http.StatusOK,
-			body:               "OK response",
-			expectedStatusCode: http.StatusOK,
-			expectedBody:       "OK response",
-		},
-		{
-			name:               "Created response",
-			statusCode:         http.StatusCreated,
-			body:               "Created",
-			expectedStatusCode: http.StatusCreated,
-			expectedBody:       "Created",
-		},
-		{
-			name:               "Bad Request response",
-			statusCode:         http.StatusBadRequest,
-			body:               "Bad Request",
-			expectedStatusCode: http.StatusBadRequest,
-			expectedBody:       "Bad Request",
-		},
-		{
-			name:               "Internal Server Error response",
-			statusCode:         http.StatusInternalServerError,
-			body:               "Internal Server Error",
-			expectedStatusCode: http.StatusInternalServerError,
-			expectedBody:       "Internal Server Error",
-		},
-	}
+func TestRouteLabelFromOption(t *testing.T) {
+	t.Parallel()
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			// Создаем recorder и обертку
-			rr := httptest.NewRecorder()
-			mrw := intercepting_response_writer.New(rr)
+	instrumenter := newInstrumenter(t, WithRouteLabel(func(*http.Request) string {
+		return "/web/battle/{id}"
+	}))
 
-			// Тестируем WriteHeader
-			mrw.WriteHeader(tc.statusCode)
-			assert.Equal(t, tc.expectedStatusCode, mrw.StatusCode)
-			assert.Equal(t, tc.expectedStatusCode, rr.Code)
+	handler := instrumenter.Middleware(
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusNotFound)
+		}),
+	)
 
-			// Тестируем Write
-			n, err := mrw.Write([]byte(tc.body))
-			assert.NoError(t, err)
-			assert.Equal(t, len(tc.body), n)
-			assert.Equal(t, tc.expectedBody, string(mrw.Body))
-			assert.Equal(t, tc.expectedBody, rr.Body.String())
+	serve(handler, http.MethodGet, "/web/battle/4182")
+	serve(handler, http.MethodGet, "/web/battle/77")
 
-			// Проверяем, что ResponseWriter интерфейс работает правильно
-			assert.Equal(t, rr.Header(), mrw.Header())
-		})
-	}
+	assert.InDelta(t, 2, testutil.ToFloat64(
+		instrumenter.requests.WithLabelValues("/web/battle/{id}", http.MethodGet, "404"),
+	), 0)
+	assert.Equal(t, 1, testutil.CollectAndCount(instrumenter.requests))
 }
 
-func TestMiddleware_ErrorStatusCodeClassification(t *testing.T) {
-	tests := []struct {
-		name           string
-		statusCode     int
-		expectedStatus string
-	}{
-		{
-			name:           "OK is not error",
-			statusCode:     http.StatusOK,
-			expectedStatus: statusOK,
-		},
-		{
-			name:           "Created is not error",
-			statusCode:     http.StatusCreated,
-			expectedStatus: statusOK,
-		},
-		{
-			name:           "Bad Request is error",
-			statusCode:     http.StatusBadRequest,
-			expectedStatus: statusError,
-		},
-		{
-			name:           "Unauthorized is error",
-			statusCode:     http.StatusUnauthorized,
-			expectedStatus: statusError,
-		},
-		{
-			name:           "Not Found is error",
-			statusCode:     http.StatusNotFound,
-			expectedStatus: statusError,
-		},
-		{
-			name:           "Internal Server Error is error",
-			statusCode:     http.StatusInternalServerError,
-			expectedStatus: statusError,
-		},
-	}
+func TestDefaultRouteLabelFromServeMuxPattern(t *testing.T) {
+	t.Parallel()
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			requestsTotal.Reset()
-			requestDuration.Reset()
+	instrumenter := newInstrumenter(t)
 
-			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(tc.statusCode)
-			})
+	// Шаблон ставит ServeMux на запросе, который передаёт обработчику, —
+	// поэтому инструментатор стоит внутри маршрута, а не снаружи mux.
+	mux := http.NewServeMux()
+	mux.Handle("GET /items/{id}", instrumenter.Middleware(
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		}),
+	))
 
-			mw := Middleware(handler)
-			req := httptest.NewRequestWithContext(
-				context.Background(),
-				http.MethodGet,
-				"/test",
-				http.NoBody,
-			)
-			rr := httptest.NewRecorder()
+	serve(mux, http.MethodGet, "/items/42")
 
-			mw.ServeHTTP(rr, req)
-
-			require.Equal(t, tc.statusCode, rr.Code)
-
-			expectedLabels := prometheus.Labels{
-				urlLabel:        "/test",
-				methodLabel:     "GET",
-				statusLabel:     tc.expectedStatus,
-				statusCodeLabel: strconv.Itoa(tc.statusCode),
-			}
-
-			count := testutil.ToFloat64(requestsTotal.With(expectedLabels))
-			assert.Equal(t, 1.0, count, "статус должен быть правильно классифицирован")
-		})
-	}
+	assert.InDelta(t, 1, testutil.ToFloat64(
+		instrumenter.requests.WithLabelValues("/items/{id}", http.MethodGet, "200"),
+	), 0)
 }
 
-func TestMiddleware_ConcurrentAccess(t *testing.T) {
-	requestsTotal.Reset()
-	requestDuration.Reset()
+func TestNoPatternBecomesOther(t *testing.T) {
+	t.Parallel()
 
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte("OK"))
-		require.NoError(t, err)
-	})
+	instrumenter := newInstrumenter(t)
+	handler := instrumenter.Middleware(
+		http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}),
+	)
 
-	mw := Middleware(handler)
+	serve(handler, http.MethodGet, "/raw/path/1")
+	serve(handler, http.MethodGet, "/raw/path/2")
 
-	done := make(chan bool)
-	concurrentRequests := 10
-
-	for i := range concurrentRequests {
-		go func(id int) {
-			path := "/api/test/" + strconv.Itoa(id)
-			req := httptest.NewRequestWithContext(
-				context.Background(),
-				http.MethodGet,
-				path,
-				http.NoBody,
-			)
-			rr := httptest.NewRecorder()
-			mw.ServeHTTP(rr, req)
-			assert.Equal(t, http.StatusOK, rr.Code)
-
-			done <- true
-		}(i)
-	}
-
-	// Ждем завершения всех горутин
-	for range concurrentRequests {
-		<-done
-	}
-
-	// Проверяем, что все метрики были записаны
-	metrics := testutil.CollectAndCount(requestsTotal)
-	assert.Equal(t, concurrentRequests, metrics, "должны быть записаны метрики для всех запросов")
+	assert.InDelta(t, 2, testutil.ToFloat64(
+		instrumenter.requests.WithLabelValues("other", http.MethodGet, "200"),
+	), 0)
 }
 
-func TestMetricsRegistration(t *testing.T) {
-	// Проверяем, что метрики правильно зарегистрированы в Prometheus
+func TestUnknownMethodBecomesOTHER(t *testing.T) {
+	t.Parallel()
+
+	instrumenter := newInstrumenter(t, WithRouteLabel(func(*http.Request) string { return "/x" }))
+	handler := instrumenter.Middleware(
+		http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}),
+	)
+
+	serve(handler, "PROPFIND", "/x")
+	serve(handler, "BREW", "/x")
+
+	assert.InDelta(t, 2, testutil.ToFloat64(
+		instrumenter.requests.WithLabelValues("/x", "OTHER", "200"),
+	), 0)
+}
+
+func TestMiddlewareForUsesFixedRoute(t *testing.T) {
+	t.Parallel()
+
+	instrumenter := newInstrumenter(t)
+	handler := instrumenter.MiddlewareFor("unmatched")(http.NotFoundHandler())
+
+	for _, path := range []string{"/a", "/b", "/wp-login.php"} {
+		serve(handler, http.MethodGet, path)
+	}
+
+	assert.InDelta(t, 3, testutil.ToFloat64(
+		instrumenter.requests.WithLabelValues("unmatched", http.MethodGet, "404"),
+	), 0)
+	assert.Equal(t, 1, testutil.CollectAndCount(instrumenter.requests))
+}
+
+func TestUpgradeRequestsAreSkipped(t *testing.T) {
+	t.Parallel()
+
+	instrumenter := newInstrumenter(t)
+	handler := instrumenter.Middleware(
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusSwitchingProtocols)
+		}),
+	)
+
+	request := httptest.NewRequestWithContext(
+		context.Background(),
+		http.MethodGet,
+		"/api/ws",
+		http.NoBody,
+	)
+	request.Header.Set("Connection", "keep-alive, Upgrade")
+	request.Header.Set("Upgrade", "websocket")
+	handler.ServeHTTP(httptest.NewRecorder(), request)
+
+	assert.Equal(t, 0, testutil.CollectAndCount(instrumenter.requests))
+	assert.Equal(t, 0, testutil.CollectAndCount(instrumenter.duration))
+	assert.InDelta(t, 0, testutil.ToFloat64(instrumenter.inFlight), 0)
+}
+
+func TestWithSkip(t *testing.T) {
+	t.Parallel()
+
+	instrumenter := newInstrumenter(t, WithSkip(func(r *http.Request) bool {
+		return r.URL.Path == "/healthcheck"
+	}))
+	handler := instrumenter.Middleware(
+		http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}),
+	)
+
+	serve(handler, http.MethodGet, "/healthcheck")
+
+	assert.Equal(t, 0, testutil.CollectAndCount(instrumenter.requests))
+}
+
+func TestInFlightReturnsToZero(t *testing.T) {
+	t.Parallel()
+
+	instrumenter := newInstrumenter(t)
+
+	var during float64
+
+	handler := instrumenter.Middleware(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		during = testutil.ToFloat64(instrumenter.inFlight)
+	}))
+
+	serve(handler, http.MethodGet, "/")
+
+	assert.InDelta(t, 1, during, 0)
+	assert.InDelta(t, 0, testutil.ToFloat64(instrumenter.inFlight), 0)
+}
+
+func TestResponseSizeAndDurationObserved(t *testing.T) {
+	t.Parallel()
+
+	instrumenter := newInstrumenter(t, WithRouteLabel(func(*http.Request) string { return "/x" }))
+	handler := instrumenter.Middleware(
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			_, _ = w.Write([]byte("abc"))
+			_, _ = w.Write([]byte("de"))
+		}),
+	)
+
+	serve(handler, http.MethodPost, "/x")
+
+	expected := `
+# HELP http_response_size_bytes Size of HTTP responses in bytes by route.
+# TYPE http_response_size_bytes histogram
+http_response_size_bytes_bucket{method="POST",route="/x",le="256"} 1
+http_response_size_bytes_bucket{method="POST",route="/x",le="1024"} 1
+http_response_size_bytes_bucket{method="POST",route="/x",le="4096"} 1
+http_response_size_bytes_bucket{method="POST",route="/x",le="16384"} 1
+http_response_size_bytes_bucket{method="POST",route="/x",le="65536"} 1
+http_response_size_bytes_bucket{method="POST",route="/x",le="262144"} 1
+http_response_size_bytes_bucket{method="POST",route="/x",le="1.048576e+06"} 1
+http_response_size_bytes_bucket{method="POST",route="/x",le="4.194304e+06"} 1
+http_response_size_bytes_bucket{method="POST",route="/x",le="+Inf"} 1
+http_response_size_bytes_sum{method="POST",route="/x"} 5
+http_response_size_bytes_count{method="POST",route="/x"} 1
+`
+	require.NoError(t, testutil.CollectAndCompare(
+		instrumenter.size, stringsReader(expected), "http_response_size_bytes",
+	))
+	assert.Equal(t, 1, testutil.CollectAndCount(instrumenter.duration))
+}
+
+func TestDuplicateRegistrationFails(t *testing.T) {
+	t.Parallel()
+
 	registry := prometheus.NewRegistry()
 
-	// Регистрируем наши метрики
-	err := registry.Register(requestsTotal)
-	assert.NoError(t, err, "requestsTotal должен регистрироваться без ошибок")
+	_, err := New(registry)
+	require.NoError(t, err)
 
-	err = registry.Register(requestDuration)
-	assert.NoError(t, err, "requestDuration должен регистрироваться без ошибок")
-
-	err = registry.Register(goroutinesNumber)
-	assert.NoError(t, err, "goroutinesNumber должен регистрироваться без ошибок")
-
-	err = registry.Register(memoryUsage)
-	assert.NoError(t, err, "memoryUsage должен регистрироваться без ошибок")
-
-	// Пытаемся зарегистрировать повторно (должна быть ошибка)
-	err = registry.Register(requestsTotal)
-	assert.Error(t, err, "повторная регистрация должна вызывать ошибку")
+	_, err = New(registry)
+	require.Error(t, err)
 }
 
-func TestMiddleware_DurationMeasurement(t *testing.T) {
-	requestsTotal.Reset()
-	requestDuration.Reset()
+// hijackable — ResponseWriter, умеющий Hijack, как у net/http.
+type hijackable struct {
+	*httptest.ResponseRecorder
 
-	// Обработчик с задержкой
-	slowHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Имитируем работу
-		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte("Slow response"))
-		require.NoError(t, err)
-	})
+	// hijacked — Hijack был вызван.
+	hijacked bool
+}
 
-	mw := Middleware(slowHandler)
-	req := httptest.NewRequestWithContext(
-		context.Background(),
-		http.MethodGet,
-		"/slow",
-		http.NoBody,
+func (h *hijackable) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	h.hijacked = true
+
+	return nil, nil, nil
+}
+
+func TestRecorderPassesHijackThrough(t *testing.T) {
+	t.Parallel()
+
+	inner := &hijackable{ResponseRecorder: httptest.NewRecorder()}
+	recorder := &responseRecorder{ResponseWriter: inner, status: http.StatusOK}
+
+	_, _, err := recorder.Hijack()
+	require.NoError(t, err)
+	assert.True(t, inner.hijacked)
+
+	plain := &responseRecorder{ResponseWriter: httptest.NewRecorder(), status: http.StatusOK}
+	_, _, err = plain.Hijack()
+	require.ErrorIs(t, err, ErrHijackUnsupported)
+}
+
+func stringsReader(s string) *strings.Reader { return strings.NewReader(s) }
+
+// TestInformationalStatusIsNotFinal — 1xx (103 Early Hints) не окончательный
+// ответ: обработчик пишет его до настоящего кода, и метка обязана нести
+// итоговый 200, а не 103.
+func TestInformationalStatusIsNotFinal(t *testing.T) {
+	t.Parallel()
+
+	instrumenter := newInstrumenter(t, WithRouteLabel(func(*http.Request) string { return "/x" }))
+	handler := instrumenter.Middleware(
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Link", "</style.css>; rel=preload; as=style")
+			w.WriteHeader(http.StatusEarlyHints)
+			w.WriteHeader(http.StatusOK)
+		}),
 	)
-	rr := httptest.NewRecorder()
 
-	mw.ServeHTTP(rr, req)
+	serve(handler, http.MethodGet, "/x")
 
-	require.Equal(t, http.StatusOK, rr.Code)
-
-	// Проверяем, что duration было измерено
-	// Просто проверяем, что метрика существует и имеет наблюдения
-	metricCount := testutil.CollectAndCount(requestDuration)
-	assert.Positive(t, metricCount, "request_duration_seconds должен иметь наблюдения")
+	assert.InDelta(t, 1, testutil.ToFloat64(
+		instrumenter.requests.WithLabelValues("/x", http.MethodGet, "200"),
+	), 0)
+	assert.Equal(t, 1, testutil.CollectAndCount(instrumenter.requests))
 }
 
-func TestMiddleware_EmptyResponse(t *testing.T) {
-	requestsTotal.Reset()
-	requestDuration.Reset()
+// TestPanicIsCountedAsServerError — паника обработчика — самая важная
+// пятисотка, и метрика обязана её увидеть: net/http перехватит панику и
+// закроет соединение, а без учёта запрос пропал бы из rps и из доли 5xx.
+// Паника при этом не глотается — её ловит тот, кто стоит выше.
+func TestPanicIsCountedAsServerError(t *testing.T) {
+	t.Parallel()
 
-	// Обработчик без тела ответа
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNoContent)
-	})
+	instrumenter := newInstrumenter(t, WithRouteLabel(func(*http.Request) string { return "/x" }))
+	handler := instrumenter.Middleware(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		panic("boom")
+	}))
 
-	mw := Middleware(handler)
-	req := httptest.NewRequestWithContext(
-		context.Background(),
-		http.MethodGet,
-		"/empty",
-		http.NoBody,
-	)
-	rr := httptest.NewRecorder()
+	assert.PanicsWithValue(t, "boom", func() { serve(handler, http.MethodGet, "/x") })
 
-	mw.ServeHTTP(rr, req)
-
-	require.Equal(t, http.StatusNoContent, rr.Code)
-	assert.Empty(t, rr.Body.String())
-
-	// Проверяем, что метрики все равно записаны
-	expectedLabels := prometheus.Labels{
-		urlLabel:        "/empty",
-		methodLabel:     "GET",
-		statusLabel:     statusOK, // 204 < 400
-		statusCodeLabel: "204",
-	}
-
-	count := testutil.ToFloat64(requestsTotal.With(expectedLabels))
-	assert.Equal(t, 1.0, count, "метрики должны быть записаны даже для пустого ответа")
+	assert.InDelta(t, 1, testutil.ToFloat64(
+		instrumenter.requests.WithLabelValues("/x", http.MethodGet, "500"),
+	), 0)
+	assert.InDelta(t, 0, testutil.ToFloat64(instrumenter.inFlight), 0)
 }
 
-func TestNewMetricsResponseWriter_NilResponseWriter(t *testing.T) {
-	// Тестируем создание с nil ResponseWriter
-	mrw := intercepting_response_writer.New(nil)
-	assert.NotNil(t, mrw)
-	assert.Nil(t, mrw.ResponseWriter)
-	assert.Equal(t, http.StatusOK, mrw.StatusCode)
-	assert.Empty(t, mrw.Body)
+// TestAbortHandlerIsNotCounted — http.ErrAbortHandler — штатный способ
+// оборвать ответ (клиент ушёл, прокси прервал поток), а не сбой: в 5xx он не
+// попадает.
+func TestAbortHandlerIsNotCounted(t *testing.T) {
+	t.Parallel()
+
+	instrumenter := newInstrumenter(t)
+	handler := instrumenter.Middleware(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		panic(http.ErrAbortHandler)
+	}))
+
+	assert.Panics(t, func() { serve(handler, http.MethodGet, "/x") })
+	assert.Equal(t, 0, testutil.CollectAndCount(instrumenter.requests))
 }

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -197,6 +198,58 @@ func TestHijack_TableDriven(t *testing.T) {
 					t.Error("Expected nil ReadWriter")
 				}
 			}
+		})
+	}
+}
+
+// TestStatusCodeIsWhatTheClientGot — StatusCode — тот код, что ушёл клиенту.
+//
+// Лишний WriteHeader после начатого тела net/http игнорирует (superfluous
+// WriteHeader), и клиент получает 200; прежде перехватчик запоминал последний
+// вызов, и корневой спан с логом показывали 500 там, где сбоя не было. 1xx
+// (103 Early Hints) окончательным ответом не является.
+func TestStatusCodeIsWhatTheClientGot(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		write func(w http.ResponseWriter)
+		want  int
+	}{
+		{
+			name: "код после начатого тела не меняет ответ",
+			write: func(w http.ResponseWriter) {
+				_, _ = w.Write([]byte("<html>"))
+				w.WriteHeader(http.StatusInternalServerError)
+			},
+			want: http.StatusOK,
+		},
+		{
+			name: "второй код не меняет первый",
+			write: func(w http.ResponseWriter) {
+				w.WriteHeader(http.StatusNotFound)
+				w.WriteHeader(http.StatusInternalServerError)
+			},
+			want: http.StatusNotFound,
+		},
+		{
+			name: "103 Early Hints не окончательный",
+			write: func(w http.ResponseWriter) {
+				w.WriteHeader(http.StatusEarlyHints)
+				w.WriteHeader(http.StatusCreated)
+			},
+			want: http.StatusCreated,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			rw := New(httptest.NewRecorder())
+			tt.write(rw)
+
+			assert.Equal(t, tt.want, rw.StatusCode)
 		})
 	}
 }

@@ -10,7 +10,6 @@ import (
 
 	"github.com/DKhorkov/libs/contextlib"
 	"github.com/DKhorkov/libs/middlewares/http/auth"
-	http2 "github.com/DKhorkov/libs/middlewares/http/metrics"
 	"github.com/DKhorkov/libs/security"
 	"github.com/stretchr/testify/require"
 )
@@ -234,11 +233,12 @@ func TestMiddleware(t *testing.T) {
 			setupToken:     func() string { return "" },
 		},
 		{
-			name:           "Метрики игнорируется",
+			// Скрытого пропуска /metrics нет: исключения задаёт только ignoreURLs.
+			name:           "Метрики без исключения требуют аутентификации",
 			requestMethod:  "GET",
-			requestPath:    http2.MetricsURLPath,
+			requestPath:    "/metrics",
 			cookiePresent:  false,
-			expectedStatus: http.StatusOK,
+			expectedStatus: http.StatusUnauthorized,
 			setupToken:     func() string { return "" },
 		},
 		{

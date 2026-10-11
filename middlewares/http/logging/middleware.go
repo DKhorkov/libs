@@ -8,7 +8,6 @@ import (
 
 	"github.com/DKhorkov/libs/logging"
 	"github.com/DKhorkov/libs/middlewares/http/intercepting_response_writer"
-	"github.com/DKhorkov/libs/middlewares/http/metrics"
 )
 
 // truncatedPayload — что пишется в лог вместо тела ответа, не уместившегося в
@@ -21,13 +20,6 @@ func Middleware(
 ) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Не логгируем сбор метрик:
-			if r.URL.Path == metrics.MetricsURLPath {
-				next.ServeHTTP(w, r)
-
-				return
-			}
-
 			ctx := r.Context()
 
 			// Reading request body:

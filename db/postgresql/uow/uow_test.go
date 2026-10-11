@@ -94,10 +94,11 @@ func TestUnitOfWork_Do(t *testing.T) {
 				}
 			},
 			ctx: func() context.Context {
-				ctx, _ := context.WithDeadline(
+				ctx, cancel := context.WithDeadline(
 					context.Background(),
 					time.Now().Add(time.Millisecond),
 				)
+				t.Cleanup(cancel)
 
 				return ctx
 			}(),
@@ -161,7 +162,8 @@ func TestUnitOfWork_Do(t *testing.T) {
 				return nil
 			},
 			ctx: func() context.Context {
-				ctx, _ := context.WithTimeout(context.Background(), 100*time.Millisecond)
+				ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+				t.Cleanup(cancel)
 
 				return ctx
 			}(),

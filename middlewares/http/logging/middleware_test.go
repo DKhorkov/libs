@@ -12,7 +12,6 @@ import (
 
 	mocklogging "github.com/DKhorkov/libs/logging/mocks"
 	"github.com/DKhorkov/libs/middlewares/http/intercepting_response_writer"
-	http2 "github.com/DKhorkov/libs/middlewares/http/metrics"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -33,22 +32,6 @@ func TestMiddleware(t *testing.T) {
 		setupMockLogger func(*mocklogging.MockLogger)
 		expectations    func(*testing.T, *http.Request, *httptest.ResponseRecorder)
 	}{
-		{
-			name:    "skip metrics endpoint",
-			path:    http2.MetricsURLPath,
-			method:  "GET",
-			handler: func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) },
-			setupMockLogger: func(logger *mocklogging.MockLogger) {
-				// No logs expected for metrics
-				logger.EXPECT().InfoContext(gomock.Any(), gomock.Any()).Times(0)
-				logger.EXPECT().ErrorContext(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
-			},
-			expectations: func(t *testing.T, r *http.Request, rr *httptest.ResponseRecorder) {
-				if rr.Code != http.StatusOK {
-					t.Errorf("expected status OK, got %d", rr.Code)
-				}
-			},
-		},
 		{
 			name:            "success with json answer",
 			path:            "/api/test",

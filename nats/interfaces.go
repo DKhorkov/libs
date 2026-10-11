@@ -6,6 +6,9 @@ package nats
 type Consumer interface {
 	Run() error
 	Stop() error
+
+	// Dropped — сколько сообщений выброшено из-за полного канала подписки.
+	Dropped() (int, error)
 }
 
 // Publisher publishes messages to NATS broker.

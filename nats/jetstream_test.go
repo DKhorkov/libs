@@ -3,6 +3,7 @@
 package nats
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -22,10 +23,12 @@ const (
 	dedupSubject     = "test-notifications.verify_email.email"
 	redeliverSubject = "test-notifications.forget_password.email"
 	survivorSubject  = "test-notifications.friend_request.bell"
+	droppedSubject   = "test-notifications.chimera_recovered.web_push"
 
 	dedupDurable     = "test-dedup-worker"
 	redeliverDurable = "test-redeliver-worker"
 	survivorDurable  = "test-survivor-worker"
+	droppedDurable   = "test-dropped-worker"
 
 	duplicatesWindow   = 2 * time.Minute
 	streamMaxAge       = time.Hour
@@ -247,4 +250,51 @@ func TestJetStreamConsumer_AppliesChangedSettings(t *testing.T) {
 
 	assert.Equal(t, updatedMaxDeliver, info.Config.MaxDeliver, "предел попыток не применился")
 	assert.Equal(t, updatedAckWait, info.Config.AckWait, "ack_wait не применился")
+}
+
+// TestJetStreamConsumer_DroppedCountsEveryMessage — счётчик выброшенных есть
+// и у JetStream-консьюмера: его подписка тоже канальная
+// (ChanQueueSubscribe), и полный канал теряет задачу до redelivery молча.
+func TestJetStreamConsumer_DroppedCountsEveryMessage(t *testing.T) {
+	publisher, err := NewJetStreamPublisher(url, testStreamConfig())
+	require.NoError(t, err)
+
+	defer func() {
+		require.NoError(t, publisher.Close())
+	}()
+
+	consumer, err := NewJetStreamConsumer(
+		url,
+		droppedSubject,
+		WithJetStreamStream(streamName),
+		WithJetStreamDurable(droppedDurable),
+		WithJetStreamAckWait(jetStreamAckWait),
+		WithJetStreamMaxDeliver(jetStreamMaxDelivs),
+		WithJetStreamMessageChannelBufferSize(1),
+		WithJetStreamMessageHandler(func(*natsbroker.Msg) {}),
+	)
+	require.NoError(t, err)
+
+	defer func() {
+		require.NoError(t, consumer.Stop())
+	}()
+
+	// Run не вызван: канал в одно сообщение никто не читает. Идентификаторы
+	// уникальны на прогон — иначе повторный прогон внутри окна дедупликации
+	// не опубликовал бы ничего.
+	runID := time.Now().UnixNano()
+
+	for i := range 5 {
+		require.NoError(t, publisher.PublishWithID(
+			droppedSubject, fmt.Sprintf("dropped-%d-%d", runID, i), []byte(`{}`),
+		))
+	}
+
+	// Не меньше четырёх, а не ровно: неподтверждённые задачи прошлых прогонов
+	// и redelivery по ack_wait выбрасываются тем же каналом.
+	require.Eventually(t, func() bool {
+		dropped, droppedErr := consumer.Dropped()
+
+		return droppedErr == nil && dropped >= 4
+	}, jetStreamAckWait, 20*time.Millisecond)
 }

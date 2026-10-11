@@ -36,12 +36,32 @@ type InterceptingResponseWriter struct {
 	// BodyTruncated — тело длиннее MaxCapturedBodySize, и Body хранит только
 	// его начало.
 	BodyTruncated bool
+
+	// statusSent — окончательный код уже ушёл (явно или первым Write):
+	// следующий WriteHeader net/http игнорирует, и StatusCode его не берёт.
+	statusSent bool
 }
 
 // WriteHeader intercepts response body for later usage in trace.Span.
+//
+// StatusCode — код, который получил клиент: первый окончательный. Лишний
+// WriteHeader после начатого ответа net/http игнорирует (superfluous
+// WriteHeader), и запомни мы его — спан и лог показали бы 500 там, где клиент
+// получил 200. 1xx (кроме 101) окончательным ответом не является.
 func (rw *InterceptingResponseWriter) WriteHeader(statusCode int) {
-	rw.StatusCode = statusCode
+	if !rw.statusSent && !informational(statusCode) {
+		rw.StatusCode = statusCode
+		rw.statusSent = true
+	}
+
 	rw.ResponseWriter.WriteHeader(statusCode)
+}
+
+// informational — код 1xx, после которого последует окончательный ответ.
+func informational(code int) bool {
+	return code >= http.StatusContinue &&
+		code < http.StatusOK &&
+		code != http.StatusSwitchingProtocols
 }
 
 // Write intercepts response body for later usage in trace.Span.
@@ -52,6 +72,9 @@ func (rw *InterceptingResponseWriter) WriteHeader(statusCode int) {
 // traceback логгера) переписывал перехваченное тело до того, как его читала
 // трассировка.
 func (rw *InterceptingResponseWriter) Write(body []byte) (int, error) {
+	// Тело без явного WriteHeader уходит с 200: код окончательный.
+	rw.statusSent = true
+
 	if room := MaxCapturedBodySize - len(rw.Body); room < len(body) {
 		rw.Body = append(rw.Body, body[:max(room, 0)]...)
 		rw.BodyTruncated = true

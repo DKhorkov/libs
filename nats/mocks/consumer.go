@@ -39,6 +39,21 @@ func (m *MockConsumer) EXPECT() *MockConsumerMockRecorder {
 	return m.recorder
 }
 
+// Dropped mocks base method.
+func (m *MockConsumer) Dropped() (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Dropped")
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Dropped indicates an expected call of Dropped.
+func (mr *MockConsumerMockRecorder) Dropped() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Dropped", reflect.TypeOf((*MockConsumer)(nil).Dropped))
+}
+
 // Run mocks base method.
 func (m *MockConsumer) Run() error {
 	m.ctrl.T.Helper()

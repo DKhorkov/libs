@@ -8,7 +8,6 @@ import (
 	"slices"
 
 	"github.com/DKhorkov/libs/contextlib"
-	http2 "github.com/DKhorkov/libs/middlewares/http/metrics"
 	"github.com/DKhorkov/libs/security"
 )
 
@@ -32,13 +31,6 @@ func Middleware(
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Не проверяем OPTIONS на аутентификацию
 			if r.Method == http.MethodOptions {
-				next.ServeHTTP(w, r)
-
-				return
-			}
-
-			// Не проверяем метрики на аутентификацию
-			if r.URL.Path == http2.MetricsURLPath {
 				next.ServeHTTP(w, r)
 
 				return

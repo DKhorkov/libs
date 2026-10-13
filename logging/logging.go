@@ -8,6 +8,7 @@ import (
 	"os"
 	"runtime"
 	"sync"
+	"time"
 
 	"github.com/DKhorkov/libs/contextlib"
 	"github.com/DKhorkov/libs/requestid"
@@ -47,6 +48,27 @@ func New(logLevel Level, logFilePath string) Logger {
 		instance = slog.New(
 			slog.NewJSONHandler(
 				logWriter,
+				&slog.HandlerOptions{
+					Level: slog.Level(logLevel),
+				},
+			),
+		)
+	})
+
+	return instance
+}
+
+// NewDaily — синглтон-логгер, как New, но файл лога — свой на каждую дату
+// (DailyFile): pattern с %s под дату в формате dateFormat и поясе location.
+//
+// New открывает один файл на весь запуск, и он растёт до перезапуска: срок
+// хранения по возрасту (mtime) его не трогает — в него пишут. Синглтон у New и
+// NewDaily общий: какой вызван первым, тот логгер и остаётся.
+func NewDaily(logLevel Level, pattern, dateFormat string, location *time.Location) Logger {
+	once.Do(func() {
+		instance = slog.New(
+			slog.NewJSONHandler(
+				io.MultiWriter(os.Stdout, NewDailyFile(pattern, dateFormat, location)),
 				&slog.HandlerOptions{
 					Level: slog.Level(logLevel),
 				},
@@ -113,6 +135,29 @@ func LogInfoContext(ctx context.Context, logger Logger, msg string, args ...any)
 	}...)
 
 	logger.InfoContext(
+		ctx,
+		msg,
+		args...,
+	)
+}
+
+// LogDebugContext — LogInfoContext на уровне DEBUG: те же поля Request ID и
+// Traceback. Для строк, которые нужны только при отладке, — например, лог
+// каждого HTTP-запроса.
+func LogDebugContext(ctx context.Context, logger Logger, msg string, args ...any) {
+	requestID, err := contextlib.ValueFromContext[string](ctx, requestid.Key)
+	if err != nil {
+		requestID = ""
+	}
+
+	args = append(args, []any{
+		requestIDField,
+		requestID,
+		tracebackField,
+		GetLogTraceback(skipLevel),
+	}...)
+
+	logger.DebugContext(
 		ctx,
 		msg,
 		args...,

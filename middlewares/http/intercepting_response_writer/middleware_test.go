@@ -253,3 +253,26 @@ func TestStatusCodeIsWhatTheClientGot(t *testing.T) {
 		})
 	}
 }
+
+// TestNewStatusOnlyKeepsStatusNotBody — режим «только статус» запоминает
+// статус и не копирует тело: клиент получает ответ целиком.
+//
+// Его берёт middleware логирования на выключенном уровне строк запроса:
+// статус нужен, чтобы отметить 5xx, а копия тела каждого ответа (до 1 МиБ) —
+// лишняя работа на каждом запросе.
+func TestNewStatusOnlyKeepsStatusNotBody(t *testing.T) {
+	t.Parallel()
+
+	recorder := httptest.NewRecorder()
+	rw := NewStatusOnly(recorder)
+
+	rw.WriteHeader(http.StatusInternalServerError)
+
+	_, err := rw.Write([]byte("internal error"))
+	require.NoError(t, err)
+
+	assert.Equal(t, http.StatusInternalServerError, rw.StatusCode)
+	assert.Empty(t, rw.Body)
+	assert.False(t, rw.BodyTruncated)
+	assert.Equal(t, "internal error", recorder.Body.String())
+}

@@ -191,3 +191,31 @@ func TestLogInfo(t *testing.T) {
 	require.Contains(t, logOutput, `"msg":"test info message"`)
 	require.Contains(t, logOutput, `"Traceback"`)
 }
+
+// TestLogDebugContext — строка уровня DEBUG с теми же полями, что у
+// LogInfoContext, и молчит на логгере уровня INFO.
+func TestLogDebugContext(t *testing.T) {
+	t.Parallel()
+
+	ctx := contextlib.WithValue(context.Background(), requestid.Key, "test-request-id")
+
+	var debugOutput, infoOutput bytes.Buffer
+
+	logging.LogDebugContext(
+		ctx,
+		slog.New(slog.NewJSONHandler(&debugOutput, &slog.HandlerOptions{Level: slog.LevelDebug})),
+		"test debug message",
+	)
+	logging.LogDebugContext(
+		ctx,
+		slog.New(slog.NewJSONHandler(&infoOutput, &slog.HandlerOptions{Level: slog.LevelInfo})),
+		"test debug message",
+	)
+
+	logged := debugOutput.String()
+	require.Contains(t, logged, `"level":"DEBUG"`)
+	require.Contains(t, logged, `"msg":"test debug message"`)
+	require.Contains(t, logged, `"Request ID":"test-request-id"`)
+	require.Contains(t, logged, `"Traceback"`)
+	require.Empty(t, infoOutput.String())
+}

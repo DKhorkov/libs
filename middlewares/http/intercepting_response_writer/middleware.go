@@ -40,6 +40,20 @@ type InterceptingResponseWriter struct {
 	// statusSent — окончательный код уже ушёл (явно или первым Write):
 	// следующий WriteHeader net/http игнорирует, и StatusCode его не берёт.
 	statusSent bool
+
+	// discardBody — тело не копируется (NewStatusOnly).
+	discardBody bool
+}
+
+// NewStatusOnly — перехват только статуса: тело уходит клиенту, но не
+// копируется. Для того, кому нужен статус (отметить 5xx), а копия тела каждого
+// ответа (до MaxCapturedBodySize) — лишняя работа. Hijack работает так же.
+func NewStatusOnly(w http.ResponseWriter) *InterceptingResponseWriter {
+	return &InterceptingResponseWriter{ //nolint:exhaustruct // тело не копируется — остальное пусто
+		ResponseWriter: w,
+		StatusCode:     http.StatusOK,
+		discardBody:    true,
+	}
 }
 
 // WriteHeader intercepts response body for later usage in trace.Span.
@@ -74,6 +88,10 @@ func informational(code int) bool {
 func (rw *InterceptingResponseWriter) Write(body []byte) (int, error) {
 	// Тело без явного WriteHeader уходит с 200: код окончательный.
 	rw.statusSent = true
+
+	if rw.discardBody {
+		return rw.ResponseWriter.Write(body)
+	}
 
 	if room := MaxCapturedBodySize - len(rw.Body); room < len(body) {
 		rw.Body = append(rw.Body, body[:max(room, 0)]...)
